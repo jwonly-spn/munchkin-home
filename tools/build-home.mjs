@@ -23,6 +23,8 @@ for (;;) {
   body = body.slice(m[0].length);
 }
 if (!head.some((x) => x.startsWith('<title>'))) throw Error('원본 맨 앞에 <title> 이 없어요.');
+// claude.ai 페이지에만 보이는 "새 주소로 옮겼어요" 안내는 뺀다
+body = body.replace(/<!--ARTIFACT-ONLY-->[\s\S]*?<!--\/ARTIFACT-ONLY-->\s*/g, '');
 // 키우기 사이트 주소를 새 도메인으로
 body = body.replaceAll('https://jwonly-spn.github.io/jun-live-fanpage/', KIUGI);
 if (body.includes('jwonly-spn.github.io/jun-live-fanpage')) throw Error('예전 키우기 주소가 남아 있어요.');
