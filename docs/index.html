@@ -25,7 +25,7 @@ img{max-width:100%}
 </head>
 <body>
 <style>
-/* 레이아웃: 우유빛 바탕 한 줄 흐름 — 첫 화면(이름·받기) → 승인 진행 → 기존 봇 주의(#trust, 그대로 둠) → DJ 키우기(그림 5장) → 왜 먼치킨 → 화면 예시 → 기능(묶음 탭) → 업데이트 대기 → 시작 3단계 → 묻고 답하기.
+/* 레이아웃: 우유빛 바탕 한 줄 흐름 — 첫 화면(이름·받기) → 승인 진행 → 기존 봇 주의(#trust, 그대로 둠) → DJ 키우기(그림 5장) → 왜 먼치킨 → 화면 예시 → 기능(묶음 탭) → 업데이트 대기 → 받는 법(엣지·윈도우 경고 창 그림) → 시작 3단계 → 묻고 답하기.
    휴대폰에서는 긴 설명을 접어 두고(누르면 펼침), 카드 묶음은 옆으로 넘기는 줄로 보여 줘요. 모든 정보는 한 번 누르면 볼 수 있어요. 자바스크립트 없이 움직여요.
    그림의 고양이 쿠키에서 가져온 색: 우유·코코아·딸기 우유(분홍)·담요 하늘색. 화면 예시 안쪽은 프로그램처럼 보라색. 표시 글꼴은 둥근 Jua, 본문은 Noto Sans KR, 명령어는 나눔고딕코딩. */
 :root{
@@ -390,6 +390,85 @@ figcaption span{font-size:15px;color:var(--muted)}
 .need b{color:var(--ink)}
 @media (max-width:520px){.need{gap:4px 14px;font-size:14px}}
 
+/* 받는 법: 엣지·윈도우가 띄우는 확인 창을 간단히 옮겨 그린 그림 + 누를 곳(분홍 테두리). 그림 속 창은 실제 화면처럼 늘 밝은 색이에요. */
+.dl-help{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:14px;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.ih-intro{display:grid;gap:12px;max-width:820px}
+.ih-why{background:var(--sky);color:var(--sky-ink);border-radius:18px;padding:16px 20px;font-size:15px;display:grid;gap:4px}
+.ih-why b{font-size:16px}
+.ih-safe{display:flex;gap:10px;align-items:flex-start;background:var(--ok-soft);color:var(--ok);border-radius:18px;padding:14px 18px;font-size:15px;font-weight:700}
+.ih-safe svg{width:20px;height:20px;flex:none;margin-top:3px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.ih-part{margin-top:40px}
+.ih-part>h3{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-size:24px;margin-bottom:6px}
+.ih-part>h3 .pill{font:700 13px var(--body);background:var(--soft);color:var(--muted);border-radius:999px;padding:3px 10px}
+.ih-part>.ih-sub{color:var(--muted);font-size:15px;margin-bottom:16px}
+.ih-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr));gap:16px;counter-reset:ih}
+.ih-steps>li{counter-increment:ih;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;display:grid;gap:14px;align-content:start}
+.ih-cap{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:start}
+.ih-cap::before{content:counter(ih);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-size:18px}
+.ih-cap b{display:block;font-size:16px;line-height:1.5}
+.ih-cap span{display:block;font-size:14px;color:var(--muted);margin-top:2px;line-height:1.55}
+.ih-done{margin-top:16px;display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--muted)}
+.ih-done svg{width:20px;height:20px;flex:none;margin-top:3px;fill:none;stroke:var(--ok);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ih-note{margin-top:20px;font-size:13.5px;color:var(--muted)}
+.ih-chrome{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 20px;display:grid;gap:6px;max-width:820px}
+.ih-chrome p{color:var(--muted);font-size:15px}
+/* 그림 속 화면 */
+.shot{position:relative;background:#E8EDF4;border-radius:14px;padding:14px 14px 34px;color:#1B1B1B;font:400 13px/1.45 "Segoe UI","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all;overflow-wrap:anywhere;min-height:150px;display:grid;align-content:center}
+.shot .win{background:#FFFFFF;border-radius:10px;box-shadow:0 6px 20px -8px rgba(0,0,0,.35);padding:12px;display:grid;gap:10px}
+.shot .wtitle{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
+.shot .wtitle i{font-style:normal;color:#5C5C5C;letter-spacing:2px}
+.shot .item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:start}
+.shot .fic{width:24px;height:28px;border-radius:3px;background:linear-gradient(135deg,#C9D6E8 0 70%,#AFC0D8 70%);position:relative}
+.shot .fic::after{content:"";position:absolute;left:5px;right:5px;bottom:6px;height:3px;border-radius:2px;background:#6E86A8}
+.shot .fname{font-weight:700;font-size:13px}
+.shot .warn{color:#A4262C;font-size:12.5px}
+.shot .tools{display:flex;gap:6px;align-items:center}
+.shot .ib{min-width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:#424242;font-weight:700;background:#F3F3F3}
+.shot .ib svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.shot .menu{background:#FFFFFF;border-radius:8px;box-shadow:0 6px 20px -6px rgba(0,0,0,.4);padding:6px;display:grid;gap:2px;width:min(100%,230px);justify-self:end}
+.shot .menu span{padding:7px 10px;border-radius:5px;font-size:13px}
+.shot .bar{display:block;height:9px;border-radius:5px;background:#E2E2E2;margin:6px 10px}
+.shot .bar.s{width:55%}
+.shot .bar.m{width:75%}
+.shot .dlg h4{font:700 15px/1.4 "Segoe UI","Malgun Gothic","Noto Sans KR",sans-serif}
+.shot .dlg p{font-size:12.5px;color:#424242}
+.shot .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.shot .row.gap{margin-top:26px}
+.shot .b{border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;background:#FFFFFF;box-shadow:inset 0 0 0 1px #C8C8C8;color:#1B1B1B}
+.shot .b.blue{background:#0F6CBD;color:#FFFFFF;box-shadow:none}
+.shot .lnk{color:#0F6CBD;font-weight:600;font-size:13px}
+.shot .chev{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;margin-left:2px}
+.shot .drop{border-top:1px solid #E5E5E5;padding-top:6px;display:grid;gap:2px}
+.shot .drop span{padding:6px 8px;border-radius:5px}
+.shot .open{color:#0F6CBD;font-weight:600;font-size:12.5px;text-decoration:underline}
+/* 윈도우 파란 창 */
+.shot.ss{background:#E8EDF4}
+.shot .ssw{background:#1F5EA8;color:#FFFFFF;border-radius:6px;padding:16px;display:grid;gap:10px;box-shadow:0 6px 20px -8px rgba(0,0,0,.45)}
+.shot .ssw h4{font:400 20px/1.3 "Segoe UI","Malgun Gothic","Noto Sans KR",sans-serif}
+.shot .ssw p{font-size:12.5px;color:#FFFFFF}
+.shot .ssw .lnk{color:#FFFFFF;text-decoration:underline}
+.shot .ssw dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-size:12.5px}
+.shot .ssw dt{opacity:.85}
+.shot .ssw dd{margin:0;font-weight:600}
+.shot .ssw .row{justify-content:flex-end;margin-top:4px}
+.shot .ssw .b{background:transparent;color:#FFFFFF;box-shadow:inset 0 0 0 2px #FFFFFF;border-radius:2px;min-width:84px;text-align:center}
+/* 누를 곳: 분홍 테두리 + "눌러요" 꼬리표 */
+.shot .hit{position:relative;box-shadow:0 0 0 3px #FFFFFF,0 0 0 6px #E0306A !important;border-radius:6px;z-index:1}
+.shot .hit::after{content:"눌러요";position:absolute;right:-6px;top:calc(100% + 9px);background:#E0306A;color:#FFFFFF;font:700 12px/1 "Noto Sans KR","Malgun Gothic",sans-serif;padding:6px 9px;border-radius:999px;white-space:nowrap;z-index:2}
+.shot .hit.up::after{top:auto;bottom:calc(100% + 9px)}
+.shot .hit.left::after{right:auto;left:-6px}
+.shot .no{position:relative}
+.shot .no::after{content:"누르지 마세요";position:absolute;left:0;bottom:calc(100% + 6px);background:#424242;color:#FFFFFF;font:700 11px/1 "Noto Sans KR","Malgun Gothic",sans-serif;padding:5px 8px;border-radius:999px;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.shot .hit{animation:ihPulse 1.6s ease-in-out infinite}}
+@keyframes ihPulse{50%{box-shadow:0 0 0 3px #FFFFFF,0 0 0 9px rgba(224,48,106,.55)}}
+@media (max-width:520px){
+  .ih-part{margin-top:32px}
+  .ih-part>h3{font-size:21px}
+  .ih-steps{gap:12px}
+  .ih-steps>li{padding:14px;border-radius:18px}
+  .shot{padding:12px 12px 32px}
+}
+
 /* 묻고 답하기 */
 .faq{display:grid;gap:10px;max-width:820px}
 .faq details{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:4px 20px}
@@ -419,7 +498,7 @@ footer .wrap{display:grid;gap:8px}
   <div class="wrap">
     <a class="brand" href="#top"><img src="data:image/webp;base64,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" alt="">먼치킨</a>
     <nav class="nav" aria-label="이 페이지">
-      <a href="#trust">안심 기준</a><a href="#kiugi">DJ 키우기</a><a href="#why">왜 먼치킨</a><a href="#screens">화면</a><a href="#features">기능</a><a href="#waiting">업데이트 대기</a><a href="#start">시작하기</a><a href="#faq">자주 묻는 질문</a><a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">디스코드</a>
+      <a href="#trust">안심 기준</a><a href="#kiugi">DJ 키우기</a><a href="#why">왜 먼치킨</a><a href="#screens">화면</a><a href="#features">기능</a><a href="#waiting">업데이트 대기</a><a href="#install-help">받는 법</a><a href="#start">시작하기</a><a href="#faq">자주 묻는 질문</a><a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">디스코드</a>
     </nav>
   </div>
 </header>
@@ -437,6 +516,7 @@ footer .wrap{display:grid;gap:8px}
           <a class="btn line" href="#kiugi">새 콘텐츠 DJ 키우기</a>
         </div>
         <p class="dl-meta">먼치킨 0.15.88 · Windows 10·11 (64비트) · 128MB · 무료 베타</p>
+        <a class="dl-help" href="#install-help">받을 때 "신뢰할 수 있는지 확인하세요"가 나오나요? 그림으로 보는 받는 법 →</a><br>
         <a class="discord-note" href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/></svg><span>먼치킨 <b>공지사항·업데이트 내용</b>은 디스코드에 올라와요</span><span class="go">디스코드 바로가기 →</span></a>
       </div>
       <div class="hero-art">
@@ -792,6 +872,123 @@ footer .wrap{display:grid;gap:8px}
     </div>
   </section>
 
+  <section id="install-help" class="sec" aria-labelledby="ih-title">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">받는 법</span>
+        <h2 id="ih-title">받을 때 경고가 나와도 놀라지 마세요</h2>
+      </div>
+      <div class="ih-intro">
+        <div class="ih-why"><b>왜 경고가 나와요?</b><span>먼치킨은 아직 마이크로소프트 서명을 받지 않은 프로그램이에요. 그래서 처음 받을 때 엣지와 윈도우가 "이 파일을 믿어도 되는지" 한 번 더 물어봐요. 아래 그림에서 분홍 테두리를 차례로 누르면 돼요. 이 확인은 처음 설치할 때만 나오고, 그다음 업데이트는 먼치킨이 알아서 해요.</span></div>
+        <p class="ih-safe"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span>먼치킨.com의 받기 단추로 받은 파일만 이렇게 열어 주세요. 파일 이름은 Munchkin-Setup으로 시작해요. 다른 곳에서 받은 파일은 열지 마세요.</span></p>
+      </div>
+
+      <div class="ih-part">
+        <h3>엣지에서 받을 때 <span class="pill">윈도우 기본 브라우저</span></h3>
+        <p class="ih-sub">받기 단추를 누르면 엣지 오른쪽 위에 다운로드 창이 떠요. 창이 사라졌다면 키보드에서 Ctrl + J를 누르면 다시 열려요.</p>
+        <ol class="ih-steps">
+          <li>
+            <div class="shot" role="img" aria-label="엣지 다운로드 창. 먼치킨 파일 아래에 '일반적으로 다운로드되지 않습니다' 경고가 있고, 파일 옆 점 세 개 단추에 표시가 있어요.">
+              <div class="win">
+                <div class="wtitle">다운로드 <i>···</i></div>
+                <div class="item">
+                  <span class="fic"></span>
+                  <div><div class="fname">Munchkin-Setup-0.15.88.exe</div><div class="warn">일반적으로 다운로드되지 않습니다. 열기 전에 신뢰할 수 있는지 확인하세요.</div></div>
+                  <div class="tools"><span class="ib"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg></span><span class="ib hit">···</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>파일 옆 "···"(더 보기)을 눌러요</b><span>휴지통 단추는 누르지 마세요. 파일이 지워져요.</span></p></div>
+          </li>
+          <li>
+            <div class="shot" role="img" aria-label="점 세 개를 누르면 나오는 메뉴. '유지'에 표시가 있어요.">
+              <div class="win">
+                <div class="item">
+                  <span class="fic"></span>
+                  <div><div class="fname">Munchkin-Setup-0.15.88.exe</div><div class="warn">일반적으로 다운로드되지 않습니다.</div></div>
+                  <div class="tools"><span class="ib">···</span></div>
+                </div>
+                <div class="menu"><i class="bar m"></i><span class="hit left">유지</span><i class="bar"></i><i class="bar s"></i></div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>메뉴에서 "유지"를 눌러요</b><span>"파일을 남겨 둔다"는 뜻이에요.</span></p></div>
+          </li>
+          <li>
+            <div class="shot" role="img" aria-label="'열기 전에 신뢰할 수 있는지 확인하세요' 창. 파란 삭제 단추는 누르지 말고, 아래 '더 보기'에 표시가 있어요.">
+              <div class="win dlg">
+                <h4>열기 전에 이 파일을 신뢰할 수 있는지 확인하세요</h4>
+                <p>Microsoft Defender SmartScreen은 이 파일이 안전한지 확인할 수 없습니다.</p>
+                <div class="row gap"><span class="b blue no">삭제</span><span class="b">취소</span></div>
+                <div><span class="lnk hit left">더 보기 <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5l3.5 3.5 3.5-3.5"/></svg></span></div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>창 아래 "더 보기"를 눌러요</b><span>파란 "삭제" 단추는 누르지 마세요.</span></p></div>
+          </li>
+          <li>
+            <div class="shot" role="img" aria-label="'더 보기'를 누르면 아래에 '그래도 계속'이 나오고, 거기에 표시가 있어요.">
+              <div class="win dlg">
+                <h4>열기 전에 이 파일을 신뢰할 수 있는지 확인하세요</h4>
+                <div class="row"><span class="b blue">삭제</span><span class="b">취소</span></div>
+                <div class="drop"><span class="lnk">더 보기 <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 7.5l3.5-3.5 3.5 3.5"/></svg></span><span class="hit left">그래도 계속</span><i class="bar m"></i></div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>"그래도 계속"을 눌러요</b><span>이제 파일이 PC에 저장돼요.</span></p></div>
+          </li>
+          <li>
+            <div class="shot" role="img" aria-label="다운로드 창에서 먼치킨 파일 아래 '파일 열기'에 표시가 있어요.">
+              <div class="win">
+                <div class="wtitle">다운로드 <i>···</i></div>
+                <div class="item">
+                  <span class="fic"></span>
+                  <div><div class="fname">Munchkin-Setup-0.15.88.exe</div><span class="open hit left">파일 열기</span></div>
+                  <div class="tools"></div>
+                </div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>"파일 열기"를 눌러요</b><span>다운로드 폴더에서 파일을 두 번 눌러도 돼요. 다음은 아래 윈도우 파란 창이에요.</span></p></div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="ih-part">
+        <h3>설치 파일을 열 때 <span class="pill">윈도우 파란 창</span></h3>
+        <p class="ih-sub">파일을 열면 윈도우가 파란 창을 한 번 더 띄울 수 있어요. 크롬으로 받았을 때도 같아요.</p>
+        <ol class="ih-steps">
+          <li>
+            <div class="shot ss" role="img" aria-label="파란색 'Windows의 PC 보호' 창. 글 아래 '추가 정보'에 표시가 있어요.">
+              <div class="ssw">
+                <h4>Windows의 PC 보호</h4>
+                <p>Microsoft Defender SmartScreen에서 인식할 수 없는 앱의 시작을 차단했습니다. 이 앱을 실행하면 PC가 위험에 노출될 수 있습니다.</p>
+                <div><span class="lnk hit left">추가 정보</span></div>
+                <div class="row"><span class="b">실행 안 함</span></div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>글 아래 "추가 정보"를 눌러요</b><span>처음에는 "실행" 단추가 안 보여요. "추가 정보"를 눌러야 나와요.</span></p></div>
+          </li>
+          <li>
+            <div class="shot ss" role="img" aria-label="'추가 정보'를 누르면 앱 이름과 게시자가 보이고, 아래 '실행' 단추에 표시가 있어요.">
+              <div class="ssw">
+                <h4>Windows의 PC 보호</h4>
+                <dl><dt>앱:</dt><dd>Munchkin-Setup-0.15.88.exe</dd><dt>게시자:</dt><dd>알 수 없는 게시자</dd></dl>
+                <div class="row"><span class="b hit">실행</span><span class="b">실행 안 함</span></div>
+              </div>
+            </div>
+            <div class="ih-cap"><p><b>"실행"을 누르면 설치가 이어져요</b><span>"알 수 없는 게시자"는 서명이 없다는 뜻이에요. 앱 이름이 Munchkin-Setup인지만 확인해 주세요.</span></p></div>
+          </li>
+        </ol>
+        <p class="ih-done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>설치가 끝나면 먼치킨을 켜서 "스푼 연결"을 눌러 주세요. 이 창들은 처음 한 번만 나와요. 새 버전은 먼치킨이 켜질 때 저절로 업데이트돼요.</span></p>
+      </div>
+
+      <div class="ih-part">
+        <div class="ih-chrome">
+          <b>크롬으로 받을 때</b>
+          <p>오른쪽 위 다운로드 단추(↓)를 누르면 받은 파일 목록이 보여요. 먼치킨 파일 옆에 경고가 붙어 있으면, 그 파일을 눌러 받기를 이어 가는 단추를 눌러 주세요. 그다음은 위 "설치 파일을 열 때"와 같아요.</p>
+        </div>
+        <p class="ih-note">그림은 실제 창을 간단히 옮겨 그린 거예요. 엣지와 윈도우 버전에 따라 글자나 단추 모양이 조금 다를 수 있어요.</p>
+      </div>
+    </div>
+  </section>
+
   <section id="start" class="sec" aria-labelledby="start-title">
     <div class="wrap">
       <div class="head">
@@ -799,7 +996,7 @@ footer .wrap{display:grid;gap:8px}
         <h2 id="start-title">이렇게 시작해요</h2>
       </div>
       <ol class="start">
-        <li><h3>먼치킨 설치</h3><p>맨 위 "Windows용 무료 받기"로 설치 파일을 받아 열어요. Windows가 확인 창을 띄우면 "추가 정보"를 누른 뒤 "실행"을 눌러요.</p></li>
+        <li><h3>먼치킨 설치</h3><p>맨 위 "Windows용 무료 받기"로 설치 파일을 받아 열어요. 엣지나 윈도우가 확인 창을 띄우면 위 <a href="#install-help">받는 법</a> 그림대로 눌러 주세요.</p></li>
         <li><h3>스푼 연결</h3><p>DJ 계정으로 로그인해서 먼치킨이 내 방송을 도와도 된다고 허용해요.</p></li>
         <li><h3>먼치킨을 매니저로</h3><p>먼치킨이 매니저여야 들어온 사람에게 바로 인사해요. 매니저가 아니어도 들어오고 나간 사람을 2~3초 안에 알아채고 인사해요.</p>
           <details class="more"><summary>매니저 지정 방법 자세히</summary><p>고정 매니저로 두려면 먼치킨 계정이 DJ를 팔로우해야 하는데, 먼치킨을 설치해 등록하면 먼치킨 계정이 차례로 팔로우해 드려요(조금 걸릴 수 있어요). 그 전에는 방송을 시작하기 전에 청취자 목록에서 먼치킨을 매니저로 지정해 주세요. 방송 중에 지정했다면 먼치킨 화면 위 알림 띠의 "다시 연결"을 눌러 주세요.</p></details></li>
@@ -814,7 +1011,9 @@ footer .wrap{display:grid;gap:8px}
       <div class="faq">
         <details><summary>지금 받을 수 있나요?</summary><p>네. 맨 위 "Windows용 무료 받기" 단추를 누르면 설치 파일(128MB)을 받아요. 받은 파일을 열어 설치하면 돼요. 새 버전이 나오면 먼치킨이 켜질 때 저절로 업데이트해요.</p></details>
         <details><summary>다른 곳에서 받은 먼치킨도 써도 되나요?</summary><p>먼치킨은 이 페이지(먼치킨.com)에서만 받아 주세요. 0.15.69부터는 누가 프로그램 파일을 고쳐서 다시 나눠 준 판은 켜지지 않아요. 먼치킨의 코드·화면·그림은 허락 없이 복제·수정·재배포하거나 뜯어볼 수 없어요.</p></details>
+        <details><summary>엣지에서 "일반적으로 다운로드되지 않습니다"가 떠요</summary><p>먼치킨이 아직 마이크로소프트 서명을 받지 않아서 나오는 확인이에요. 파일 옆 "···" → "유지" → "더 보기" → "그래도 계속" 순서로 누르면 받아져요. <a href="#install-help">그림으로 보는 받는 법</a>에 차례대로 그려 두었어요.</p></details>
         <details><summary>설치할 때 "Windows의 PC 보호" 창이 떠요</summary><p>Windows가 처음 보는 프로그램이라 띄우는 확인 창이에요. "추가 정보"를 누르고 "실행"을 누르면 설치가 이어져요. 설치 파일은 꼭 이 페이지의 단추로 받아 주세요.</p></details>
+        <details><summary>링크를 누르면 엣지로 열려요</summary><p>디스코드나 카카오톡에서 링크를 누르면 PC에 기본으로 정해 둔 브라우저로 열려요. 크롬으로 열고 싶으면 링크를 복사해 크롬 주소창에 붙여 넣거나, Windows 설정 › 앱 › 기본 앱에서 크롬을 기본 브라우저로 바꿔 주세요. 어느 브라우저로 받아도 먼치킨은 같아요.</p></details>
         <details><summary>먼치킨이 켜지지 않아요</summary><p>이 페이지(먼치킨.com)에서 설치 파일을 새로 받아 다시 설치해 주세요. 통장, 애청지수 같은 기록은 PC에 그대로 남아요. 백신 프로그램이 먼치킨 파일을 고치거나 막으면 켜지지 않을 수 있어요. 그럴 땐 백신 설정에서 먼치킨 설치 폴더(AppData\Local\Programs\JUN LIVE)를 예외로 추가한 뒤 다시 설치해 주세요. 업데이트를 마치지 못했을 때도 먼치킨이 알려 드려요.</p></details>
         <details><summary>PC를 꺼 두어도 봇이 방송에 들어오나요?</summary><p>아니요. 먼치킨은 DJ의 PC에서 돌아가요. 스푼은 청취자 정보를 DJ의 PC에 저장하는 방법만 승인한다고 답했어요. PC를 켜지 않아도 들어오는 봇처럼 청취자 정보를 개발사 서버에서 다루는 방식은 이 기준에 맞지 않아요.</p></details>
         <details><summary>DJ 키우기는 언제 쓸 수 있나요?</summary><p>지금 쓸 수 있어요. 먼치킨 0.15.50부터 들어 있어요. 이미 먼치킨을 쓰고 있다면 켤 때 저절로 업데이트돼요. 방송 관리 › 콘텐츠 › 키우기에서 캐릭터를 만들고 켜 주세요. 시즌 1 할로윈은 11월 30일까지 이어지고, 12월 1일에 시즌 2로 바뀌어요.</p></details>
