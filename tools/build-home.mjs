@@ -71,4 +71,12 @@ fs.writeFileSync(path.join(DOCS, '.nojekyll'), '');
 const ICONS = path.join(WORK, '아이콘');
 fs.copyFileSync(path.join(ICONS, 'munchkin.ico'), path.join(DOCS, 'favicon.ico'));
 for (const s of [64, 256]) fs.copyFileSync(path.join(ICONS, `munchkin-${s}.png`), path.join(DOCS, `munchkin-${s}.png`));
+// 스푼 연결(OAuth)에서 돌아오는 페이지 — 키우기.com 인증서가 나오기 전까지 https 로 받을 수 있는 자리(2026-10-19).
+// 원본은 팬페이지 저장소 docs/spoon.* 그대로 복사한다(글의 옛 이름 "JUN LIVE" 만 "먼치킨"으로).
+const FAN = path.join(WORK, '팬페이지', 'docs');
+for (const f of ['spoon.html', 'spoon.js', 'spoon.css']) {
+  const src = path.join(FAN, f);
+  if (!fs.existsSync(src)) throw Error(`팬페이지 docs/${f} 가 없어요.`);
+  fs.writeFileSync(path.join(DOCS, f), fs.readFileSync(src, 'utf8').replaceAll('JUN LIVE', '먼치킨'));
+}
 console.log('docs/index.html', html.length, 'bytes · head', head.length, '줄');
