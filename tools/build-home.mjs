@@ -77,6 +77,13 @@ const FAN = path.join(WORK, '팬페이지', 'docs');
 for (const f of ['spoon.html', 'spoon.js', 'spoon.css']) {
   const src = path.join(FAN, f);
   if (!fs.existsSync(src)) throw Error(`팬페이지 docs/${f} 가 없어요.`);
-  fs.writeFileSync(path.join(DOCS, f), fs.readFileSync(src, 'utf8').replaceAll('JUN LIVE', '먼치킨'));
+  // 조사: "JUN LIVE와/는" → "먼치킨과/은"(받침) 먼저, 나머지는 그대로 이름만
+  fs.writeFileSync(path.join(DOCS, f), fs.readFileSync(src, 'utf8').replaceAll('JUN LIVE와', '먼치킨과').replaceAll('JUN LIVE는', '먼치킨은').replaceAll('JUN LIVE', '먼치킨'));
+}
+// 자리표시가 남아 있으면 올리지 않는다(2026-10-19 W8b 권고): 이메일·시행일·확인 표시는 공개 전에 채워야 한다.
+for (const f of ['index.html']) {
+  const t = fs.readFileSync(path.join(DOCS, f), 'utf8');
+  const left = ['[이메일 주소]', '[날짜]', '[확인 필요', '[확인]'].filter((k) => t.includes(k));
+  if (left.length && !process.argv.includes('--allow-placeholders')) throw Error(`${f} 에 자리표시가 남아 있어요: ${left.join(' ')} — 채운 뒤 다시 만들어요(시험만이면 --allow-placeholders).`);
 }
 console.log('docs/index.html', html.length, 'bytes · head', head.length, '줄');
