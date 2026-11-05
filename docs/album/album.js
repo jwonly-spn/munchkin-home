@@ -225,9 +225,12 @@ async function call(path, { method = 'GET', body, query = {}, timeout = 25000, s
   if (!res.ok || !data?.ok) throw Object.assign(Error(data?.error || '잠시 문제가 생겼어요. 조금 뒤에 다시 해 주세요.'), { status: res.status, data });
   return data;
 }
+// 본인인증 마무리(verify-done·find-done)는 bakje-verify 함수로(2026-11-05 — 카카오 인증서는 CI 가 없어 이름·생년월일·전화번호 값으로도 같은 사람을 알아본다)
+const VERIFY = SB + '/functions/v1/bakje-verify/';
 async function memberCall(action, body = {}) {
   const auth = !NO_SESSION.has(action);
-  try { return await call('member', { method: 'POST', body: { action, ...body }, session: auth }); }
+  const base = action === 'verify-done' || action === 'find-done' ? VERIFY : API;
+  try { return await call('member', { method: 'POST', body: { action, ...body }, session: auth, base }); }
   catch (e) { if (auth && e.status === 401) dropSession(); throw e; }
 }
 async function billCall(action, body = {}) {
