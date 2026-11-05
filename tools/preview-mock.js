@@ -1,4 +1,4 @@
-// 가짜 서버(미리 보기만): supabase 함수 부르기를 가로채 지어낸 답을 준다. ?mock=new(앨범 없음·로그인 전) · owner(앨범 있음) · pending(신청 기다림)
+// 가짜 서버(미리 보기만): supabase 함수 부르기를 가로채 지어낸 답을 준다. ?mock=new(베타·앨범 없음) · owner(앨범 있음) · pending(신청 기다림) · open(공개 후 신청 화면 검수 전용)
 const SB = 'https://aksegkhhugqvvaidgvro.supabase.co';
 const q = new URLSearchParams(location.search);
 if (q.get('mock') && q.get('mock') !== '1') sessionStorage.setItem('mock_kind', q.get('mock'));
@@ -37,7 +37,7 @@ window.fetch = async (url, init = {}) => {
   }
   if (path.endsWith('/bakje-billing')) {
     switch (b.action) {
-      case 'info': return reply({ ok: true, open: true, bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '제이원스튜디오' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], addons: {}, ents: { munchkin: now + 12 * DAY, ...(st.albums[0] ? { album: st.albums[0].paidUntil } : {}) }, owns: st.albums.map((a) => a.id), albums: st.albums, orders: st.orders, admin: false });
+      case 'info': return reply({ ok: true, open: true, albumOpen: kind === 'open', munchkinFrom: Date.parse('2027-01-01T00:00:00+09:00'), bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '제이원스튜디오' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], addons: {}, ents: { munchkin: now + 12 * DAY, ...(st.albums[0] ? { album: st.albums[0].paidUntil } : {}) }, owns: st.albums.map((a) => a.id), albums: st.albums, orders: st.orders, admin: false });
       case 'album-name': {
         const label = String(b.label || '').normalize('NFC').trim().toLowerCase();
         if (label === 'test') return reply({ ok: true, label, host: '', free: false, reason: '쓸 수 없는 주소 이름이에요. 다른 이름을 골라 주세요.' });
