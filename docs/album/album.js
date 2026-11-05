@@ -657,7 +657,9 @@ function topbar() {
     } },
       h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', null, '먼치킨 ', h('em', { text: '추억앨범' }))),
     h('nav', { class: 'top-nav' },
-      S.view !== 'apply' && S.view !== 'app' ? h('button', { class: 'btn line small hide-s', type: 'button', text: '신청하기', onclick: () => go('apply') }) : null,
+      S.view !== 'apply' && S.view !== 'app' ? (albumBeta() && !ownsAlbum()
+        ? h('a', { class: 'btn line small hide-s', href: PREVIEW_URL, target: '_blank', rel: 'noopener', text: '미리 보기' })
+        : h('button', { class: 'btn line small hide-s', type: 'button', text: '신청하기', onclick: () => go('apply') })) : null,
       right)));
 }
 function footer() {
@@ -674,12 +676,25 @@ function footer() {
       h('p', { text: '대구광역시 수성구 동대구로 336 · likegorogoro@naver.com' }))));
 }
 const sectionHead = (eyebrow, title, lead) => h('div', { class: 'head' }, eyebrow ? h('p', { class: 'eyebrow', text: eyebrow }) : null, h('h2', { text: title }), lead ? h('p', { class: 'lead', text: lead }) : null);
+// 추억앨범 베타(2026-11-05 사용자 "추억앨범은 아직 다른 디제이들은 이용할 수 없어 — 베타테스트 중이라 추후 공개 예정 · 미리보기 버튼 → 한이준.com"):
+//  서버(bakje-billing info albumOpen)가 새 앨범 신청을 받을 때만 신청하기. 아니면(로그인 전 포함) 안내 + 미리 보기. 이미 앨범이 있는 DJ(시범)는 연장 그대로.
+const PREVIEW_URL = 'https://xn--hu5bi2af5y.com/';
+const BETA_TEXT = '추억앨범은 지금 베타 테스트 중이에요. 다른 DJ분들께는 추후 공개할 예정이에요.';
+const albumBeta = () => S.info?.albumOpen !== true;
+const ownsAlbum = () => Boolean(S.session && S.info?.albums?.length);
+const previewBtn = (cls = 'btn main') => h('a', { class: cls, href: PREVIEW_URL, target: '_blank', rel: 'noopener' }, icon('album'), '미리 보기 · 한이준 추억앨범');
+const betaBox = () => h('div', { class: 'card beta-box' },
+  h('p', { class: 'eyebrow', text: '베타 테스트 중' }),
+  h('p', { class: 'lead-s', text: BETA_TEXT }),
+  h('p', { class: 'muted small', text: '어떤 모습인지는 한이준 추억앨범에서 미리 볼 수 있어요.' }),
+  previewBtn());
 
 // 처음 화면
 function homeView() {
   const mine = S.session && S.info?.albums?.length ? S.info.albums : null;
   if (S.session && !S.info) ensureInfo();
-  const ctaMain = h('button', { class: 'btn main', type: 'button', onclick: () => go('apply') }, icon('album'), mine ? '연장·신청하기' : '추억앨범 신청하기');
+  const beta = albumBeta() && !mine;
+  const ctaMain = beta ? previewBtn() : h('button', { class: 'btn main', type: 'button', onclick: () => go('apply') }, icon('album'), mine ? '연장·신청하기' : '추억앨범 신청하기');
   const ctaSub = S.session
     ? h('button', { class: 'btn line', type: 'button', onclick: () => go('me') }, icon('user'), '내 정보')
     : h('button', { class: 'btn line', type: 'button', onclick: () => openSheet('login') }, '로그인 · 회원가입');
@@ -696,11 +711,11 @@ function homeView() {
     mine ? h('section', { class: 'mine-strip' }, h('div', { class: 'mine-row' }, mine.map(albumMini))) : null,
     h('section', { class: 'hero' }, h('div', { class: 'hero-grid' },
       h('div', { class: 'hero-text' },
-        h('p', { class: 'eyebrow', text: '먼치킨 추억앨범' }),
+        h('p', { class: 'eyebrow', text: beta ? '먼치킨 추억앨범 · 베타 테스트 중' : '먼치킨 추억앨범' }),
         h('h1', null, '방송의 추억을', h('br'), h('em', { text: '나만의 앨범' }), '으로'),
         h('p', { class: 'lead' }, '내 박제판·최초 박제판·방송 사진을 모아 두는 나만의 사이트예요. 주소는 ', h('b', { text: '밤톨.먼치킨.com' }), '처럼 내 이름으로 정해요.'),
         h('div', { class: 'cta' }, ctaMain, ctaSub),
-        h('p', { class: 'note', text: '추억앨범만 써도 되고, 먼치킨과 함께 쓰면 더 편해요.' })),
+        h('p', { class: 'note', text: beta ? BETA_TEXT : '추억앨범만 써도 되고, 먼치킨과 함께 쓰면 더 편해요.' })),
       h('div', { class: 'hero-art' }, h('div', { class: 'plate' }, h('img', { src: '../munchkin-256.png', alt: '먼치킨 캐릭터', width: '256', height: '256' })), mock))),
     h('section', { class: 'sect' },
       sectionHead('같이 쓰면 좋은 점', '먼치킨이랑 같이 쓰면 더 좋아요'),
@@ -709,15 +724,16 @@ function homeView() {
       sectionHead('앨범에 담기는 것', '내 방송의 모든 순간을 한곳에'),
       h('ul', { class: 'chips' }, ['일반 게시물(피드)', '박제판', '최초 박제판', '달력으로 보기', '하트·댓글·답글', 'DJ 알림', '내 프로필·소개'].map((t) => h('li', { text: t })))),
     h('section', { class: 'sect' },
-      sectionHead('만드는 방법', '이렇게 만들어요', '세 단계면 끝나요. 앨범이 생기면 바로 글을 올릴 수 있어요.'),
+      sectionHead('만드는 방법', '이렇게 만들어요', beta ? '공개되면 세 단계면 끝나요. 지금은 베타 테스트 중이라 신청을 받지 않아요.' : '세 단계면 끝나요. 앨범이 생기면 바로 글을 올릴 수 있어요.'),
       h('ol', { class: 'steps' },
         h('li', null, h('b', { text: '먼치킨 계정으로 로그인' }), h('span', { text: '없으면 1분이면 가입해요. 카카오로도 돼요.' })),
         h('li', null, h('b', { text: '신청하기' }), h('span', { text: '주소 이름·앨범 이름·기간을 고르고 계좌로 이체해요.' })),
         h('li', null, h('b', { text: '바로 열려요' }), h('span', { text: '운영자가 입금을 확인하면 앨범과 주소가 바로 만들어져요(최대 24시간).' }))),
-      h('div', { class: 'cta center' }, h('button', { class: 'btn main', type: 'button', onclick: () => go('apply') }, '추억앨범 신청하기'))),
+      h('div', { class: 'cta center' }, beta ? previewBtn() : h('button', { class: 'btn main', type: 'button', onclick: () => go('apply') }, '추억앨범 신청하기'))),
     h('section', { class: 'sect faq' },
       sectionHead('묻고 답하기', '궁금한 것'),
-      [['먼치킨을 안 써도 만들 수 있나요?', '네. 추억앨범만 신청해도 돼요. 먼치킨(봇 프로그램)을 함께 쓰면 최초 박제판이 저절로 올라가요.'],
+      [...(beta ? [['지금 신청할 수 있나요?', '아직은 베타 테스트 중이라 신청을 받지 않아요. 추후 공개할 예정이에요. 어떤 모습인지는 한이준 추억앨범(한이준.com)에서 미리 볼 수 있어요.']] : []),
+        ['먼치킨을 안 써도 만들 수 있나요?', '네. 추억앨범만 신청해도 돼요. 먼치킨(봇 프로그램)을 함께 쓰면 최초 박제판이 저절로 올라가요.'],
         ['먼치킨 프로그램과는 어떻게 이어지나요?', '먼치킨에서 같은 먼치킨 계정으로 로그인하면 저절로 이어져요. 앨범이 생길 때 그 계정으로 로그인한 먼치킨이 있으면 그것도 바로 이어져요.'],
         ['본인인증은 왜 하나요?', '추억앨범·이용권을 신청한 분을 확인하려고 한 번 해요. 이름·전화번호·생년월일은 저장하지 않아요.'],
         ['청취자도 가입해야 하나요?', '앨범은 누구나 볼 수 있어요. 댓글을 달 때만 가입하면 돼요.']]
@@ -825,6 +841,8 @@ function applyView() {
   // 확인을 기다리는 신청
   if (pending.length) parts.push(h('div', { class: 'stack' }, h('h3', { class: 'sub', text: '확인을 기다리는 신청' }), pending.map((o) => orderCard(o, info))));
   if (!info.open) { parts.push(h('div', { class: 'card' }, h('p', { class: 'notice', text: '신청을 준비하고 있어요. 조금 뒤에 다시 와 주세요.' }))); return h('section', { class: 'sect narrow' }, parts); }
+  // 베타: 앨범이 없는 DJ 는 새 신청 대신 안내·미리 보기(서버도 받지 않는다). 먼치킨 이용권 칸도 함께(무료 기간 안내)
+  if (!owner && info.albumOpen !== true) { parts[0] = sectionHead('추억앨범 신청', '아직 신청을 받지 않아요'); parts.push(betaBox(), munchkinOnly(info)); return h('section', { class: 'sect narrow' }, parts); }
 
   // 1. 본인인증
   const verified = Boolean(me.verified);
@@ -936,6 +954,12 @@ function applyView() {
 // 먼치킨 이용권만(접어 둠)
 function munchkinOnly(info) {
   if (!(info.prices?.munchkin > 0)) return null;
+  // 무료 기간(2026-12-31 까지 — 서버 munchkinFrom): 신청 단추 없이 안내만(서버도 받지 않는다)
+  const from = Number(info.munchkinFrom) || Date.parse('2027-01-01T00:00:00+09:00');
+  if (Date.now() < from) return h('details', { class: 'card more' }, h('summary', { text: '먼치킨(봇 프로그램)만 쓰고 싶어요' }),
+    h('p', { class: 'lead-s', text: '먼치킨은 2026년 12월 31일까지 무료예요. 지금은 신청하지 않아도 돼요.' }),
+    h('p', { class: 'muted small', text: `먼치킨을 설치하고 먼치킨 계정으로 로그인하면 바로 쓸 수 있어요. 2027년 1월부터 먼치킨 이용권(월 ${won(info.prices.munchkin)})을 여기서 신청해요.` }),
+    h('a', { class: 'btn line block', href: '../', text: '먼치킨 받으러 가기' }));
   let months = 1;
   const amt = h('p', { class: 'amount small-amount' });
   const st = statusEl();
@@ -989,7 +1013,9 @@ function meView() {
         })
         : orders.find((o) => o.state === 'pending' && o.newAlbum)
           ? [h('p', { class: 'muted', text: `${orders.find((o) => o.state === 'pending' && o.newAlbum).newAlbum.label}.${SUFFIX} 신청이 확인을 기다리고 있어요. ${WAIT_ALBUM}` }), h('button', { class: 'btn line block', type: 'button', text: '입금 안내 보기', onclick: () => go('apply') })]
-          : [h('p', { class: 'muted', text: '아직 추억앨범이 없어요.' }), h('button', { class: 'btn main block', type: 'button', text: '추억앨범 신청하기', onclick: () => go('apply') })]),
+          : albumBeta()
+            ? [h('p', { class: 'muted', text: '아직 추억앨범이 없어요. ' + BETA_TEXT }), previewBtn('btn main block')]
+            : [h('p', { class: 'muted', text: '아직 추억앨범이 없어요.' }), h('button', { class: 'btn main block', type: 'button', text: '추억앨범 신청하기', onclick: () => go('apply') })]),
     h('article', { class: 'card' }, h('h3', { text: '이용권' }),
       h('dl', { class: 'kv' }, kvRow('먼치킨', until('munchkin')), kvRow('추억앨범', until('album')))),
     h('article', { class: 'card' }, h('h3', { text: '내 신청' }),
