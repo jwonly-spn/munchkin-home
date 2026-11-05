@@ -9,3 +9,4 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 
 .free-notice{margin-top:20px;font-size:12px;color:var(--accent);font-weight:700}.beta-notice{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;border:1px solid var(--line);padding:8px 12px;border-radius:10px;margin-bottom:18px}@media(max-width:520px){.free-notice{font-size:11px;line-height:1.8}.beta-notice{font-size:11px}}
+.scene-orbit{overflow:hidden}:root{--ok:#2f7552;--ok-soft:#e6f1e9}@media(prefers-color-scheme:dark){:root{--ok:#a7dbbd;--ok-soft:#253b2d}}
