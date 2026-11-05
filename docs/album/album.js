@@ -5,6 +5,9 @@
 //  #bjlogin=<표>      카카오 로그인·먼치킨 프로그램(web-ticket)이 로그인된 채 열 때 → 표를 세션으로 바꾼다
 //  #go=apply|me|find  그 화면으로(프로그램의 [신청하기]·[내 정보 관리]·[아이디·비밀번호 찾기])
 //  ?app=<자리>        먼치킨 프로그램 카카오 로그인 — 여기서 로그인한 뒤 "먼치킨 프로그램에서 로그인할까요?" [로그인] → app-approve
+//  ?app=<자리>&kakao=1  (2026-11-06 쉬운 로그인) 먼치킨이 띄운 카카오 로그인 창: 로그인이 안 돼 있으면 바로 카카오로 넘기고,
+//                     로그인되면 묻지 않고 승인한다 — 단, 그 창의 preload 가 준 표시(window.munchkinLogin — inApp·같은 자리 번호)가 있을 때만.
+//                     보통 브라우저에는 그 표시가 없어 예전처럼 묻는다(남이 보낸 ?app= 링크로 내 계정이 남의 프로그램에 로그인되지 않게).
 //  ?bjverify=1&…      휴대폰 본인인증에서 돌아온 자리(포트원)
 // 회원·본인인증 흐름은 추억앨범 사이트(박제관 docs/app.js)와 같게 — 포트원 V2 브라우저 SDK(누를 때만 불러온다).
 
@@ -53,7 +56,7 @@ if (LOCAL && (new URLSearchParams(location.search).has('mock') || ss.get('mk_moc
 
 // ---------- 주소로 들어온 값 — 맨 먼저 떼어 두고 주소를 깨끗하게 ----------
 const RETURN = (() => {
-  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', verify: null };
+  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false, verify: null };
   try {
     const hp = new URLSearchParams(location.hash.slice(1));
     if (TICKET_RE.test(hp.get('bjlogin') || '')) out.ticket = hp.get('bjlogin');
@@ -62,6 +65,7 @@ const RETURN = (() => {
     if (['apply', 'me', 'find'].includes(hp.get('go'))) out.go = hp.get('go');
     const q = new URLSearchParams(location.search);
     if (APP_RE.test(q.get('app') || '')) out.app = q.get('app');
+    out.kakao = Boolean(out.app) && q.get('kakao') === '1';
     if (q.get('bjverify') === '1') {
       const saved = parse(ss.get('mk_verify'));
       ss.del('mk_verify');
@@ -94,6 +98,14 @@ const S = {
 if (!TICKET_RE.test(S.session)) { S.session = ''; S.me = null; }
 const saveDraft = () => ss.set('mk_draft', JSON.stringify(S.draft));
 
+// 먼치킨 프로그램이 띄운 카카오 로그인 창인가(2026-11-06): 그 창의 preload 만 window.munchkinLogin 을 준다(보통 브라우저·다른 사이트는 못 만든다 —
+//  페이지 글은 contextBridge 로 준 이 값을 바꿀 수 없다). 주소의 ?app= 과 그 창을 열 때 정한 자리 번호가 같을 때만 "창 안"으로 본다.
+const IN_APP = (() => {
+  try { const m = window.munchkinLogin; return m && m.inApp === true && typeof m.app === 'string' && APP_RE.test(m.app) ? m : null; } catch { return null; }
+})();
+const inApp = () => Boolean(IN_APP && S.app && S.app === IN_APP.app);
+if (inApp()) { S.view = 'app'; S.appDone = 'wait'; document.documentElement.classList.add('in-app'); }
+
 // ---------- 작은 도구 ----------
 const $ = (sel, root = document) => root.querySelector(sel);
 function h(tag, props, ...kids) {
@@ -123,7 +135,8 @@ const ICONS = {
   trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/>',
   key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/>',
   heart: '<path d="M12 20.3s-7.4-4.5-9.2-9.1C1.5 7.9 3.5 4.6 7 4.6c2 0 3.6 1.1 5 2.9 1.4-1.8 3-2.9 5-2.9 3.5 0 5.5 3.3 4.2 6.6-1.8 4.6-9.2 9.1-9.2 9.1z"/>',
-  monitor: '<rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8.5 20h7M12 16v4"/>'
+  monitor: '<rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8.5 20h7M12 16v4"/>',
+  spin: '<path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5"/>'
 };
 function icon(name) {
   const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -325,10 +338,29 @@ function kakaoLogin() {
   location.href = API + 'kakao-start?' + new URLSearchParams({ apikey: KEY, h: location.host, r: location.pathname + location.search });
 }
 
+// 먼치킨 안의 카카오 로그인 창: 로그인돼 있으면 묻지 않고 승인한다(그 창을 연 프로그램의 자리 번호만 — inApp()).
+//  승인하면 창에 알리고(approved — 프로그램이 바로 받아 가고 창을 닫는다) "로그인했어요"를 보인다. 세션이 끝났으면 카카오로 다시.
+let approving = false;
+async function autoApprove() {
+  if (!inApp() || approving) return;
+  if (!S.session) { S.appDone = ''; S.view = 'app'; paint(); return; }
+  approving = true; S.appDone = 'wait'; S.view = 'app'; paint();
+  try {
+    await memberCall('app-approve', { id: S.app });
+    S.appDone = 'ok';
+    try { IN_APP.approved?.(); } catch { /* 프로그램이 2초마다 묻는다 */ }
+  } catch (e) { S.appDone = e.status === 401 ? '' : e.message; }
+  finally { approving = false; }
+  paint();
+}
+// 창 안에서 카카오로(한 번만 저절로 — 그 뒤에는 단추로)
+function inAppKakao() { ss.set('mk_app_kakao:' + S.app, '1'); kakaoLogin(); }
+
 // 로그인을 마친 뒤: 프로그램 로그인 승인 → 가려던 화면 → (닉네임이 없으면 먼저 닉네임)
 function afterLogin(message) {
   if (message) toast(message);
   closeSheet();
+  if (inApp()) { autoApprove(); return; }
   if (S.app) { go('app'); return; }
   if (S.me && !S.me.nickname) { openSheet('nickname', { join: true }); return; }
   continueNext();
@@ -342,6 +374,8 @@ function continueNext() {
 }
 // 로그인이 필요한 화면은 로그인부터
 function go(view) {
+  // 먼치킨 안의 창은 로그인 화면(app) 밖으로 가지 않는다
+  if (inApp()) { S.view = 'app'; paint(); return; }
   if ((view === 'apply' || view === 'me' || view === 'app') && !S.session) {
     if (view !== 'app') S.next = view;
     S.view = view === 'app' ? 'app' : S.view;
@@ -649,6 +683,9 @@ function viewBody() {
   return homeView();
 }
 function topbar() {
+  // 먼치킨 안의 카카오 로그인 창: 이름표만(다른 화면으로 가는 단추 없음)
+  if (inApp()) return h('header', { class: 'top' }, h('div', { class: 'wrap top-in' },
+    h('span', { class: 'brand' }, h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', null, '먼치킨 ', h('em', { text: '로그인' })))));
   const right = S.session && S.me
     ? h('button', { class: 'me-btn', type: 'button', 'aria-label': '내 정보', onclick: () => go('me') }, icon('user'), h('span', { class: 'me-name', text: S.me.nickname || '내 정보' }))
     : h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => openSheet('login') });
@@ -666,6 +703,9 @@ function topbar() {
       right)));
 }
 function footer() {
+  if (inApp()) return h('footer', { class: 'foot' }, h('div', { class: 'wrap' },
+    h('p', { class: 'muted small', text: '먼치킨 프로그램의 로그인 창이에요. 로그인하면 이 창은 저절로 닫혀요.' }),
+    h('p', { class: 'muted small', text: '먼치킨과 추억앨범은 스푼(Spoon)이 만든 서비스가 아니고, 스푼과 제휴 관계도 아니에요.' })));
   return h('footer', { class: 'foot' }, h('div', { class: 'wrap' },
     h('p', { class: 'foot-links' },
       h('a', { href: TERMS, target: '_blank', rel: 'noopener', text: '이용약관' }), ' · ',
@@ -1031,8 +1071,38 @@ function meView() {
     h('p', { class: 'muted small center' }, '탈퇴는 추억앨범 사이트의 내 정보에서 할 수 있어요.'));
 }
 
+// 먼치킨 안의 카카오 로그인 창(2026-11-06): 묻지 않는다 — 기다림·로그인했어요·안 됐어요·(로그인 전) 카카오로 로그인
+function inAppView() {
+  const card = (...kids) => h('section', { class: 'sect narrow' }, h('article', { class: 'card app-card' }, ...kids));
+  if (S.appDone === 'ok') return card(
+    h('div', { class: 'app-ico ok' }, icon('check')),
+    h('h2', { text: '로그인했어요!' }),
+    h('p', { class: 'lead-s', text: '먼치킨으로 돌아가요. 이 창은 저절로 닫혀요.' }));
+  if (S.appDone === 'wait') return card(
+    h('div', { class: 'app-ico wait' }, icon('spin')),
+    h('h2', { text: '먼치킨에 로그인하는 중이에요' }),
+    h('p', { class: 'lead-s', text: S.me?.nickname ? `${S.me.nickname}님 계정으로 로그인하고 있어요.` : '잠시만 기다려 주세요.' }));
+  if (S.appDone && S.session) {
+    const again = h('button', { class: 'btn main block', type: 'button', text: '다시 해 보기', onclick: () => autoApprove() });
+    return card(
+      h('div', { class: 'app-ico bad' }, icon('close')),
+      h('h2', { text: '로그인하지 못했어요' }),
+      h('p', { class: 'status bad', text: S.appDone }),
+      again,
+      h('p', { class: 'lead-s small', text: '계속 안 되면 이 창을 닫고 먼치킨에서 [카카오로 로그인]을 다시 눌러 주세요.' }));
+  }
+  // 로그인 전(카카오에서 그만뒀거나 실패함): 카카오가 먼저, 아이디는 작게
+  return card(
+    h('div', { class: 'app-ico kakao' }, kakaoSymbol()),
+    h('h2', { text: '카카오로 로그인해 주세요' }),
+    S.appNote ? h('p', { class: 'status bad', text: S.appNote }) : h('p', { class: 'lead-s', text: '카카오 계정으로 로그인하면 먼치킨이 저절로 로그인돼요. 처음이면 카카오로 바로 가입돼요.' }),
+    h('button', { class: 'kakao-btn big', type: 'button', onclick: () => inAppKakao() }, kakaoSymbol(), h('span', { text: '카카오로 로그인' })),
+    h('div', { class: 'links' }, linkBtn('아이디로 로그인', () => openSheet('login'))));
+}
+
 // 먼치킨 프로그램 카카오 로그인 승인(?app=)
 function appView() {
+  if (inApp()) return inAppView();
   if (S.appDone === 'ok') return h('section', { class: 'sect narrow' }, h('article', { class: 'card app-card' },
     h('div', { class: 'app-ico ok' }, icon('check')),
     h('h2', { text: '로그인했어요!' }),
@@ -1089,6 +1159,15 @@ async function start() {
   const back = ss.get('mk_after_sso'); ss.del('mk_after_sso');
   if (!S.session && !RETURN.ticket && !RETURN.loginError) await trySso();
   paint();
+
+  // 먼치킨 안의 카카오 로그인 창: 로그인돼 있으면 바로 승인, 아니면 처음 한 번은 바로 카카오로(그 뒤엔 [카카오로 로그인] 단추)
+  if (inApp()) {
+    if (RETURN.loginError) { S.appNote = KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail; S.appDone = ''; paint(); return; }
+    if (S.session) { await autoApprove(); return; }
+    if (RETURN.kakao && !ss.get('mk_app_kakao:' + S.app)) { inAppKakao(); return; }
+    S.appDone = ''; paint();
+    return;
+  }
 
   if (RETURN.loginError) {
     toast(KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail, RETURN.loginError !== 'cancel');

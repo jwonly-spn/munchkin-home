@@ -221,6 +221,15 @@ p{margin:0}
 .app-ico .ico{width:36px;height:36px}
 .app-ico.ok{background:var(--ok-soft);color:var(--ok)}
 .app-ico.bad{background:var(--bad-soft);color:var(--bad)}
+/* 먼치킨 안의 카카오 로그인 창(2026-11-06): 기다림 돌기 · 카카오 표시 · 큰 카카오 단추 */
+.app-ico.wait .ico{animation:mk-spin 1s linear infinite}
+.app-ico.kakao{background:#FEE500;color:#191919}
+.app-ico.kakao .kakao-sym{width:34px;height:34px}
+.kakao-btn.big{min-height:56px;font-size:17px;border-radius:14px}
+.app-card .lead-s.small{font-size:14px}
+html.in-app .foot{padding-top:8px}
+@keyframes mk-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.app-ico.wait .ico{animation:none}}
 .who{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:999px;padding:6px 14px}
 
 /* 창(로그인·가입 등) — 휴대폰은 아래에서 올라오는 판 */
