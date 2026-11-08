@@ -12,7 +12,7 @@ const DOCS = path.join(ROOT, 'docs');
 // 새 주소(한글 도메인은 브라우저가 알아보는 영문 표기로 적는다)
 export const HOME = 'https://xn--s22bu18a0ub.com/';   // 먼치킨.com
 // 키우기.com — 인증서가 나오기 전에는 https 가 열리지 않아 http 로 건다(인증서가 나와 https 강제가 켜지면 http 는 https 로 저절로 넘어간다, 2026-10-08)
-export const KIUGI = 'http://xn--ok0bp87bn6g.com/';
+export const KIUGI = 'https://xn--ok0bp87bn6g.com/'; // 2026-11-08 Cloudflare 로 https
 
 let body = fs.readFileSync(SOURCE, 'utf8').replace(/^﻿/, '');
 // 맨 앞의 <title>·<meta>·<link> 줄은 head 로 옮긴다
