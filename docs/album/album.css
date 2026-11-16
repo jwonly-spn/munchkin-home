@@ -1,7 +1,7 @@
 /* 먼치킨.com/album — 먼치킨 첫 화면(docs/index.html)과 같은 색: 우유·코코아·딸기 우유(분홍)·담요 하늘색. 표시 글꼴 Jua, 본문 Noto Sans KR. 휴대폰 먼저. */
 :root{
   --bg:#FFF9F3; --card:#FFFFFF; --soft:#F7ECE1; --line:#EBDCCD;
-  --ink:#3A2B24; --muted:#755845; --accent:#C8466B; --accent-ink:#FFFFFF; --accent-soft:#FCE5EC; --sky:#E1EDF8; --sky-ink:#2E5577;
+  --ink:#3A2B24; --muted:#755845; --accent:#AC385B; --accent-ink:#FFFFFF; --accent-soft:#FAE6EB; --sky:#E1EDF8; --sky-ink:#2E5577;
   --ok:#2F7D55; --ok-soft:#E2F3EA; --warn:#7A4D00; --warn-soft:#FFF1CC; --bad:#B42318; --bad-soft:#FDECEA;
   --shadow:0 18px 40px -24px rgba(90,52,32,.35); --shadow-s:0 6px 18px -12px rgba(90,52,32,.35);
   --display:"Jua","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
@@ -288,3 +288,37 @@ html.in-app .foot{padding-top:8px}
 @media(prefers-reduced-motion:reduce){.plate{animation:none}.btn{transition:none}}
 
 .beta-box{border:1px solid var(--line);background:var(--accent-soft);padding:28px;gap:16px}.beta-box .eyebrow{margin:0}.beta-box .btn{justify-self:start}.top-nav .btn{max-width:100%}@media(max-width:600px){.top-nav>.btn.line.small{display:none}.beta-box{padding:20px}.beta-box .btn{width:100%;font-size:14px}.hero .cta .btn{font-size:14px}.top-nav .btn{font-size:12px}}
+
+/* 2026-11-16 UI 검토(S7·S11·S12): 이름표 두 칸·[먼치킨 받기], 입력칸 테두리 3:1, "보기" 줄바꿈 막기, 누르는 칸 넓히기 */
+.brand-split{gap:0}
+.brand-split a{display:inline-flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;color:inherit}
+.brand-split .brand-album{padding-left:10px;margin-left:8px;border-left:2px solid var(--line)}
+.brand-split .brand-album em{font-style:normal;color:var(--accent)}
+.brand-split a:hover span,.brand-split a:hover em{text-decoration:underline;text-underline-offset:4px}
+.top-nav .get-link{white-space:nowrap}
+.input,.addr{border-color:var(--field-line)}
+.input:focus,.addr:focus-within{border-color:var(--accent)}
+.check input{width:24px;height:24px}
+.agree-row .check{flex:1 1 auto;min-width:0}
+.agree-view{flex:none;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px;padding:0 6px;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.link-btn{min-height:44px}
+.sso-link{justify-self:center;font-size:15px}
+.foot-links{font-size:14px}
+.foot-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
+.foot .small{font-size:13px}
+.foot-biz{font-size:14px}
+.foot-biz summary{min-height:44px;display:inline-flex;align-items:center}
+@media(max-width:600px){
+  .top-nav>.btn.line.small.get-link{display:inline-flex}
+  .top-nav{gap:6px}
+  .top-nav .btn{font-size:13px;padding:0 12px}
+  .brand-split .brand-album{padding-left:8px;margin-left:6px}
+}
+@media(max-width:400px){
+  .brand-split .brand-home span{display:none}
+}
+/* 2026-11-16 UI 검토(S4): 이 페이지도 읽는 글은 12px 이상 */
+.mock-bar{font-size:12px}
+.mock-head span{font-size:12px}
+.mock-grid em{font-size:12px}
+@media(max-width:520px){.stepper li{font-size:12px}}

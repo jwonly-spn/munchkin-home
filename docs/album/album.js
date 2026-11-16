@@ -505,7 +505,7 @@ const STEPS = {
         h('p', { class: 'lead-s', text: S.app ? '먼치킨 프로그램에 로그인하려면 먼저 여기서 먼치킨 계정으로 로그인해 주세요.' : '먼치킨 계정 하나로 먼치킨 프로그램과 모든 추억앨범을 써요.' }),
         S.members?.kakao ? [kakaoButton(), orLine()] : null,
         form,
-        h('button', { class: 'btn soft block small', type: 'button', onclick: () => ssoContinue() }, icon('check'), '다른 추억앨범에서 로그인했다면 → 그 계정으로 계속'),
+        h('button', { class: 'link-btn sso-link', type: 'button', onclick: () => ssoContinue() }, '다른 DJ 앨범에서 이미 로그인했어요'),
         h('div', { class: 'links' }, linkBtn('회원가입', () => openSheet('signup')), h('span', { class: 'sep', 'aria-hidden': 'true' }), linkBtn('아이디·비밀번호 찾기', () => openSheet('find')))
       ]
     };
@@ -547,7 +547,7 @@ const STEPS = {
       field('s-id', '아이디', id, '영어 소문자·숫자·_ 로 4~20자'),
       field('s-pw', '비밀번호', pw, '8자 이상'),
       field('s-pw2', '비밀번호 확인', pw2),
-      field('s-nick', '닉네임', nk, '한글·영문·숫자·_ 로 2~12자 — 추억앨범 댓글과 입금자명에 쓰여요'),
+      field('s-nick', '닉네임', nk, '한글·영문·숫자·_ 로 2~12자, 추억앨범 댓글에 보여요'),
       h('div', { class: 'agree' },
         h('label', { class: 'check agree-all', for: 'agree-all' }, all, h('span', { text: '모두 동의해요' })),
         agreeRow(terms, 'agree-terms', '이용약관에 동의해요', TERMS),
@@ -689,14 +689,18 @@ function topbar() {
   const right = S.session && S.me
     ? h('button', { class: 'me-btn', type: 'button', 'aria-label': '내 정보', onclick: () => go('me') }, icon('user'), h('span', { class: 'me-name', text: S.me.nickname || '내 정보' }))
     : h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => openSheet('login') });
+  // 이름표 두 칸(2026-11-16 UI 검토 S7): "먼치킨"은 먼치킨.com 첫 화면으로, "추억앨범"은 이 페이지 처음 화면으로. 맨 위에 [먼치킨 받기]도 둔다.
   return h('header', { class: 'top' }, h('div', { class: 'wrap top-in' },
-    h('a', { class: 'brand', href: './', onclick: (e) => {
-      e.preventDefault();
-      if (S.view === 'app') { S.app = ''; S.appDone = ''; try { history.replaceState(null, '', location.pathname); } catch { /* 그대로 */ } }
-      go('home');
-    } },
-      h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', null, '먼치킨 ', h('em', { text: '추억앨범' }))),
+    h('div', { class: 'brand brand-split' },
+      h('a', { class: 'brand-home', href: '../', 'aria-label': '먼치킨.com 첫 화면' },
+        h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', { text: '먼치킨' })),
+      h('a', { class: 'brand-album', href: './', onclick: (e) => {
+        e.preventDefault();
+        if (S.view === 'app') { S.app = ''; S.appDone = ''; try { history.replaceState(null, '', location.pathname); } catch { /* 그대로 */ } }
+        go('home');
+      } }, h('em', { text: '추억앨범' }))),
     h('nav', { class: 'top-nav' },
+      h('a', { class: 'btn line small get-link', href: '../#get', text: '먼치킨 받기' }),
       S.view !== 'apply' && S.view !== 'app' ? (albumBeta() && !ownsAlbum()
         ? h('a', { class: 'btn line small hide-s', href: PREVIEW_URL, target: '_blank', rel: 'noopener', text: '미리 보기' })
         : h('button', { class: 'btn line small hide-s', type: 'button', text: '신청하기', onclick: () => go('apply') })) : null,
