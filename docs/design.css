@@ -130,7 +130,7 @@ p { margin: 0; }
 .dl-tip a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 700; color: inherit; text-underline-offset: 4px; }
 /* 휴대폰·맥에서: PC 에서 받도록 주소 보내기 */
 .pc-note { width: 100%; max-width: 520px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 10px; }
-.pc-note h2, .pc-note-title { font: 700 17px/1.5 var(--body); letter-spacing: 0; color: var(--ink); }
+.pc-note-title { font: 700 17px/1.5 var(--body); letter-spacing: 0; color: var(--ink); }
 .pc-note p { font-size: 15px; color: var(--muted); line-height: 1.6; }
 .pc-note-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .pc-note-actions .btn { flex: 1 1 180px; }
@@ -303,8 +303,9 @@ p { margin: 0; }
   .screens .chat-shot img { max-width: none; aspect-ratio: 1 / 1; object-fit: cover; object-position: center 38%; }
   .screens figcaption { font-size: 14px; }
   .features { grid-template-columns: minmax(0, 1fr); }
-  .features li { padding: 18px 18px; gap: 6px; border-right: 0 !important; border-bottom: 1px solid var(--line) !important; }
-  .features li:last-child { border-bottom: 0 !important; }
+  .features li { padding: 18px 18px; gap: 6px; }
+  .features li:nth-child(n) { border-right: 0; border-bottom: 1px solid var(--line); }
+  .features li:nth-child(n):last-child { border-bottom: 0; }
   .features h3 { font-size: 20px; }
   .features p { font-size: 15px; line-height: 1.65; }
   .start-section { padding-block: 48px; }
