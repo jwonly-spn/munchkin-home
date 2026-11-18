@@ -381,7 +381,7 @@ function openSheet(step, data = {}) {
     const box = h('div', { class: 'sheet-in' });
     const d = h('dialog', { class: 'sheet', 'aria-label': '먼치킨 계정' }, box);
     d.addEventListener('close', () => { d.remove(); if (sheet?.d === d) sheet = null; });
-    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+    // 바깥(어두운 곳)을 눌러도 닫지 않는다 — 가입하다 쓴 글이 날아가지 않게(2026-11-18 사용자 요청, 추억앨범 acct-sheet 의 sticky 와 같게). 닫기는 X 단추·Esc.
     document.body.append(d);
     d.showModal();
     sheet = { d, box };
