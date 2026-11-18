@@ -37,7 +37,7 @@ window.fetch = async (url, init = {}) => {
   }
   if (path.endsWith('/bakje-billing')) {
     switch (b.action) {
-      case 'info': return reply({ ok: true, open: true, albumOpen: kind === 'open', munchkinFrom: Date.parse('2027-01-01T00:00:00+09:00'), bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '제이원스튜디오' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], addons: {}, ents: { munchkin: now + 12 * DAY, ...(st.albums[0] ? { album: st.albums[0].paidUntil } : {}) }, owns: st.albums.map((a) => a.id), albums: st.albums, orders: st.orders, admin: false });
+      case 'info': return reply({ ok: true, open: true, albumOpen: kind === 'open', munchkinFrom: Date.parse('2027-01-01T00:00:00+09:00'), bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '뉴비랩' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], addons: {}, ents: { munchkin: now + 12 * DAY, ...(st.albums[0] ? { album: st.albums[0].paidUntil } : {}) }, owns: st.albums.map((a) => a.id), albums: st.albums, orders: st.orders, admin: false });
       case 'album-name': {
         const label = String(b.label || '').normalize('NFC').trim().toLowerCase();
         if (label === 'test') return reply({ ok: true, label, host: '', free: false, reason: '쓸 수 없는 주소 이름이에요. 다른 이름을 골라 주세요.' });
