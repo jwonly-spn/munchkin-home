@@ -1,6 +1,6 @@
 // 먼치킨.com/album — 먼치킨 계정 가입·로그인 · 추억앨범 신청(주소 이름·앨범 이름·기간·계좌이체) · 내 정보.
 // 계정은 하나: 먼치킨 계정 = 추억앨범 계정(서버 bakje 회원 — 모든 DJ 앨범 공통). 먼치킨 프로그램(봇·송출)도 이 계정으로 로그인한다.
-// 서버: bakje(회원·카카오·본인인증·앨범 사이 로그인 이어 주기) · bakje-billing(이용권·추억앨범 신청). 로그인 표는 이 주소의 localStorage(mk_session)에만.
+// 서버: bakje(회원·카카오·앨범 사이 로그인 이어 주기) · bakje-billing(이용권·추억앨범 신청). 로그인 표는 이 주소의 localStorage(mk_session)에만.
 // 주소로 들어오는 것:
 //  #bjlogin=<표>      카카오 로그인·먼치킨 프로그램(web-ticket)이 로그인된 채 열 때 → 표를 세션으로 바꾼다
 //  #go=apply|me|find  그 화면으로(프로그램의 [신청하기]·[내 정보 관리]·[아이디·비밀번호 찾기])
@@ -8,14 +8,13 @@
 //  ?app=<자리>&kakao=1  (2026-11-06 쉬운 로그인) 먼치킨이 띄운 카카오 로그인 창: 로그인이 안 돼 있으면 바로 카카오로 넘기고,
 //                     로그인되면 묻지 않고 승인한다 — 단, 그 창의 preload 가 준 표시(window.munchkinLogin — inApp·같은 자리 번호)가 있을 때만.
 //                     보통 브라우저에는 그 표시가 없어 예전처럼 묻는다(남이 보낸 ?app= 링크로 내 계정이 남의 프로그램에 로그인되지 않게).
-//  ?bjverify=1&…      휴대폰 본인인증에서 돌아온 자리(포트원)
-// 회원·본인인증 흐름은 추억앨범 사이트(박제관 docs/app.js)와 같게 — 포트원 V2 브라우저 SDK(누를 때만 불러온다).
+// 회원 흐름은 추억앨범 사이트(박제관 docs/app.js)와 같게. 2026-11-18 휴대폰 본인인증을 뺐다(사용자 결정) —
+//  로그인(아이디·비밀번호 또는 카카오)만으로 신청. 만 14세는 가입할 때 체크로 받는다(아이디 가입 age14 · 카카오 첫 가입 kakao-start a=1).
 
 const SB = 'https://aksegkhhugqvvaidgvro.supabase.co';
 const KEY = 'sb_publishable_45cIqG4dGLSlev-rmNiVDg_uG8szVzD';
 const API = SB + '/functions/v1/bakje/';
 const BILL = SB + '/functions/v1/bakje-billing';
-const PORTONE_SDK = 'https://cdn.portone.io/v2/browser-sdk.js';
 const TERMS = 'https://xn--hu5bi2af5y.com/terms.html';
 const PRIVACY = 'https://xn--hu5bi2af5y.com/privacy.html';
 const SUFFIX = '먼치킨.com';
@@ -23,7 +22,7 @@ const APP_RE = /^app-[a-z2-9]{20}$/;
 const TICKET_RE = /^[-_A-Za-z0-9]{43}$/;
 const LOGIN_ID_RE = /^[a-z0-9_]{4,20}$/;
 const LABEL_RE = /^[가-힣a-z0-9](?:[가-힣a-z0-9-]{0,13}[가-힣a-z0-9])?$/;
-const NO_SESSION = new Set(['signup', 'login', 'ticket', 'find-start', 'find-done', 'reset']);
+const NO_SESSION = new Set(['signup', 'login', 'ticket']);
 const PLAN_NAME = { munchkin: '먼치킨', album: '추억앨범', bundle: '먼치킨 + 추억앨범', 'add-album': '추억앨범 추가', 'add-munchkin': '먼치킨 추가' };
 const PLAN_STATE = { paid: '확인됐어요', rejected: '거절됐어요', canceled: '취소했어요', pending: '확인 기다리는 중' };
 const KAKAO_ERRORS = {
@@ -31,9 +30,11 @@ const KAKAO_ERRORS = {
   fail: '카카오 로그인을 하지 못했어요. 다시 해 주세요.',
   banned: '이용이 막힌 계정이에요.',
   setup: '카카오 로그인 준비 중이에요.',
-  'sso-none': '다른 추억앨범에서 로그인한 기록이 없어요. 여기서 로그인해 주세요.'
+  'sso-none': '다른 추억앨범에서 로그인한 기록이 없어요. 여기서 로그인해 주세요.',
+  // 처음 카카오로 가입하는데 만 14세 체크 없이 왔을 때(서버 kakao — 계정은 만들지 않았다)
+  age14: '처음 가입하는 카카오 계정이에요. "만 14세 이상이에요"에 체크한 뒤 카카오 단추를 다시 눌러 주세요.'
 };
-const VERIFY_TEXT = '신청한 분을 확인하려고 휴대폰 본인인증을 한 번 해요. 이름·전화번호·생년월일은 저장하지 않아요. 만 14세 이상만 신청할 수 있어요.';
+const AGE14_NEED = '"만 14세 이상이에요"에 체크해 주세요.';
 const WAIT_ALBUM = '운영자가 입금을 확인하면 앨범이 만들어져요(최대 24시간).';
 const WAIT_PLAN = '운영자가 입금을 확인하면 이용 기간이 늘어나요(최대 24시간).';
 const SSO_FRESH_MS = 50 * 86400000;
@@ -56,26 +57,16 @@ if (LOCAL && (new URLSearchParams(location.search).has('mock') || ss.get('mk_moc
 
 // ---------- 주소로 들어온 값 — 맨 먼저 떼어 두고 주소를 깨끗하게 ----------
 const RETURN = (() => {
-  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false, verify: null };
+  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false };
   try {
     const hp = new URLSearchParams(location.hash.slice(1));
     if (TICKET_RE.test(hp.get('bjlogin') || '')) out.ticket = hp.get('bjlogin');
-    if (/^[-a-z]{1,20}$/.test(hp.get('bjlogin-error') || '')) out.loginError = hp.get('bjlogin-error');
+    if (/^[-a-z0-9]{1,20}$/.test(hp.get('bjlogin-error') || '')) out.loginError = hp.get('bjlogin-error');   // age14 처럼 숫자도
     if (/^[a-z]{1,10}$/.test(hp.get('bjsso') || '')) out.sso = hp.get('bjsso');
     if (['apply', 'me', 'find'].includes(hp.get('go'))) out.go = hp.get('go');
     const q = new URLSearchParams(location.search);
     if (APP_RE.test(q.get('app') || '')) out.app = q.get('app');
     out.kakao = Boolean(out.app) && q.get('kakao') === '1';
-    if (q.get('bjverify') === '1') {
-      const saved = parse(ss.get('mk_verify'));
-      ss.del('mk_verify');
-      const id = q.get('identityVerificationId') || '';
-      out.verify = {
-        mode: saved?.mode === 'find' ? 'find' : 'join', savedId: typeof saved?.id === 'string' ? saved.id : '',
-        id: /^[-_A-Za-z0-9]{4,80}$/.test(id) ? id : '', code: q.get('code') || '', message: (q.get('message') || '').slice(0, 200)
-      };
-      if (APP_RE.test(saved?.app || '')) out.app = saved.app;
-    }
   } catch { /* 이상한 주소 — 그냥 첫 화면 */ }
   try { history.replaceState(null, '', location.pathname + (out.app ? '?app=' + out.app : '')); } catch { /* 그대로 */ }
   return out;
@@ -85,15 +76,15 @@ const RETURN = (() => {
 const S = {
   session: ls.get('mk_session') || '',
   me: parse(ls.get('mk_me')),
-  members: null,                 // members-config: {password, kakao, verify:{storeId, channelKey}|null}
+  members: null,                 // members-config: {password, kakao}
   info: null, infoAt: 0, infoError: '',
   view: 'home',
   app: RETURN.app,               // 먼치킨 프로그램 카카오 로그인 자리
   appDone: '',                   // 'ok' · 오류 글
+  appAge: false,                 // 먼치킨 안의 카카오 창: 처음 가입이라 "만 14세 이상이에요" 체크가 필요함(서버 #bjlogin-error=age14)
   next: null,                    // 로그인한 뒤 갈 화면
   draft: { label: '', name: '', plan: 'album', months: 1, album: '', ...(parse(ss.get('mk_draft')) || {}) },
-  labelOk: null,                 // {label, host} — album-name 이 쓸 수 있다고 한 것
-  verifyNote: null               // 본인인증 칸에 보일 것 {text, bad} · {conflict}
+  labelOk: null                  // {label, host} — album-name 이 쓸 수 있다고 한 것
 };
 if (!TICKET_RE.test(S.session)) { S.session = ''; S.me = null; }
 const saveDraft = () => ss.set('mk_draft', JSON.stringify(S.draft));
@@ -238,12 +229,9 @@ async function call(path, { method = 'GET', body, query = {}, timeout = 25000, s
   if (!res.ok || !data?.ok) throw Object.assign(Error(data?.error || '잠시 문제가 생겼어요. 조금 뒤에 다시 해 주세요.'), { status: res.status, data });
   return data;
 }
-// 본인인증 마무리(verify-done·find-done)는 bakje-verify 함수로(2026-11-05 — 카카오 인증서는 CI 가 없어 이름·생년월일·전화번호 값으로도 같은 사람을 알아본다)
-const VERIFY = SB + '/functions/v1/bakje-verify/';
 async function memberCall(action, body = {}) {
   const auth = !NO_SESSION.has(action);
-  const base = action === 'verify-done' || action === 'find-done' ? VERIFY : API;
-  try { return await call('member', { method: 'POST', body: { action, ...body }, session: auth, base }); }
+  try { return await call('member', { method: 'POST', body: { action, ...body }, session: auth, base: API }); }
   catch (e) { if (auth && e.status === 401) dropSession(); throw e; }
 }
 async function billCall(action, body = {}) {
@@ -253,12 +241,8 @@ async function billCall(action, body = {}) {
 async function loadMembersConfig() {
   try {
     const m = (await call('members-config')).members;
-    const v = m?.verify;
-    S.members = {
-      password: m?.password !== false, kakao: m?.kakao === true,
-      verify: v && typeof v.storeId === 'string' && v.storeId && typeof v.channelKey === 'string' && v.channelKey ? { storeId: v.storeId, channelKey: v.channelKey } : null
-    };
-  } catch { S.members = { password: true, kakao: false, verify: null, failed: true }; }
+    S.members = { password: m?.password !== false, kakao: m?.kakao === true };
+  } catch { S.members = { password: true, kakao: false, failed: true }; }
 }
 async function loadInfo() {
   S.info = await billCall('info');
@@ -333,9 +317,10 @@ function ssoContinue() {
   if (S.next) ss.set('mk_next', S.next);
   location.href = API + 'sso?' + new URLSearchParams({ h: location.host, r: location.pathname + location.search });
 }
-function kakaoLogin() {
+// age14: 가입 화면에서 "만 14세 이상이에요"에 체크함(a=1) — 서버는 처음 카카오로 가입할 때만 본다(없으면 #bjlogin-error=age14)
+function kakaoLogin(age14 = false) {
   if (S.next) ss.set('mk_next', S.next);
-  location.href = API + 'kakao-start?' + new URLSearchParams({ apikey: KEY, h: location.host, r: location.pathname + location.search });
+  location.href = API + 'kakao-start?' + new URLSearchParams({ apikey: KEY, h: location.host, r: location.pathname + location.search, ...(age14 ? { a: '1' } : {}) });
 }
 
 // 먼치킨 안의 카카오 로그인 창: 로그인돼 있으면 묻지 않고 승인한다(그 창을 연 프로그램의 자리 번호만 — inApp()).
@@ -353,8 +338,8 @@ async function autoApprove() {
   finally { approving = false; }
   paint();
 }
-// 창 안에서 카카오로(한 번만 저절로 — 그 뒤에는 단추로)
-function inAppKakao() { ss.set('mk_app_kakao:' + S.app, '1'); kakaoLogin(); }
+// 창 안에서 카카오로(한 번만 저절로 — 그 뒤에는 단추로). age14: 처음 가입이라 만 14세 체크를 하고 다시 갈 때
+function inAppKakao(age14 = false) { ss.set('mk_app_kakao:' + S.app, '1'); kakaoLogin(age14); }
 
 // 로그인을 마친 뒤: 프로그램 로그인 승인 → 가려던 화면 → (닉네임이 없으면 먼저 닉네임)
 function afterLogin(message) {
@@ -387,64 +372,6 @@ function go(view) {
   if (view === 'apply' || view === 'me') ensureInfo(true);
   paint();
   window.scrollTo({ top: 0 });
-}
-
-// ---------- 포트원 본인인증 ----------
-let portoneLoading = null;
-function loadPortOne() {
-  if (window.PortOne?.requestIdentityVerification) return Promise.resolve(window.PortOne);
-  if (portoneLoading) return portoneLoading;
-  portoneLoading = new Promise((resolve, reject) => {
-    const s = h('script', {
-      src: PORTONE_SDK, async: true,
-      onload: () => (window.PortOne?.requestIdentityVerification ? resolve(window.PortOne) : reject(Error('본인인증 창을 열지 못했어요. 다시 해 주세요.'))),
-      onerror: () => { portoneLoading = null; s.remove(); reject(Error('본인인증 창을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')); }
-    });
-    document.head.append(s);
-  });
-  return portoneLoading;
-}
-// mode: 'join'(내 계정 본인인증 — 신청 화면) · 'find'(아이디·비밀번호 찾기). PC 는 끝난 번호를 돌려주고,
-//  휴대폰은 본인인증 창으로 넘어갔다가 ?bjverify=1 로 돌아온다(이 함수는 끝나지 않는다).
-async function portoneVerify(mode) {
-  const cfg = S.members?.verify;
-  if (!cfg) throw Error('본인인증 준비 중이에요. 조금 뒤에 다시 해 주세요.');
-  const sdk = loadPortOne();
-  sdk.catch(() => {});
-  const { id } = await memberCall(mode === 'find' ? 'find-start' : 'verify-start');
-  const PortOne = await sdk;
-  ss.set('mk_verify', JSON.stringify({ mode, id, app: S.app || '', at: Date.now() }));
-  let res;
-  try {
-    res = await PortOne.requestIdentityVerification({
-      storeId: cfg.storeId, identityVerificationId: id, channelKey: cfg.channelKey,
-      redirectUrl: location.origin + location.pathname + '?bjverify=1',
-      // 다날: 만 14세 미만은 인증 창에서부터 막고(서버도 다시 확인한다), 인증 창에 서비스 이름을 보인다.
-      // KG이니시스 통합인증: 고객 정보를 미리 채우지 않음(flgFixedUser 는 꼭 넣어야 함). 채널의 결제대행사 것만 쓰이고 나머지는 무시된다.
-      bypass: { danal: { AGELIMIT: 14, CPTITLE: '먼치킨 추억앨범' }, inicisUnified: { flgFixedUser: 'N' } }
-    });
-  } catch (e) {
-    ss.del('mk_verify');
-    throw Error(e?.message || '본인인증 창을 열지 못했어요. 다시 해 주세요.');
-  }
-  ss.del('mk_verify');
-  if (!res) throw Error('본인인증 결과를 받지 못했어요. 다시 해 주세요.');
-  if (res.code != null) throw Error(res.message || '본인인증을 마치지 못했어요. 다시 해 주세요.');
-  return id;
-}
-// 신청 화면의 본인인증 마무리(verify-done). 같은 사람이 다른 계정으로 이미 인증했으면 그 계정을 알려 준다.
-async function finishVerify(id) {
-  S.verifyNote = { text: '본인인증 결과를 확인하는 중…' };
-  paint();
-  try {
-    const r = await memberCall('verify-done', { id });
-    saveMe(r.member);
-    S.verifyNote = null;
-    toast('본인인증을 마쳤어요');
-  } catch (e) {
-    S.verifyNote = e.status === 409 && e.data?.hint ? { conflict: e.data } : { text: e.message, bad: true };
-  }
-  paint();
 }
 
 // ---------- 창(로그인·가입·찾기·닉네임·비밀번호) ----------
@@ -480,8 +407,14 @@ function kakaoSymbol() {
   return el;
 }
 // 카카오 로그인 단추(카카오 디자인 안내: 노란 #FEE500 · 검은 말풍선 · 글자 85% 검정)
-const kakaoButton = (text = '카카오 로그인') => h('button', { class: 'kakao-btn', type: 'button', onclick: () => kakaoLogin() }, kakaoSymbol(), h('span', { text }));
+const kakaoButton = (text = '카카오 로그인', onclick = () => kakaoLogin()) => h('button', { class: 'kakao-btn', type: 'button', onclick }, kakaoSymbol(), h('span', { text }));
 const orLine = (text = '또는') => h('p', { class: 'or' }, h('span', { text }));
+// 가입할 때 "만 14세 이상이에요" 체크 칸(아이디 가입·카카오 첫 가입 둘 다 — 서버도 다시 본다)
+function ageBox(id) {
+  const box = h('input', { type: 'checkbox', id });
+  const wrap = h('div', { class: 'agree' }, h('label', { class: 'check', for: id }, box, h('span', null, h('em', { text: '(필수)' }), ' 만 14세 이상이에요')));
+  return { box, wrap };
+}
 
 const STEPS = {
   login() {
@@ -511,7 +444,16 @@ const STEPS = {
     };
   },
 
-  signup() {
+  signup(x) {
+    // 만 14세 체크는 맨 위 한 칸 — 카카오 가입과 아이디 가입 둘 다 이것을 본다
+    const age = ageBox('s-age14');
+    const kst = statusEl();
+    if (x.kakaoAge) say(kst, KAKAO_ERRORS.age14, true);
+    age.box.addEventListener('change', () => { if (age.box.checked) say(kst, ''); });
+    const kakaoJoin = () => {
+      if (!age.box.checked) { say(kst, AGE14_NEED, true); age.box.focus(); return; }
+      kakaoLogin(true);
+    };
     const id = input('s-id', { name: 'username', autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false', maxlength: '20' });
     id.addEventListener('input', (e) => { if (e.isComposing) return; const v = id.value.toLowerCase().replace(/[^a-z0-9_]/g, ''); if (v !== id.value) id.value = v; });
     const pw = pwInput('s-pw', 'new-password'), pw2 = pwInput('s-pw2', 'new-password');
@@ -534,9 +476,10 @@ const STEPS = {
       if (bad) { say(st, bad, true); return; }
       const nick = nickOf(nk.value);
       if ([...nick].length < 2 || [...nick].length > 12) { say(st, '닉네임은 2~12자로 정해 주세요.', true); nk.focus(); return; }
+      if (!age.box.checked) { say(st, AGE14_NEED, true); age.box.focus(); return; }
       if (!terms.checked || !privacy.checked) { say(st, '이용약관과 개인정보 수집·이용에 동의해 주세요.', true); return; }
       busy(btn, st, async () => {
-        const r = await memberCall('signup', { loginId, password: pw.value, agree: true, role: 'dj' });
+        const r = await memberCall('signup', { loginId, password: pw.value, agree: true, age14: true, role: 'dj' });
         setSession(r.session, r.member);
         // 닉네임은 가입 뒤 따로 정한다 — 겹치거나 못 쓰는 닉네임이면 닉네임 단계에서 다시
         try { saveMe((await memberCall('nickname', { nickname: nick })).member); }
@@ -552,13 +495,13 @@ const STEPS = {
         h('label', { class: 'check agree-all', for: 'agree-all' }, all, h('span', { text: '모두 동의해요' })),
         agreeRow(terms, 'agree-terms', '이용약관에 동의해요', TERMS),
         agreeRow(privacy, 'agree-privacy', '개인정보 수집·이용에 동의해요', PRIVACY)),
-      h('p', { class: 'hint', text: '만 14세 이상만 가입할 수 있어요. 본인인증은 추억앨범·이용권을 신청할 때 한 번 해요.' }),
       st, btn);
     return {
-      title: '회원가입', back: 'login', focus: id,
+      title: '회원가입', back: 'login', focus: x.kakaoAge ? age.box : id,
       body: [
         h('p', { class: 'lead-s', text: '먼치킨 계정을 만들어요. 먼치킨 프로그램과 추억앨범에서 같이 써요.' }),
-        S.members?.kakao ? [kakaoButton('카카오로 시작하기'), orLine('또는 아이디로 가입')] : null,
+        age.wrap,
+        S.members?.kakao ? [kakaoButton('카카오로 시작하기', kakaoJoin), kst, orLine('또는 아이디로 가입')] : kst,
         form
       ]
     };
@@ -612,61 +555,16 @@ const STEPS = {
     return { title: '비밀번호 바꾸기', focus: old, body: [h('p', { class: 'lead-s', text: '바꾸면 이 브라우저 말고 다른 곳(다른 추억앨범·먼치킨 프로그램)의 로그인은 풀려요.' }), form] };
   },
 
-  find(x) {
-    const cfg = S.members?.verify;
-    const st = statusEl();
-    const btn = h('button', { class: 'btn main block', type: 'button', text: '휴대폰 본인인증하기', disabled: !cfg });
-    const done = async (id) => {
-      say(st, '본인인증 결과를 확인하는 중…');
-      const r = await memberCall('find-done', { id });
-      openSheet('found', { account: r.account || {}, reset: typeof r.reset === 'string' ? r.reset : null });
-    };
-    btn.addEventListener('click', () => busy(btn, st, async () => { await done(await portoneVerify('find')); }));
-    if (!cfg) say(st, '본인인증 준비 중이에요. 조금 뒤에 다시 해 주세요.');
-    else if (x.error) say(st, x.error, true);
+  // 아이디·비밀번호 찾기(프로그램의 #go=find 도 여기로): 본인인증을 뺐으니(2026-11-18) 운영자에게 알려 주세요(카카오로 가입했다면 카카오 로그인)
+  find() {
     return {
       title: '아이디·비밀번호 찾기', back: S.session ? null : 'login',
       body: [
-        h('p', { class: 'lead-s', text: '가입한 계정에 했던 휴대폰 본인인증을 다시 하면 아이디를 알려 드리고, 비밀번호를 새로 정할 수 있어요.' }),
-        h('p', { class: 'hint', text: '본인인증을 한 번도 하지 않은 계정은 찾을 수 없어요. 그때는 운영자(likegorogoro@naver.com)에게 알려 주세요.' }),
-        st, btn,
+        h('p', { class: 'lead-s' }, '아이디나 비밀번호를 잊었다면 운영자(', h('a', { href: 'mailto:likegorogoro@naver.com', text: 'likegorogoro@naver.com' }), ')에게 알려 주세요. 닉네임과 생각나는 아이디를 함께 적어 주세요.'),
+        S.members?.kakao && !S.session ? [h('p', { class: 'hint', text: '카카오로 가입했다면 카카오 로그인을 눌러 주세요.' }), kakaoButton()] : null,
         h('div', { class: 'links' }, linkBtn('회원가입', () => openSheet('signup')))
-      ],
-      after: () => {
-        if (cfg) loadPortOne().catch(() => {});
-        if (x.pendingId) busy(btn, st, () => done(x.pendingId));
-      }
+      ]
     };
-  },
-
-  found(x) {
-    const a = x.account || {};
-    const parts = [];
-    if (a.loginId) {
-      parts.push(h('div', { class: 'found-id' }, h('span', { text: '내 아이디' }), h('strong', { text: a.loginId })));
-      if (x.reset && !S.session) {
-        const pw = pwInput('r-pw', 'new-password'), pw2 = pwInput('r-pw2', 'new-password');
-        const st = statusEl();
-        const btn = h('button', { class: 'btn main block', type: 'submit', text: '새 비밀번호로 로그인' });
-        parts.push(h('form', { class: 'stack', onsubmit: (e) => {
-          e.preventDefault();
-          const bad = checkNewPassword(pw, pw2);
-          if (bad) { say(st, bad, true); return; }
-          busy(btn, st, async () => {
-            const r = await memberCall('reset', { reset: x.reset, password: pw.value });
-            setSession(r.session, r.member);
-            afterLogin('비밀번호를 바꾸고 로그인했어요');
-          });
-        } },
-          h('p', { class: 'lead-s', text: '비밀번호를 새로 정하면 바로 로그인돼요. 10분 안에 해 주세요.' }),
-          h('input', { type: 'text', class: 'hidden', autocomplete: 'username', value: a.loginId, tabindex: '-1', 'aria-hidden': 'true' }),
-          field('r-pw', '새 비밀번호', pw, '8자 이상'), field('r-pw2', '새 비밀번호 확인', pw2), st, btn));
-        parts.push(h('div', { class: 'links' }, linkBtn('지금 비밀번호로 로그인할게요', () => openSheet('login'))));
-      } else if (!S.session) parts.push(h('button', { class: 'btn main block', type: 'button', text: '로그인하러 가기', onclick: () => openSheet('login') }));
-    }
-    if (a.kakao) parts.push(h('p', { class: 'lead-s', text: '카카오로 가입한 계정이에요. 카카오 로그인을 눌러 주세요.' }), S.members?.kakao && !S.session ? kakaoButton() : null);
-    if (!a.loginId && !a.kakao) parts.push(h('p', { class: 'lead-s', text: '계정을 찾지 못했어요.' }));
-    return { title: '계정 찾기', back: S.session ? null : 'login', body: parts };
   }
 };
 
@@ -782,7 +680,6 @@ function homeView() {
       [...(beta ? [['지금 신청할 수 있나요?', '아직은 베타 테스트 중이라 신청을 받지 않아요. 추후 공개할 예정이에요. 어떤 모습인지는 한이준 추억앨범(한이준.com)에서 미리 볼 수 있어요.']] : []),
         ['먼치킨을 안 써도 만들 수 있나요?', '네. 추억앨범만 신청해도 돼요. 먼치킨(봇 프로그램)을 함께 쓰면 최초 박제판이 저절로 올라가요.'],
         ['먼치킨 프로그램과는 어떻게 이어지나요?', '먼치킨에서 같은 먼치킨 계정으로 로그인하면 저절로 이어져요. 앨범이 생길 때 그 계정으로 로그인한 먼치킨이 있으면 그것도 바로 이어져요.'],
-        ['본인인증은 왜 하나요?', '추억앨범·이용권을 신청한 분을 확인하려고 한 번 해요. 이름·전화번호·생년월일은 저장하지 않아요.'],
         ['청취자도 가입해야 하나요?', '앨범은 누구나 볼 수 있어요. 댓글을 달 때만 가입하면 돼요.']]
         .map(([q, a]) => h('details', { class: 'qa' }, h('summary', { text: q }), h('p', { text: a }))))
   ];
@@ -805,7 +702,7 @@ function albumMini(a) {
 
 // 신청 화면
 function stepper(done) {
-  const items = ['본인인증', '주소 이름', '앨범 이름', '기간', '입금'];
+  const items = ['주소 이름', '앨범 이름', '기간', '입금'];
   return h('ol', { class: 'stepper', 'aria-label': '신청 단계' }, items.map((t, i) => h('li', { class: done[i] ? 'done' : '' }, h('b', null, done[i] ? icon('check') : String(i + 1)), h('span', { text: t }))));
 }
 const kvRow = (k, ...v) => h('div', { class: 'kv-row' }, h('dt', { text: k }), h('dd', null, ...v));
@@ -891,29 +788,7 @@ function applyView() {
   // 베타: 앨범이 없는 DJ 는 새 신청 대신 안내·미리 보기(서버도 받지 않는다). 먼치킨 이용권 칸도 함께(무료 기간 안내)
   if (!owner && info.albumOpen !== true) { parts[0] = sectionHead('추억앨범 신청', '아직 신청을 받지 않아요'); parts.push(betaBox(), munchkinOnly(info)); return h('section', { class: 'sect narrow' }, parts); }
 
-  // 1. 본인인증
-  const verified = Boolean(me.verified);
-  if (!verified) {
-    const cfg = S.members?.verify;
-    const st = statusEl();
-    const btn = h('button', { class: 'btn main block', type: 'button', text: '휴대폰 본인인증하기', disabled: !cfg });
-    btn.addEventListener('click', () => busy(btn, st, async () => { const id = await portoneVerify('join'); await finishVerify(id); }));
-    const note = S.verifyNote;
-    let conflict = null;
-    if (note?.conflict) {
-      const hint = note.conflict.hint || {};
-      conflict = h('div', { class: 'notice' },
-        h('strong', { text: note.conflict.error || '이미 본인인증한 계정이 있어요. 그 계정으로 로그인해 주세요.' }),
-        hint.loginId ? h('p', null, '그 계정의 아이디: ', h('b', { text: hint.loginId })) : null,
-        hint.kakao ? h('p', { text: '그 계정은 카카오로 가입했어요.' }) : null,
-        h('button', { class: 'btn main small', type: 'button', text: '로그아웃하고 그 계정으로 로그인', onclick: async () => { S.verifyNote = null; await logoutAll(); S.next = 'apply'; paint(); openSheet('login'); } }));
-    } else if (note?.text) say(st, note.text, note.bad);
-    if (!cfg) say(st, '본인인증 준비 중이에요. 조금 뒤에 다시 해 주세요.');
-    parts.push(stepper([false, false, false, false, false]),
-      h('article', { class: 'card' }, h('h3', { text: '1. 본인인증' }), h('p', { class: 'lead-s', text: VERIFY_TEXT }), conflict, st, conflict ? null : btn));
-    if (cfg) loadPortOne().catch(() => {});
-    return h('section', { class: 'sect narrow' }, parts);
-  }
+  // 본인인증은 2026-11-18 뺐다 — 로그인하고 닉네임만 있으면 바로 신청
   if (!me.nickname) {
     parts.push(h('article', { class: 'card' }, h('h3', { text: '닉네임을 먼저 정해 주세요' }), h('p', { class: 'lead-s', text: '입금자명과 앨범 이름에 닉네임이 쓰여요.' }),
       h('button', { class: 'btn main block', type: 'button', text: '닉네임 정하기', onclick: () => openSheet('nickname', {}) })));
@@ -959,28 +834,28 @@ function applyView() {
       albums.length > 1 ? segOf(albums.map((a) => [a.id, a.name || hostText(a.host)]), album.id, (v) => { d.album = v; saveDraft(); paint(); }) : null,
       albumMini(album)));
   } else if (pendingNew) {
-    parts.push(stepper([true, true, true, true, false]),
+    parts.push(stepper([true, true, true, false]),
       h('article', { class: 'card' }, h('p', { class: 'notice', text: `${pendingNew.newAlbum.label}.${SUFFIX} 신청이 확인을 기다리고 있어요. 다른 주소로 새로 신청하려면 그 신청을 먼저 취소해 주세요.` })));
     parts.push(munchkinOnly(info));
     return h('section', { class: 'sect narrow' }, parts);
   } else {
-    // 2. 주소 이름 · 3. 앨범 이름
+    // 1. 주소 이름 · 2. 앨범 이름
     const out = statusEl();
     const labelIn = input('a-label', { maxlength: '15', value: d.label, placeholder: '예: 밤톨', autocapitalize: 'none', spellcheck: 'false', autocomplete: 'off', inputmode: 'text' });
     labelIn.addEventListener('input', (e) => { if (!e.isComposing) checkLabel(labelIn.value, out); });
     labelIn.addEventListener('compositionend', () => checkLabel(labelIn.value, out));
     cards.push(
-      h('article', { class: 'card' }, h('h3', { text: '2. 주소 이름' }),
+      h('article', { class: 'card' }, h('h3', { text: '1. 주소 이름' }),
         h('p', { class: 'lead-s', text: '내 앨범 주소가 돼요. 한글도 돼요.' }),
         h('div', { class: 'addr' }, h('span', { class: 'addr-pre', text: 'https://' }), labelIn, h('span', { class: 'addr-suf', text: '.' + SUFFIX })),
         out,
         h('p', { class: 'hint', text: '한글·영어 소문자·숫자로 1~15자, - 는 가운데에만. 앨범이 만들어진 뒤에는 바꾸기 어려워요.' })),
-      h('article', { class: 'card' }, h('h3', { text: '3. 앨범 이름' }),
+      h('article', { class: 'card' }, h('h3', { text: '2. 앨범 이름' }),
         field('a-name', '앨범 이름', nameIn, `사이트 맨 위와 링크 미리 보기에 보여요. 비우면 "${me.nickname} 추억앨범"`)));
     if (d.label) setTimeout(() => checkLabel(d.label, out), 0);
   }
-  // 4. 기간
-  cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '기간' : '4. 이용권·기간' }),
+  // 3. 기간
+  cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '기간' : '3. 이용권·기간' }),
     segOf(plans, d.plan, (v) => { d.plan = v; saveDraft(); paint(); }),
     quote ? h('p', { class: 'small', text: `${d.plan === 'add-album' ? '쓰고 있는 먼치킨' : '추억앨범'}이 끝나는 ${dayText(quote.until)}까지 함께 써요(${quote.days}일 · 한 달 ${won(quote.perMonth)} 기준).` })
       : segOf([[1, '1개월'], [3, '3개월'], [6, '6개월'], [12, '1년']], d.months, (v) => { d.months = v; saveDraft(); paint(); }),
@@ -988,11 +863,11 @@ function applyView() {
     !quote && d.months === 12 && full > amount ? h('p', { class: 'small good', text: `한 달씩보다 ${won(full - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` }) : null,
     d.plan === 'bundle' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램) 이용권도 같은 기간만큼 함께 늘어나요.' }) : null,
     amount > 0 ? null : h('p', { class: 'hint', text: '이 이용권은 아직 준비 중이에요.' })));
-  // 5. 입금
-  cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '신청' : '5. 신청하고 이체하기' }),
+  // 4. 입금
+  cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '신청' : '4. 신청하고 이체하기' }),
     h('p', { class: 'lead-s', text: `신청하면 계좌와 입금자명이 나와요. 이체한 뒤 "입금했어요"를 누르면 돼요. ${wantAlbum ? WAIT_ALBUM : WAIT_PLAN}` }),
     st, btn));
-  stepperDone = () => [true, Boolean(S.labelOk), Boolean(S.labelOk) && nameOk(), Boolean(S.labelOk) && amount > 0, false];
+  stepperDone = () => [Boolean(S.labelOk), Boolean(S.labelOk) && nameOk(), Boolean(S.labelOk) && amount > 0, false];
   stepperRef = owner ? null : stepper(stepperDone());
   parts.push(stepperRef, ...cards, munchkinOnly(info));
   setTimeout(refreshOrderBtn, 0);
@@ -1038,8 +913,7 @@ function meView() {
     h('article', { class: 'card' }, h('h3', { text: '계정' }),
       h('dl', { class: 'kv' },
         kvRow('닉네임', m.nickname ? h('b', { text: m.nickname }) : h('span', { class: 'muted', text: '아직 안 정했어요' })),
-        kvRow('로그인', m.loginId ? `아이디 ${m.loginId}` : m.kakao ? '카카오' : '—'),
-        kvRow('본인인증', m.verified ? h('span', { class: 'good' }, icon('check'), '했어요') : h('span', { class: 'muted', text: '아직 — 신청할 때 해요' }))),
+        kvRow('로그인', m.loginId ? `아이디 ${m.loginId}` : m.kakao ? '카카오' : '—')),
       h('div', { class: 'row-btns wrap-btns' },
         h('button', { class: 'btn line small', type: 'button', text: m.nickname ? '닉네임 바꾸기' : '닉네임 정하기', onclick: () => openSheet('nickname', {}) }),
         m.loginId ? h('button', { class: 'btn line small', type: 'button', text: '비밀번호 바꾸기', onclick: () => openSheet('password') }) : null,
@@ -1095,12 +969,21 @@ function inAppView() {
       again,
       h('p', { class: 'lead-s small', text: '계속 안 되면 이 창을 닫고 먼치킨에서 [카카오로 로그인]을 다시 눌러 주세요.' }));
   }
-  // 로그인 전(카카오에서 그만뒀거나 실패함): 카카오가 먼저, 아이디는 작게
+  // 로그인 전(카카오에서 그만뒀거나 실패함): 카카오가 먼저, 아이디는 작게.
+  //  처음 가입하는 카카오 계정이면(appAge) "만 14세 이상이에요" 체크 칸을 보이고, 체크해야 카카오로 다시 간다(a=1)
+  const age = S.appAge ? ageBox('app-age14') : null;
+  const ast = statusEl();
+  if (age) age.box.addEventListener('change', () => { if (age.box.checked) say(ast, ''); });
+  const kakaoGo = () => {
+    if (age && !age.box.checked) { say(ast, AGE14_NEED, true); age.box.focus(); return; }
+    inAppKakao(Boolean(age));
+  };
   return card(
     h('div', { class: 'app-ico kakao' }, kakaoSymbol()),
     h('h2', { text: '카카오로 로그인해 주세요' }),
     S.appNote ? h('p', { class: 'status bad', text: S.appNote }) : h('p', { class: 'lead-s', text: '카카오 계정으로 로그인하면 먼치킨이 저절로 로그인돼요. 처음이면 카카오로 바로 가입돼요.' }),
-    h('button', { class: 'kakao-btn big', type: 'button', onclick: () => inAppKakao() }, kakaoSymbol(), h('span', { text: '카카오로 로그인' })),
+    age ? [age.wrap, ast] : null,
+    h('button', { class: 'kakao-btn big', type: 'button', onclick: kakaoGo }, kakaoSymbol(), h('span', { text: '카카오로 로그인' })),
     h('div', { class: 'links' }, linkBtn('아이디로 로그인', () => openSheet('login'))));
 }
 
@@ -1166,7 +1049,7 @@ async function start() {
 
   // 먼치킨 안의 카카오 로그인 창: 로그인돼 있으면 바로 승인, 아니면 처음 한 번은 바로 카카오로(그 뒤엔 [카카오로 로그인] 단추)
   if (inApp()) {
-    if (RETURN.loginError) { S.appNote = KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail; S.appDone = ''; paint(); return; }
+    if (RETURN.loginError) { S.appNote = KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail; S.appAge = RETURN.loginError === 'age14'; S.appDone = ''; paint(); return; }
     if (S.session) { await autoApprove(); return; }
     if (RETURN.kakao && !ss.get('mk_app_kakao:' + S.app)) { inAppKakao(); return; }
     S.appDone = ''; paint();
@@ -1174,20 +1057,10 @@ async function start() {
   }
 
   if (RETURN.loginError) {
+    // 처음 카카오로 가입하는데 만 14세 체크가 없었다 → 가입 화면(맨 위 체크 칸)에서 다시
+    if (RETURN.loginError === 'age14') { if (!S.session) openSheet('signup', { kakaoAge: true }); return; }
     toast(KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail, RETURN.loginError !== 'cancel');
     if (RETURN.loginError === 'sso-none') openSheet('login');
-    return;
-  }
-  // 휴대폰 본인인증에서 돌아옴
-  const v = RETURN.verify;
-  if (v) {
-    if (v.savedId && v.id && v.savedId !== v.id) { toast('본인인증을 처음부터 다시 해 주세요.', true); return; }
-    if (v.mode === 'find') { openSheet('find', v.code ? { error: v.message || '본인인증을 마치지 못했어요. 다시 해 주세요.' } : { pendingId: v.id }); return; }
-    if (!S.session) { toast('로그인이 풀렸어요. 다시 로그인한 뒤 본인인증을 해 주세요.', true); S.next = 'apply'; openSheet('login'); return; }
-    go('apply');
-    if (v.code) { S.verifyNote = { text: v.message || '본인인증을 마치지 못했어요. 다시 해 주세요.', bad: true }; paint(); return; }
-    if (!v.id) { toast('본인인증 결과를 받지 못했어요. 다시 해 주세요.', true); return; }
-    await finishVerify(v.id);
     return;
   }
   if (S.app) {

@@ -160,7 +160,7 @@ p{margin:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;display:grid;gap:12px;box-shadow:var(--shadow-s)}
 .card h3{font-size:21px}
 @media (max-width:520px){.card{padding:16px;border-radius:18px}}
-.stepper{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.stepper{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
 .stepper li{display:grid;justify-items:center;gap:4px;text-align:center;font-size:12.5px;color:var(--muted)}
 .stepper b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--soft);font-size:14px;color:var(--muted)}
 .stepper .done b{background:var(--accent);color:var(--accent-ink)}
