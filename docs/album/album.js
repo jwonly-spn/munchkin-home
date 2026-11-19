@@ -618,7 +618,7 @@ function footer() {
     h('details', { class: 'foot-biz' },
       h('summary', { text: '사업자 정보' }),
       h('p', { text: '뉴비랩 (NEWVIE Lab) · 대표 이지원 · 사업자등록번호 748-15-02934' }),
-      h('p', { text: '대구광역시 수성구 동대구로 336 · 전화번호 010-6894-0925 · likegorogoro@naver.com' }))));
+      h('p', { text: '대구광역시 수성구 동대구로 336 · 전화번호 0505-008-0032 · likegorogoro@naver.com' }))));
 }
 const sectionHead = (eyebrow, title, lead) => h('div', { class: 'head' }, eyebrow ? h('p', { class: 'eyebrow', text: eyebrow }) : null, h('h2', { text: title }), lead ? h('p', { class: 'lead', text: lead }) : null);
 // 추억앨범 베타(2026-11-05 사용자 "추억앨범은 아직 다른 디제이들은 이용할 수 없어 — 베타테스트 중이라 추후 공개 예정 · 미리보기 버튼 → 한이준.com"):
