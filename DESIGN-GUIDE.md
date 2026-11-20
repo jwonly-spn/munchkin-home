@@ -34,7 +34,7 @@
   - 글 `먼치킨 0.19.22 · Windows 10·11 (64비트) · 145MB · 무료 베타`
 - 사실만: 기능 설명은 지금 docs/index.html 에 있는 글을 근거로(없는 기능을 지어내지 않기). 요금은 지금처럼 "무료 베타"(2027년 유료 예정이라는 말은 지금 페이지에 있는 만큼만).
 - 예시 이름은 지어낸 것만(밤톨·별빛·달무리처럼). 실제 DJ 닉네임 금지.
-- 바닥 사업자 정보(뉴비랩 (NEWVIE Lab) · 대표 이지원 · 사업자등록번호 748-15-02934 · 전화번호 0505-008-0032 · likegorogoro@naver.com)는 "사업자 정보 ▾" 접기 안에, 주소도 그 안에만(지금 docs/album/ 바닥과 같게). 이용약관·개인정보처리방침 링크(https://xn--hu5bi2af5y.com/terms.html · privacy.html) 유지.
+- 바닥 사업자 정보(뉴비랩 (NEWVIE Lab) · 대표 이지원 · 사업자등록번호 748-15-02934 · 통신판매업 신고번호 제2026-대구수성구-1478호 · 전화번호 0505-008-0032 · likegorogoro@naver.com)는 "사업자 정보 ▾" 접기 안에, 주소도 그 안에만(지금 docs/album/ 바닥과 같게). 이용약관·개인정보처리방침 링크(https://xn--hu5bi2af5y.com/terms.html · privacy.html) 유지.
 - 받는 법 안내(`#install-help` — 엣지·윈도우 경고 창 그림)는 꼭 필요해요(설치 때 경고가 떠서 DJ 들이 많이 막혀요). 모양은 바꿔도 돼요.
 - 바깥 자원: 글꼴은 지금 쓰는 것(Google Fonts) 정도까지, 스크립트는 album 의 포트원 SDK 말고 새로 부르지 않기. 그림은 docs/ 안 파일로(한 장 300KB 안쪽 권장, webp/jpg).
 - docs/album/index.html 의 Content-Security-Policy 를 지켜 주세요(바꿔야 하면 꼭 필요한 만큼만).

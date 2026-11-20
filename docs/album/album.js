@@ -619,7 +619,7 @@ function footer() {
     // 운영자 사업자 정보 — 평소엔 접어 두고 누르면 펼침(추억앨범 사이트와 같게)
     h('details', { class: 'foot-biz' },
       h('summary', { text: '사업자 정보' }),
-      h('p', { text: '뉴비랩 (NEWVIE Lab) · 대표 이지원 · 사업자등록번호 748-15-02934' }),
+      h('p', { text: '뉴비랩 (NEWVIE Lab) · 대표 이지원 · 사업자등록번호 748-15-02934 · 통신판매업 신고번호 제2026-대구수성구-1478호' }),
       h('p', { text: '대구광역시 수성구 동대구로 336 · 전화번호 0505-008-0032 · likegorogoro@naver.com' }))));
 }
 const sectionHead = (eyebrow, title, lead) => h('div', { class: 'head' }, eyebrow ? h('p', { class: 'eyebrow', text: eyebrow }) : null, h('h2', { text: title }), lead ? h('p', { class: 'lead', text: lead }) : null);
