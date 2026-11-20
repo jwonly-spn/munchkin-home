@@ -571,7 +571,9 @@ const STEPS = {
 // ---------- 화면 ----------
 const app = $('#app');
 function paint() {
-  const main = h('main', { class: 'wrap page', id: 'main' }, viewBody());
+  // 모양만: 어느 화면인지 CSS 가 알게 이름을 적어 둔다(view-home · view-apply · view-me · view-app)
+  const name = S.view === 'app' ? 'app' : (S.view === 'apply' || S.view === 'me') && S.session ? S.view : 'home';
+  const main = h('main', { class: 'page view-' + name, id: 'main' }, viewBody());
   app.replaceChildren(topbar(), main, footer());
 }
 function viewBody() {
@@ -582,13 +584,13 @@ function viewBody() {
 }
 function topbar() {
   // 먼치킨 안의 카카오 로그인 창: 이름표만(다른 화면으로 가는 단추 없음)
-  if (inApp()) return h('header', { class: 'top' }, h('div', { class: 'wrap top-in' },
+  if (inApp()) return h('header', { class: 'top on-night' }, h('div', { class: 'wrap top-in' },
     h('span', { class: 'brand' }, h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', null, '먼치킨 ', h('em', { text: '로그인' })))));
   const right = S.session && S.me
     ? h('button', { class: 'me-btn', type: 'button', 'aria-label': '내 정보', onclick: () => go('me') }, icon('user'), h('span', { class: 'me-name', text: S.me.nickname || '내 정보' }))
     : h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => openSheet('login') });
   // 이름표 두 칸(2026-11-16 UI 검토 S7): "먼치킨"은 먼치킨.com 첫 화면으로, "추억앨범"은 이 페이지 처음 화면으로. 맨 위에 [먼치킨 받기]도 둔다.
-  return h('header', { class: 'top' }, h('div', { class: 'wrap top-in' },
+  return h('header', { class: 'top on-night' }, h('div', { class: 'wrap top-in' },
     h('div', { class: 'brand brand-split' },
       h('a', { class: 'brand-home', href: '../', 'aria-label': '먼치킨.com 첫 화면' },
         h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', { text: '먼치킨' })),
@@ -643,45 +645,53 @@ function homeView() {
   const ctaSub = S.session
     ? h('button', { class: 'btn line', type: 'button', onclick: () => go('me') }, icon('user'), '내 정보')
     : h('button', { class: 'btn line', type: 'button', onclick: () => openSheet('login') }, '로그인 · 회원가입');
-  const mock = h('div', { class: 'mock', 'aria-hidden': 'true' },
-    h('div', { class: 'mock-bar' }, h('i'), h('i'), h('i'), h('span', { text: '밤톨.먼치킨.com' })),
-    h('div', { class: 'mock-head' }, h('b', { class: 'mock-av' }), h('div', null, h('strong', { text: '밤톨 추억앨범' }), h('span', { text: '게시물 24 · 박제판 12 · 하트 380' }))),
-    h('div', { class: 'mock-grid' }, ...[1, 2, 3, 4, 5, 6].map((n) => h('span', { class: 't' + n }, n === 1 ? h('em', { text: '🏆 최초' }) : null))));
+  // 밤 첫 화면의 그림: 아치 창 속 먼치킨 + 지어낸 예시 박제판 세 장(첫 페이지와 같은 것)
+  const art = (name, w, hh, alt = '', lazy = true) => h('img', { class: 'art', src: `../art/${name}.webp`, width: String(w), height: String(hh), alt, decoding: 'async', loading: lazy ? 'lazy' : null });
+  const arch = (tone, img, more = '') => h('div', { class: `arch ${tone} ${more}`.trim() }, h('i', { class: 'stars', 'aria-hidden': 'true' }), img);
+  const scene = h('div', { class: 'hero-scene a-scene' },
+    h('p', { class: 'album-addr', text: '밤톨.먼치킨.com' }),
+    arch('blush', art('album', 581, 720, '사진 앨범을 꼭 껴안은 먼치킨', false)),
+    h('div', { class: 'memories', role: 'img', 'aria-label': '밤톨.먼치킨.com 예시. 박제판 그림 세 장에 첫 번째 함께한 순간(최초 박제판), 오늘도 고마워요(방송 추억), 별빛처럼 반짝인 우리(내 박제판)라고 적혀 있어요.' },
+      [['첫 번째 함께한 순간', '최초 박제판'], ['오늘도 고마워요', '방송 추억'], ['별빛처럼 반짝인 우리', '내 박제판']].map(([t, k], i) =>
+        h('div', { class: 'memory m' + (i + 1) }, h('img', { src: `../art/board-sample-${i + 1}.webp`, width: '308', height: '308', alt: '', decoding: 'async' }), h('span', { text: t }), h('b', { text: k })))),
+    h('p', { class: 'example-label', text: '지어낸 이름과 내용으로 만든 예시예요.' }));
   const points = [
-    ['trophy', '최초 박제판이 저절로', '먼치킨 최초 박제판에 이름이 적히면 내 추억앨범에 저절로 올라가요. 손으로 올릴 필요가 없어요.'],
-    ['key', '계정 하나로 둘 다', '먼치킨 계정 하나로 먼치킨 프로그램과 추억앨범을 함께 써요. 프로그램에서 로그인하면 앨범과 저절로 이어져요.'],
-    ['heart', '청취자와 함께', '청취자가 하트를 누르고 댓글·답글을 달아요. 새 하트·댓글은 알림으로 알려 드려요.']
+    ['blush', ['thanks-cookie', 640, 720], '최초 박제판이 저절로', '먼치킨 최초 박제판에 이름이 적히면 내 추억앨범에 저절로 올라가요. 손으로 올릴 필요가 없어요.'],
+    ['sky-tone', ['aegyo-1', 512, 512], '계정 하나로 둘 다', '먼치킨 계정 하나로 먼치킨 프로그램과 추억앨범을 함께 써요. 프로그램에서 로그인하면 앨범과 저절로 이어져요.'],
+    ['butter', ['greet', 675, 720], '청취자와 함께', '청취자가 하트를 누르고 댓글·답글을 달아요. 새 하트·댓글은 알림으로 알려 드려요.']
   ];
+  const sky = () => h('i', { class: 'sky', 'aria-hidden': 'true' });
   return [
-    mine ? h('section', { class: 'mine-strip' }, h('div', { class: 'mine-row' }, mine.map(albumMini))) : null,
-    h('section', { class: 'hero' }, h('div', { class: 'hero-grid' },
-      h('div', { class: 'hero-text' },
-        h('p', { class: 'eyebrow', text: beta ? '먼치킨 추억앨범 · 베타 테스트 중' : '먼치킨 추억앨범' }),
+    mine ? h('section', { class: 'mine-strip on-night' }, h('div', { class: 'wrap mine-row' }, mine.map(albumMini))) : null,
+    h('section', { class: 'hero a-hero night hero-night' }, sky(), h('div', { class: 'wrap hero-in' },
+      h('div', { class: 'hero-copy' },
+        h('p', { class: 'kicker' }, h('i', { class: 'dot' + (beta ? ' warn' : ''), 'aria-hidden': 'true' }), beta ? '먼치킨 추억앨범 · 베타 테스트 중' : '먼치킨 추억앨범'),
         h('h1', null, '방송의 추억을', h('br'), h('em', { text: '나만의 앨범' }), '으로'),
-        h('p', { class: 'lead' }, '내 박제판·최초 박제판·방송 사진을 모아 두는 나만의 사이트예요. 주소는 ', h('b', { text: '밤톨.먼치킨.com' }), '처럼 내 이름으로 정해요.'),
+        h('p', { class: 'lead' }, '내 박제판·최초 박제판·방송 사진을 모아 두는 나만의 사이트예요. 주소는 ', h('b', { class: 'nobr', text: '밤톨.먼치킨.com' }), '처럼 내 이름으로 정해요.'),
         h('div', { class: 'cta' }, ctaMain, ctaSub),
         h('p', { class: 'note', text: beta ? BETA_TEXT : '추억앨범만 써도 되고, 먼치킨과 함께 쓰면 더 편해요.' })),
-      h('div', { class: 'hero-art' }, h('div', { class: 'plate' }, h('img', { src: '../munchkin-256.png', alt: '먼치킨 캐릭터', width: '256', height: '256' })), mock))),
-    h('section', { class: 'sect' },
+      scene)),
+    h('section', { class: 'section' }, h('div', { class: 'wrap' },
       sectionHead('같이 쓰면 좋은 점', '먼치킨이랑 같이 쓰면 더 좋아요'),
-      h('div', { class: 'cards3' }, points.map(([ic, t, d]) => h('article', { class: 'point' }, h('span', { class: 'point-ico' }, icon(ic)), h('h3', { text: t }), h('p', { text: d }))))),
-    h('section', { class: 'sect' },
+      h('ul', { class: 'with3' }, points.map(([tone, [img, w, hh], t, d]) => h('li', null, arch(tone, art(img, w, hh), 'mini-arch'), h('h3', { text: t }), h('p', { text: d })))))),
+    h('section', { class: 'holds-section' }, h('div', { class: 'wrap' },
       sectionHead('앨범에 담기는 것', '내 방송의 모든 순간을 한곳에'),
-      h('ul', { class: 'chips' }, ['일반 게시물(피드)', '박제판', '최초 박제판', '달력으로 보기', '하트·댓글·답글', 'DJ 알림', '내 프로필·소개'].map((t) => h('li', { text: t })))),
-    h('section', { class: 'sect' },
+      h('ul', { class: 'holds' }, ['일반 게시물(피드)', '박제판', '최초 박제판', '달력으로 보기', '하트·댓글·답글', 'DJ 알림', '내 프로필·소개'].map((t) => h('li', null, icon('check'), t))))),
+    h('section', { class: 'start-section night' }, sky(), h('div', { class: 'wrap' },
       sectionHead('만드는 방법', '이렇게 만들어요', beta ? '공개되면 세 단계면 끝나요. 지금은 베타 테스트 중이라 신청을 받지 않아요.' : '세 단계면 끝나요. 앨범이 생기면 바로 글을 올릴 수 있어요.'),
-      h('ol', { class: 'steps' },
-        h('li', null, h('b', { text: '먼치킨 계정으로 로그인' }), h('span', { text: '없으면 1분이면 가입해요. 카카오로도 돼요.' })),
-        h('li', null, h('b', { text: '신청하기' }), h('span', { text: '주소 이름·앨범 이름·기간을 고르고 계좌로 이체해요.' })),
-        h('li', null, h('b', { text: '바로 열려요' }), h('span', { text: '운영자가 입금을 확인하면 앨범과 주소가 바로 만들어져요(최대 24시간).' }))),
-      h('div', { class: 'cta center' }, beta ? previewBtn() : h('button', { class: 'btn main', type: 'button', onclick: () => go('apply') }, '추억앨범 신청하기'))),
-    h('section', { class: 'sect faq' },
+      h('ol', { class: 'start-steps plain' },
+        h('li', null, h('span', { class: 'num', 'aria-hidden': 'true', text: '1' }), h('h3', { text: '먼치킨 계정으로 로그인' }), h('p', { text: '없으면 1분이면 가입해요. 카카오로도 돼요.' })),
+        h('li', null, h('span', { class: 'num', 'aria-hidden': 'true', text: '2' }), h('h3', { text: '신청하기' }), h('p', { text: '주소 이름·앨범 이름·기간을 고르고 계좌로 이체해요.' })),
+        h('li', null, h('span', { class: 'num', 'aria-hidden': 'true', text: '3' }), h('h3', { text: '바로 열려요' }), h('p', { text: '운영자가 입금을 확인하면 앨범과 주소가 바로 만들어져요(최대 24시간).' }))),
+      h('div', { class: 'cta center' }, beta ? previewBtn() : h('button', { class: 'btn main', type: 'button', onclick: () => go('apply') }, '추억앨범 신청하기')))),
+    h('section', { class: 'section faq' }, h('div', { class: 'wrap' },
       sectionHead('묻고 답하기', '궁금한 것'),
-      [...(beta ? [['지금 신청할 수 있나요?', '아직은 베타 테스트 중이라 신청을 받지 않아요. 추후 공개할 예정이에요. 어떤 모습인지는 한이준 추억앨범(한이준.com)에서 미리 볼 수 있어요.']] : []),
-        ['먼치킨을 안 써도 만들 수 있나요?', '네. 추억앨범만 신청해도 돼요. 먼치킨(봇 프로그램)을 함께 쓰면 최초 박제판이 저절로 올라가요.'],
-        ['먼치킨 프로그램과는 어떻게 이어지나요?', '먼치킨에서 같은 먼치킨 계정으로 로그인하면 저절로 이어져요. 앨범이 생길 때 그 계정으로 로그인한 먼치킨이 있으면 그것도 바로 이어져요.'],
-        ['청취자도 가입해야 하나요?', '앨범은 누구나 볼 수 있어요. 댓글을 달 때만 가입하면 돼요.']]
-        .map(([q, a]) => h('details', { class: 'qa' }, h('summary', { text: q }), h('p', { text: a }))))
+      h('div', { class: 'faq-list' },
+        [...(beta ? [['지금 신청할 수 있나요?', '아직은 베타 테스트 중이라 신청을 받지 않아요. 추후 공개할 예정이에요. 어떤 모습인지는 한이준 추억앨범(한이준.com)에서 미리 볼 수 있어요.']] : []),
+          ['먼치킨을 안 써도 만들 수 있나요?', '네. 추억앨범만 신청해도 돼요. 먼치킨(봇 프로그램)을 함께 쓰면 최초 박제판이 저절로 올라가요.'],
+          ['먼치킨 프로그램과는 어떻게 이어지나요?', '먼치킨에서 같은 먼치킨 계정으로 로그인하면 저절로 이어져요. 앨범이 생길 때 그 계정으로 로그인한 먼치킨이 있으면 그것도 바로 이어져요.'],
+          ['청취자도 가입해야 하나요?', '앨범은 누구나 볼 수 있어요. 댓글을 달 때만 가입하면 돼요.']]
+          .map(([q, a]) => h('details', { class: 'qa' }, h('summary', { text: q }), h('p', { text: a }))))))
   ];
 }
 // 남은 기간 글
