@@ -2,7 +2,7 @@
 (() => {
   const rnd = ((s) => () => (s = s * 16807 % 2147483647) / 2147483647)(20261120);
   const C = []; for (let i = 0; i < 90; i++) C.push([rnd(), rnd(), 1.2 + rnd() * 1.2, rnd()]);
-  const SEL = 'a,button,img,summary,input,.kicker,.pc-note,.hello-note,.arch,.awin,.memories,.album-addr,.brand-sub,.must,.mgr-path span,.must-badge,.btn,.card,.album-mini,.sky-keep';
+  const SEL = 'h1,h2,h3,a,button,img,summary,input,.kicker,.pc-note,.hello-note,.arch,.awin,.memories,.album-addr,.brand-sub,.must,.mgr-path span,.must-badge,.btn,.card,.album-mini,.get,.version,.start-steps,.start-steps>li,.section-head,.head,.cta,.holds li,.sky-keep';
   const boxes = (root) => {
     const R = [], pad = 14, o = root.getBoundingClientRect();
     const add = (r) => { if (r.width && r.height) R.push([r.left - o.left - pad, r.top - o.top - pad, r.right - o.left + pad, r.bottom - o.top + pad]); };
@@ -38,9 +38,14 @@
   addEventListener('resize', () => later(150));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
   addEventListener('load', draw); draw();
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => later(60));
+  // 밤 구역이나 그 안 칸의 크기가 바뀌면(그림이 늦게 뜸 · 안내가 펼쳐짐 · 스크롤 막대가 생김) 다시 찍어요
+  const ro = window.ResizeObserver ? new ResizeObserver(() => later(80)) : null;
+  const watch = () => { if (ro) { ro.disconnect(); document.querySelectorAll('.night, .night .wrap, .night .wrap > *').forEach((e) => ro.observe(e)); } };
+  watch();
   // 화면을 스크립트로 다시 그리는 페이지(추억앨범 신청): 내용이 바뀌면 다시 찍어요(별 자신이 바뀐 것은 빼고)
   const app = document.getElementById('app');
   if (app && window.MutationObserver) new MutationObserver((list) => {
-    if (list.some((m) => !(m.target instanceof Element && m.target.closest('.sky')))) later(60);
+    if (list.some((m) => !(m.target instanceof Element && m.target.closest('.sky')))) { watch(); later(60); }
   }).observe(app, { childList: true, subtree: true });
 })();

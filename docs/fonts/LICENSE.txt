@@ -9,6 +9,8 @@
    Copyright (c) Gmarket Inc. (https://corp.gmarket.com/fonts/)
    "Gmarket Sans는 SIL Open Font License 에 따라 개인 또는 기업이 영리적, 비영리적 목적으로 자유롭게 사용할 수 있습니다." — 위 공식 페이지.
    SIL Open Font License 1.1 (아래 전문과 같은 라이선스).
+   확인한 날: 2026-11-20 (위 공식 페이지의 글). 공식 배포처: https://corp.gmarket.com/fonts/
+   자르기 전 원본: 시안 폴더(기획\갈아엎기-20261119\g-home\새방향\assets\fonts\GmarketSansBold.woff)에 있던 웹글꼴 파일 — 그 파일을 받은 주소는 기록이 남아 있지 않아요.
 
 만드는 법: tools/build-fonts.py
 

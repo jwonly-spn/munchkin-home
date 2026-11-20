@@ -646,11 +646,11 @@ function homeView() {
     ? h('button', { class: 'btn line', type: 'button', onclick: () => go('me') }, icon('user'), '내 정보')
     : h('button', { class: 'btn line', type: 'button', onclick: () => openSheet('login') }, '로그인 · 회원가입');
   // 밤 첫 화면의 그림: 아치 창 속 먼치킨 + 지어낸 예시 박제판 세 장(첫 페이지와 같은 것)
-  const art = (name, w, hh, alt = '') => h('img', { class: 'art', src: `../art/${name}.webp`, width: String(w), height: String(hh), alt, decoding: 'async' });
+  const art = (name, w, hh, alt = '', lazy = true) => h('img', { class: 'art', src: `../art/${name}.webp`, width: String(w), height: String(hh), alt, decoding: 'async', loading: lazy ? 'lazy' : null });
   const arch = (tone, img, more = '') => h('div', { class: `arch ${tone} ${more}`.trim() }, h('i', { class: 'stars', 'aria-hidden': 'true' }), img);
   const scene = h('div', { class: 'hero-scene a-scene' },
     h('p', { class: 'album-addr', text: '밤톨.먼치킨.com' }),
-    arch('blush', art('album', 581, 720, '사진 앨범을 꼭 껴안은 먼치킨')),
+    arch('blush', art('album', 581, 720, '사진 앨범을 꼭 껴안은 먼치킨', false)),
     h('div', { class: 'memories', role: 'img', 'aria-label': '밤톨.먼치킨.com 예시. 박제판 그림 세 장에 첫 번째 함께한 순간(최초 박제판), 오늘도 고마워요(방송 추억), 별빛처럼 반짝인 우리(내 박제판)라고 적혀 있어요.' },
       [['첫 번째 함께한 순간', '최초 박제판'], ['오늘도 고마워요', '방송 추억'], ['별빛처럼 반짝인 우리', '내 박제판']].map(([t, k], i) =>
         h('div', { class: 'memory m' + (i + 1) }, h('img', { src: `../art/board-sample-${i + 1}.webp`, width: '308', height: '308', alt: '', decoding: 'async' }), h('span', { text: t }), h('b', { text: k })))),

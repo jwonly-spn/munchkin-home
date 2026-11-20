@@ -60,7 +60,7 @@
 .a-scene .memories{width:min(100%,430px)}
 .with3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .with3 li{display:grid;justify-items:start;align-content:start}
-.with3 h3{font-size:22px;margin:16px 0 8px}
+.with3 h3{font-size:clamp(19px,2.4vw,22px);margin:16px 0 8px}
 .with3 p{color:var(--ink-2)}
 .holds-section{padding:0 0 8px}
 .holds{display:flex;flex-wrap:wrap;gap:10px}
@@ -75,11 +75,11 @@
 .sect.narrow>.head h2{font-size:clamp(24px,5vw,32px)}
 .sect.narrow>.head .lead{font-size:16px;line-height:1.6}
 .sect.narrow>.head::before{content:"";position:absolute;right:-40px;bottom:-90px;width:260px;height:220px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.24),transparent)}
-.sect.narrow>.head::after{content:"";position:absolute;right:22px;bottom:0;width:112px;height:122px;border-radius:56px 56px 0 0;background:url("../art/album.webp") center 100%/auto 92% no-repeat,rgba(255,255,255,.1)}
-.view-me .sect.narrow>.head::after{background-image:url("../art/aegyo-1.webp"),linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1));background-size:auto 88%,auto}
+.sect.narrow>.head::after{content:"";position:absolute;right:22px;top:50%;transform:translateY(-50%);width:104px;height:116px;border-radius:52px 52px 20px 20px;background:url("../art/album.webp") center 60%/auto 84% no-repeat,rgba(255,255,255,.1)}
+.view-me .sect.narrow>.head::after{background-image:url("../art/aegyo-1.webp"),linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1));background-size:auto 80%,auto}
 .sect.narrow>.head>*{position:relative}
 /* 닉네임이 들어가는 제목은 본문 글꼴로(어떤 글자가 와도 한 글꼴로 보이게) */
-.view-me .sect.narrow>.head h2{font-family:var(--body);font-weight:800;letter-spacing:-.02em}
+.view-me .sect.narrow>.head h2,.app-card h2.dyn{font-family:var(--body);font-weight:800;letter-spacing:-.02em}
 
 /* 카드 */
 .card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:24px;display:grid;gap:12px;box-shadow:var(--lift)}
@@ -117,7 +117,7 @@
 .field{display:grid;gap:6px}
 .field label{font-weight:700;font-size:15px}
 .input{width:100%;min-height:52px;padding:0 14px;border-radius:14px;border:1.5px solid var(--field-line);background:var(--bg);color:var(--ink);font-size:17px}
-.input::placeholder{color:var(--ink-2);opacity:.75}
+.input::placeholder{color:var(--ink-2);opacity:1}
 .input:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 .addr{display:flex;align-items:center;gap:2px;background:var(--bg);border:1.5px solid var(--field-line);border-radius:16px;padding:0 14px;min-height:60px}
 .addr:focus-within{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
@@ -162,7 +162,8 @@
 .orders{display:grid}
 .orders li{display:flex;justify-content:space-between;align-items:center;gap:14px;min-height:52px;padding:6px 0;border-bottom:1px solid var(--line);font-size:16px}
 .orders li:last-child{border-bottom:0}
-.orders small{color:var(--ink-2);font-size:15px}
+.orders small{color:var(--ink-2);font-size:15px;white-space:nowrap}
+.pay-album b,.addr-line{white-space:nowrap}
 .orders li>:first-child{min-width:0}
 .orders li>:last-child{flex:none;white-space:nowrap}
 
@@ -243,19 +244,19 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
   .a-hero .hero-in{grid-template-columns:1fr;gap:36px;padding:20px 0 56px}
   .a-hero h1{font-size:clamp(34px,10vw,42px)}
   .a-hero .cta .btn{width:100%}
-  .with3{grid-template-columns:1fr;gap:32px}
   .holds li{min-height:44px;font-size:16px}
   .view-home .start-section{margin-top:72px}
   .cta.center .btn{width:100%}
 }
 @media (max-width:600px){
+  .with3{grid-template-columns:1fr;gap:32px}
   .hide-s{display:none}
   .top-nav .btn{padding:0 14px}
   .top-nav .btn.get-link{padding:0 8px}
   .brand-split .brand-album{margin-left:6px}
   .sect.narrow{padding:16px 0 56px;gap:14px}
   .sect.narrow>.head{min-height:132px;padding:22px 108px 22px 20px;border-radius:24px}
-  .sect.narrow>.head::after{right:12px;width:88px;height:96px;border-radius:44px 44px 0 0}
+  .sect.narrow>.head::after{right:14px;width:84px;height:94px;border-radius:42px 42px 16px 16px}
   .card{padding:20px 18px;border-radius:20px}
   .beta-box{padding:22px 18px}
   .beta-box .btn{width:100%;white-space:normal;text-align:center;line-height:1.3;padding-block:8px}
