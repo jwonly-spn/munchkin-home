@@ -130,6 +130,9 @@
 .seg button:disabled{opacity:.4;cursor:not-allowed}
 .amount{font:800 36px/1.2 var(--body);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .small-amount{font-size:28px}
+/* 카드 결제: 결제하는 분 칸 묶음(2026-11-23 — 칸 모양은 위 .field·.input 그대로) */
+.payer{border:0;margin:0;padding:0;min-width:0;display:grid;gap:12px}
+.payer legend{padding:0;margin-bottom:6px;font-weight:700;font-size:16px}
 
 /* 입금 기다림 카드 */
 .pay{border:2px solid var(--coral)}
