@@ -1520,7 +1520,7 @@ async function start() {
 // 첫 페이지 가격표(2026-11-23 시안 — 사용자 "이거 저기 있는게 좋은거야?" 뒤 제안): 맨 위 [1개월 | 1년] → 카드 셋(추억앨범만 · 먼치킨만 ★추천 · 먼치킨 + 추억앨범)
 //  → 위 띠. 값·할인은 신청 화면과 같은 planModel(두 벌 만들지 않기). [신청하기]: 로그인 전이면 로그인, 먼치킨만이면 이 자리 아래 결제 칸(payActions),
 //  추억앨범이 들어가면 album/#go=apply&plan=…&months=… 로.
-const PT_PLANS = [['album', '추억앨범만', '나만의 추억앨범 사이트'], ['munchkin', '먼치킨만', '먼치킨 봇·송출 모두'], ['bundle', '먼치킨 + 추억앨범', '봇·송출 + 추억앨범']];
+const PT_PLANS = [['album', '추억앨범만', '나만의 추억앨범 사이트'], ['munchkin', '먼치킨만', '먼치킨 봇 · 송출은 무료 덤'], ['bundle', '먼치킨 + 추억앨범', '봇 + 추억앨범 · 송출은 무료 덤']];
 function ptApply(k) {
   S.draft.plan = k; saveDraft();
   if (!S.session) { openSheet('login'); return; }

@@ -455,3 +455,14 @@ p,li,dd,summary,figcaption{text-wrap:pretty}
   .bt:not(.bt-hello):not(.bt-board) .awin{flex:none;align-self:flex-start}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* 다른 봇 기록 옮기기(2026-11-23 사용자 "다른봇을 쓰고 있더라도 사용기록 옮겨올 수 있다고 어필") */
+.why-move{margin-top:20px;border-radius:32px;padding:32px 40px;background:var(--t-butter);display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:24px;align-items:center;--ink-2:#5A4A2A}
+.why-move h3{font-size:clamp(24px,2.4vw,30px);text-wrap:balance}
+.why-move-lead{color:var(--ink-2);margin-top:8px}
+.why-move-list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px}
+.why-move-how{color:var(--ink-2);font-size:15px}
+.why-move .awin{width:168px;margin:0}
+@media (prefers-color-scheme:dark){.why-move{--ink-2:#E8DCC0}}
+@media (max-width:860px){.why-move{border-radius:26px;padding:24px 20px 26px;grid-template-columns:1fr;gap:12px;margin-top:14px}.why-move .awin{width:112px;grid-row:1}}
+@media (max-width:520px){.why-move-list{grid-template-columns:1fr}}
