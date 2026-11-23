@@ -33,6 +33,7 @@ const CARD_TEST = '🧪 테스트 결제예요 — 실제로 돈이 나가지 �
 const CARD_CLOSED = '카드 결제는 KG이니시스 심사가 끝나면 열려요. 지금은 계좌이체로 결제할 수 있어요.';
 const CARD_WAIT = '카드 결제를 아직 마치지 않았어요.';
 const CARD_FAIL = '결제를 마치지 못했어요. 다시 결제하거나 신청을 취소해 주세요.';
+const CARD_CHECK = '결제를 확인하고 있어요. 잠시 뒤 [결제 다시 확인]을 눌러 주세요.';
 // 이용권·결제 화면 맨 위 띠(2026-11-23 사용자 글 그대로) — 유료가 시작되는 때(2027-01-01 0시 한국, 서버 munchkinPaidFrom 이 있으면 그 값) 뒤엔 안 보인다
 const PAID_FROM = Date.parse('2027-01-01T00:00:00+09:00');
 const PAID_BANNER = '유료화는 1월 1일부터이며, 이전에 결제한 내역은 자동으로 1월 1일부터 사용됩니다.';
@@ -825,13 +826,13 @@ function payerBox(key, st) {
   };
   return { el, read };
 }
-// 결제 안 끝난 카드 신청으로 화면을 옮기고 [다시 결제]에 초점
-function showOrder(id) {
+// 결제 안 끝난 카드 신청으로 화면을 옮기고 [다시 결제](또는 [결제 다시 확인])에 초점
+function showOrder(id, focusSel = 'button[type="submit"]') {
   setTimeout(() => {
     const card = $('#order-' + id);
     if (!card) return;
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    card.querySelector('button[type="submit"]')?.focus({ preventScroll: true });
+    card.querySelector(focusSel)?.focus({ preventScroll: true });
   }, 50);
 }
 function cardStopped(id, text) {
@@ -871,12 +872,17 @@ async function finishCard(id) {
     PAYER.name = PAYER.phone = PAYER.email = '';   // 결제를 마쳤으면 결제하는 분 칸도 비운다
     if (r.order?.plan !== 'munchkin') { S.draft = { label: '', name: '', plan: 'album', months: 1, album: '' }; saveDraft(); S.labelOk = null; }
     toast(r.state === 'test' ? '테스트 결제를 마쳤어요' : '결제했어요');
-  } else cardStopped(id, r.state === 'failed' ? (r.message || CARD_FAIL) : '결제가 아직 끝나지 않았어요. 다시 결제해 주세요.');
+  } else if (r.state === 'failed') cardStopped(id, r.message || CARD_FAIL);
+  else {
+    // pending: 방금 결제했는데 포트원 쪽 반영이 늦을 수 있다 — 다시 결제하라고 하지 않고, 신청 카드의 [결제 다시 확인]으로 다시 묻게 한다
+    S.payDone = null; S.payNote = { id, text: CARD_CHECK, bad: false, check: true };
+    toast(CARD_CHECK);
+  }
   await loadInfo().catch(() => {});
   paint();
-  // 결제를 마쳤으면 결과 카드로(초점은 [내 정보 보기] — 누른 단추가 화면에서 사라졌으니)
+  // 결제를 마쳤으면 결과 카드로(초점은 [내 정보 보기] — 누른 단추가 화면에서 사라졌으니) · 확인 중이면 [결제 다시 확인]에
   if (S.payDone) setTimeout(() => { const d = $('#pay-done'); d?.scrollIntoView({ behavior: 'smooth', block: 'start' }); d?.querySelector('button')?.focus({ preventScroll: true }); }, 50);
-  else showOrder(id);
+  else showOrder(id, S.payNote?.check ? '.pay-check' : 'button[type="submit"]');
 }
 // 휴대폰 카드 결제에서 돌아옴(?pay=): code 가 있으면(그만둠·실패) 그 글을 보이고 신청은 그대로, 없으면 card-done 으로 마무리
 async function payReturn(p) {
@@ -923,6 +929,8 @@ function cardOrderCard(o) {
     await loadInfo(); paint();
   }) });
   const btns = h('div', { class: 'row-btns' }, cancel, again);
+  // 결제 확인이 늦을 때(card-done pending): 다시 결제하지 않고 서버에 다시 묻는 길
+  const recheck = note?.check ? h('div', { class: 'links' }, h('button', { class: 'link-btn pay-check', type: 'button', text: '결제 다시 확인', onclick: (e) => busy(e.currentTarget, st, () => finishCard(o.id)) })) : null;
   return h('article', { class: 'card pay', id: 'order-' + o.id },
     h('div', { class: 'pay-top' },
       h('span', { class: 'chip wait', text: '카드 결제를 기다리고 있어요' }),
@@ -932,7 +940,8 @@ function cardOrderCard(o) {
     h('p', { class: 'amount', text: won(o.amount) }),
     h('p', { class: 'notice', text: can ? `${CARD_WAIT} 다시 결제하거나 신청을 취소할 수 있어요.` : `${CARD_WAIT} 신청을 취소할 수 있어요.` }),
     can ? [testBadge(), h('form', { class: 'stack', noValidate: true, onsubmit: (e) => { e.preventDefault(); busy(again, st, () => payWithCard(cardBodyOf(o), st, payer)); } }, payer.el, st, btns)]
-      : [st, btns]);
+      : [st, btns],
+    recheck);
 }
 
 // 확인을 기다리는 신청: 계좌·금액·입금자명 + [입금했어요] [신청 취소]

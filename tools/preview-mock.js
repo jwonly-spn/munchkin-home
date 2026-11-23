@@ -2,7 +2,7 @@
 //  2026-11-23 모두에게 결제창: 서버 기본이 열림(albumOpen true · 먼치킨 신청 지금부터) · 카드 단추는 모두(show) · 결제창은 canPay 인 심사 계정·운영자만(테스트 채널)
 //  tester(심사 계정 — canPay·테스트 모드) · tester-wait(심사 계정 + 결제 안 끝난 카드 신청 하나) · beta(운영자가 albumOpen:false 로 끔) · cardoff(card.on off)
 //  legacy(바뀌기 전 서버 답 — card 없음·albumOpen 없음·먼치킨 12/1) · 로그인 전 prices 는 sessionStorage mock_pub=0 이면 예전 서버처럼 401
-//  가짜 결제창(window.__mkMockPortOne): sessionStorage mock_pay 가 ok·cancel·fail·mobile-ok·mobile-cancel 이면 그대로 하고, 없으면 화면에 가짜 창을 띄워 고르게 한다.
+//  가짜 결제창(window.__mkMockPortOne): sessionStorage mock_pay 가 ok·late(반영 늦음)·cancel·fail·mobile-ok·mobile-cancel 이면 그대로 하고, 없으면 화면에 가짜 창을 띄워 고르게 한다.
 //  실제 포트원·KG 에는 아무것도 보내지 않는다(이 파일은 올리는 파일이 아님 — tools/preview.mjs 가 /album/mock.js 로만 준다).
 const SB = 'https://aksegkhhugqvvaidgvro.supabase.co';
 const q = new URLSearchParams(location.search);
@@ -89,6 +89,8 @@ window.fetch = async (url, init = {}) => {
         const o = st.orders.find((x) => x.id === b.id);
         if (!o) return reply({ ok: false, error: '신청을 찾을 수 없어요.' }, 404);
         const p = st.paid['mk-' + o.id];
+        // late: 결제는 했는데 포트원 반영이 늦음 — 처음 물으면 pending, 다시 물으면 끝남
+        if (p === 'late') { st.paid['mk-' + o.id] = 'ok'; save(); return reply({ ok: true, state: 'pending', order: o }); }
         if (p === 'ok' && o.state === 'pending') { o.state = 'test'; o.payAt = Date.now(); o.done = Date.now(); save(); }
         if (o.state === 'test') return reply({ ok: true, state: 'test', order: o });
         if (p === 'fail') return reply({ ok: true, state: 'failed', order: o, message: '카드사에서 결제를 거절했어요. 다른 카드로 다시 해 주세요.' });
@@ -123,7 +125,7 @@ window.__mkMockPortOne = {
       box.querySelector('button').focus();
     });
     await new Promise((r) => setTimeout(r, 200));
-    if (pick === 'ok' || pick === 'fail') { st.paid[req.paymentId] = pick; save(); }
+    if (pick === 'ok' || pick === 'fail' || pick === 'late') { st.paid[req.paymentId] = pick; save(); }
     const fail = pick === 'cancel' ? { code: 'FAILURE_TYPE_PG', message: '결제를 그만뒀어요.' } : pick === 'fail' ? { code: 'FAILURE_TYPE_PG', message: '카드사에서 결제를 거절했어요. 다른 카드로 다시 해 주세요.' } : null;
     if (mobile) {
       const back = new URL(req.redirectUrl);
