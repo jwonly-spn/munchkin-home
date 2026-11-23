@@ -6,7 +6,7 @@
 <link rel="canonical" href="https://xn--s22bu18a0ub.com/"><link rel="icon" href="favicon.ico"><link rel="apple-touch-icon" href="munchkin-256.png">
 <meta name="theme-color" content="#171C3A">
 <link rel="preload" href="fonts/mk-text.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="fonts/mk-title.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=3"><script src="stars.js?v=3" defer></script>
+<link rel="stylesheet" href="site.css?v=3"><link rel="stylesheet" href="pay.css?v=1"><script src="stars.js?v=3" defer></script><script type="module" src="album/album.js?v=16"></script>
 </head>
 <body class="home"><a class="skip" href="#main">본문으로 바로 가기</a><svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs>
 <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
@@ -23,7 +23,7 @@
 <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M10 10v10"/></symbol>
 <symbol id="i-devices" viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="10" rx="1.5"/><path d="M6 18h6M9 14v4"/><rect x="17.5" y="8" width="4.5" height="12" rx="1"/></symbol>
 </defs></svg>
-<header class="site-header on-night"><div class="wrap header-in"><a class="brand" href="./"><img src="munchkin-64.png" width="40" height="40" alt="">먼치킨</a><nav aria-label="주 메뉴"><a href="#features">기능 소개</a><a href="#install-help">설치 안내</a><a href="album/">추억앨범</a></nav><a class="btn main sm header-get" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.2/Munchkin-Setup-0.23.2.exe">무료 받기</a></div></header>
+<header class="site-header on-night"><div class="wrap header-in"><a class="brand" href="./"><img src="munchkin-64.png" width="40" height="40" alt="">먼치킨</a><nav aria-label="주 메뉴"><a href="#features">기능 소개</a><a href="#install-help">설치 안내</a><a href="album/">추억앨범</a></nav><div class="mk-auth" id="mk-auth"><a class="btn line sm" href="album/">로그인</a><a class="btn line sm join" href="album/">회원가입</a></div><a class="btn main sm header-get" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.2/Munchkin-Setup-0.23.2.exe">무료 받기</a></div></header>
 <main id="main">
 <section class="hero night hero-night" aria-labelledby="hero-title"><i class="sky" aria-hidden="true"></i><div class="wrap hero-in">
 <h1 id="hero-title"><span class="kicker"><i class="dot" aria-hidden="true"></i>스푼 DJ를 위한 PC 채팅 봇</span> 스푼 방송을 도와줄 <br>공식 API 봇, 먼치킨!</h1>
@@ -41,10 +41,15 @@
 <p class="why-other">다른 봇 이용료는 보통 월 1만 원 이상이에요.</p>
 <dl class="why-plans"><div><dt>먼치킨은</dt><dd><b>월 3,000원</b><span>1년 단위로 결제하면 30,000원, 12달 값보다 6,000원 싸요</span></dd></div><div><dt>추억앨범까지 포함해도</dt><dd><b>월 5,000원</b><span>1년 단위로 결제하면 50,000원, 12달 값보다 10,000원 싸요</span></dd></div></dl>
 <p class="why-year">다른 봇 석 달 쓸 돈이면, 먼치킨은 1년을 함께해요.<small>월 1만 원 봇 3개월 = 30,000원<br>먼치킨 1년 = 30,000원</small></p>
-<a class="btn main" href="album/">이용권 신청하기</a></div>
+<a class="btn main" href="#pay">이용권 신청하기</a></div>
 <div class="why-side"><div class="why-feats"><h3>값은 월 3,000원, 기능은 다 들어 있어요</h3><p>3,000원으로 이만큼 꽉 채웠어요. 성능도 전혀 꿀리지 않아요.</p><ul class="check-list why-list"><li>스푼 공식 API 봇이라 안심</li><li>입장 인사·후원 감사 자동</li><li>초성퀴즈·업다운 채팅 게임</li><li>룰렛·실드·펀딩과 통장</li><li>VIP 등급 이름도 직접 정해요</li><li>TTS와 효과음</li><li>신청곡 대기열과 감사 목록</li><li>방송 상황판과 청취자 카드</li><li>DJ 키우기 시즌 2 「몬스터 영토전」</li><li>나만의 추억앨범</li><li>PC 사양에 맞춘 4단계 모드</li><li>켜기만 하면 자동 업데이트</li></ul></div>
 <ul class="why-trust"><li><b>통신판매업도 신고 완료!</b><span>제2026-대구수성구-1478호</span></li><li><b>24시간 문의 챗봇</b><span>디스코드 「먼치킨 DJ 모임」의 먼치킨 챗봇이 24시간 문의를 받아요.</span></li><li><b>문의사항·건의사항 언제든 반영!</b><span><a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">먼치킨 디스코드<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>에 남겨 주세요. 프로그램 오류는 자동으로 보고돼요.</span></li></ul></div>
 </div>
+</section>
+
+<section class="pay-section wrap" id="pay" aria-labelledby="pay-title">
+<div class="section-head"><h2 id="pay-title">이용권 신청</h2><p class="lead">종류와 기간을 고르면 금액이 바로 보여요. 먼치킨만은 여기서 바로 결제하고, 추억앨범은 주소와 앨범 이름을 정한 뒤 결제해요.</p></div>
+<div class="card pay-box" id="mk-pay"><p class="notice">유료화는 1월 1일부터이며, 이전에 결제한 내역은 자동으로 1월 1일부터 사용됩니다.</p><ul class="orders"><li><b>추억앨범만</b><span>한 달 3,000원 · 1년 30,000원</span></li><li><b>먼치킨만</b><span>한 달 3,000원 · 1년 30,000원</span></li><li><b>먼치킨 + 추억앨범</b><span>한 달 5,000원 · 1년 50,000원</span></li></ul><p class="hint">신청과 결제(카드·계좌이체)는 먼치킨 계정으로 로그인한 뒤에 해요.</p><a class="btn main" href="album/">로그인하고 신청하기</a></div>
 </section>
 
 <section class="section wrap" id="features" aria-labelledby="features-title"><div class="section-head"><h2 id="features-title">먼치킨이 방송에서 하는 일</h2><p class="lead">PC에 켜 두면 스푼 방송 채팅에 들어와 이런 일을 대신해요.</p></div>
@@ -241,4 +246,5 @@
   }));
 })();
 </script>
+<div id="toast" role="status" aria-live="polite" hidden></div>
 </body></html>

@@ -51,6 +51,10 @@ const WAIT_ALBUM = '운영자가 입금을 확인하면 앨범이 만들어져�
 const WAIT_PLAN = '운영자가 입금을 확인하면 이용 기간이 늘어나요(최대 24시간).';
 const SSO_FRESH_MS = 50 * 86400000;
 const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+// 먼치킨.com 첫 페이지에 붙을 때(2026-11-23 사용자 "메인 화면에서도 결제 창 볼 수 있게, 회원가입 로그인도"): #app 대신 머리줄(#mk-auth)과 이용권 칸(#mk-pay)만 그린다.
+//  같은 주소(먼치킨.com)라 로그인 표(localStorage mk_session)를 그대로 같이 쓴다. 신청 화면·내 정보는 album/ 로 넘어간다.
+const HOME = !document.getElementById('app') && Boolean(document.getElementById('mk-pay'));
+const ALBUM_URL = HOME ? 'album/' : './';
 
 // ---------- 저장 ----------
 const store = (pick) => ({
@@ -69,7 +73,7 @@ if (LOCAL && (new URLSearchParams(location.search).has('mock') || ss.get('mk_moc
 
 // ---------- 주소로 들어온 값 — 맨 먼저 떼어 두고 주소를 깨끗하게 ----------
 const RETURN = (() => {
-  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false, pay: null, plan: '' };
+  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false, pay: null, plan: '', months: 0 };
   try {
     const hp = new URLSearchParams(location.hash.slice(1));
     if (TICKET_RE.test(hp.get('bjlogin') || '')) out.ticket = hp.get('bjlogin');
@@ -77,6 +81,7 @@ const RETURN = (() => {
     if (/^[a-z]{1,10}$/.test(hp.get('bjsso') || '')) out.sso = hp.get('bjsso');
     if (['apply', 'me', 'find'].includes(hp.get('go'))) out.go = hp.get('go');
     if (['munchkin', 'album', 'bundle'].includes(hp.get('plan'))) out.plan = hp.get('plan');   // #go=apply&plan=munchkin — 3번 칸에서 미리 고를 이용권
+    if (['1', '12'].includes(hp.get('months'))) out.months = Number(hp.get('months'));          // &months=1|12 — 첫 화면에서 고른 기간
     const q = new URLSearchParams(location.search);
     if (APP_RE.test(q.get('app') || '')) out.app = q.get('app');
     out.kakao = Boolean(out.app) && q.get('kakao') === '1';
@@ -84,6 +89,10 @@ const RETURN = (() => {
     const pay = q.get('pay') || '';
     if (/^o[a-z0-9]{11}$/.test(pay) && (!q.get('paymentId') || q.get('paymentId') === 'mk-' + pay)) out.pay = { id: pay, code: q.get('code') || '', message: q.get('message') || '' };
   } catch { /* 이상한 주소 — 그냥 첫 화면 */ }
+  if (HOME) {
+    if (out.ticket || out.loginError || out.sso) { try { history.replaceState(null, '', location.pathname + location.search); } catch { /* 그대로 */ } }
+    return { ...out, go: '', app: '', kakao: false, pay: null, plan: '', months: 0 };
+  }
   try { history.replaceState(null, '', location.pathname + (out.app ? '?app=' + out.app : '')); } catch { /* 그대로 */ }
   return out;
 })();
@@ -108,6 +117,7 @@ const S = {
 // 결제하는 분(카드 결제창에 넘김) — 저장하지 않는다(localStorage·sessionStorage 에도 안 씀). 화면을 다시 그려도 쓴 글이 남게 메모리에만.
 const PAYER = { name: '', phone: '', email: '' };
 if (RETURN.plan) S.draft.plan = RETURN.plan;
+if (RETURN.months) S.draft.months = RETURN.months;
 if (!TICKET_RE.test(S.session)) { S.session = ''; S.me = null; }
 const saveDraft = () => ss.set('mk_draft', JSON.stringify(S.draft));
 
@@ -334,7 +344,7 @@ async function trySso() {
 // 로그인한 뒤 한 번: 서버에 쿠키를 맡겨 둔다(없으면 서버 주소에 잠깐 들렀다 돌아온다 — 50일에 한 번쯤).
 //  신청 중이거나 프로그램 로그인 중에는 하지 않는다(화면이 바뀌면 안 되니까).
 async function ssoRemember() {
-  if (!S.session || S.app || S.view === 'apply' || $('dialog[open]')) return;
+  if (HOME || !S.session || S.app || S.view === 'apply' || $('dialog[open]')) return;
   if (Date.now() - Number(ls.get('mk_sso_at') || 0) < SSO_FRESH_MS) return;
   try {
     const r = await fetch(API + 'sso-check?' + new URLSearchParams({ h: location.host, peek: '1' }), { credentials: 'include', cache: 'no-store' }).then((x) => x.json());
@@ -391,6 +401,11 @@ function continueNext() {
 }
 // 로그인이 필요한 화면은 로그인부터
 function go(view) {
+  if (HOME) {
+    if (view === 'apply' || view === 'me') location.href = ALBUM_URL + '#go=' + view + (view === 'apply' ? `&plan=${S.draft.plan}&months=${S.draft.months}` : '');
+    else paint();
+    return;
+  }
   // 먼치킨 안의 창은 로그인 화면(app) 밖으로 가지 않는다
   if (inApp()) { S.view = 'app'; paint(); return; }
   // 신청 화면은 로그인 전에도 연다(위 띠·이용권·가격 — 신청·결제는 로그인한 뒤, 2026-11-23)
@@ -612,6 +627,7 @@ const STEPS = {
 // ---------- 화면 ----------
 const app = $('#app');
 function paint() {
+  if (HOME) { paintHome(); return; }
   // 모양만: 어느 화면인지 CSS 가 알게 이름을 적어 둔다(view-home · view-apply · view-me · view-app)
   const name = S.view === 'app' ? 'app' : S.view === 'apply' || (S.view === 'me' && S.session) ? S.view : 'home';
   const main = h('main', { class: 'page view-' + name, id: 'main' }, viewBody());
@@ -630,7 +646,8 @@ function topbar() {
     h('span', { class: 'brand' }, h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', null, '먼치킨 ', h('em', { text: '로그인' })))));
   const right = S.session && S.me
     ? h('button', { class: 'me-btn', type: 'button', 'aria-label': '내 정보', onclick: () => go('me') }, icon('user'), h('span', { class: 'me-name', text: S.me.nickname || '내 정보' }))
-    : h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => openSheet('login') });
+    : [h('button', { class: 'btn line small hide-s', type: 'button', text: '회원가입', onclick: () => openSheet('signup') }),
+      h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => openSheet('login') })];
   // 이름표 두 칸(2026-11-16 UI 검토 S7): "먼치킨"은 먼치킨.com 첫 화면으로, "추억앨범"은 이 페이지 처음 화면으로. 맨 위에 [먼치킨 받기]도 둔다.
   return h('header', { class: 'top on-night' }, h('div', { class: 'wrap top-in' },
     h('div', { class: 'brand brand-split' },
@@ -725,6 +742,11 @@ function homeView() {
         h('div', { class: 'cta' }, ctaMain, ctaSub),
         h('p', { class: 'note', text: beta ? BETA_TEXT : '추억앨범만 써도 되고, 먼치킨과 함께 쓰면 더 편해요.' })),
       scene)),
+    // 이용권 칸(2026-11-23 사용자 "추억앨범 화면에서도 결제 창·회원가입·로그인"): 로그인 전에도 종류·기간·금액이 보인다
+    h('section', { class: 'section pay-home', id: 'pay', 'aria-labelledby': 'pay-title' }, h('div', { class: 'wrap pay-wrap' },
+      h('div', { class: 'head' }, h('p', { class: 'eyebrow', text: '이용권' }), h('h2', { id: 'pay-title', text: '이용권 신청' }),
+        h('p', { class: 'lead', text: '종류와 기간을 고르면 금액이 바로 보여요. 먼치킨만은 여기서 바로 결제해요.' })),
+      h('article', { class: 'card pay-box', id: 'mk-pay' }, payBox()))),
     h('section', { class: 'section' }, h('div', { class: 'wrap' },
       sectionHead('같이 쓰면 좋은 점', '먼치킨이랑 같이 쓰면 더 좋아요'),
       h('ul', { class: 'with3' }, points.map(([tone, [img, w, hh], t, d]) => h('li', null, arch(tone, art(img, w, hh), 'mini-arch'), h('h3', { text: t }), h('p', { text: d })))))),
@@ -1008,6 +1030,127 @@ function checkLabel(v, out) {
   }, 400);
 }
 
+// ---------- 이용권 종류·기간·금액·할인 · 결제 단추 (신청 화면과 첫 화면 이용권 칸이 같이 쓴다 — 2026-11-23) ----------
+// 할인 표시(사용자 "n% sale"): 서버 가격으로 계산하고 내림(부풀리지 않기). 0 이하이거나 값이 없으면 안 보임
+const pct = (whole, val) => (whole > 0 && val > 0 && val < whole ? Math.floor(((whole - val) * 100) / whole) : 0);
+const sale = (n) => (n > 0 ? [' ', h('span', { class: 'chip sale', text: `${n}% 할인` })] : null);   // 앞 빈칸: 화면 읽기가 "1년 16% 할인"으로 띄어 읽게
+const munchkinOpen = (info) => info.prices?.munchkin > 0 && Date.now() >= (Number(info.munchkinFrom) || 0);
+// 고를 수 있는 이용권과 금액. info = 서버 info(로그인) 또는 prices(로그인 전) · d = S.draft(고른 것 — 고를 수 없으면 plan·months 를 고친다)
+function planModel(info, d, { owner = false, albumOk = true, addons = {} } = {}) {
+  const P = info.prices || {}, Y = info.year || {};
+  const bundleSale = P.munchkin > 0 && P.album > 0 ? pct(P.munchkin + P.album, P.bundle) : 0;
+  // 고를 수 있는 이용권(이 차례로): 추억앨범만(앨범이 있으면 연장) · 먼치킨만 · 먼치킨 + 추억앨범 · (먼치킨을 쓰는 중이면) 먼치킨 끝나는 날에 맞춰 추억앨범 더하기 · (앨범 주인) 먼치킨 더하기
+  const plans = [['album', owner ? '추억앨범 연장' : '추억앨범만', albumOk && P.album > 0], ['munchkin', '먼치킨만', munchkinOpen(info)],
+    ['bundle', ['먼치킨 + 추억앨범', sale(bundleSale)], albumOk && P.bundle > 0]];
+  if (addons['add-album']) plans.push(['add-album', '먼치킨 끝나는 날에 맞춰 더하기', owner || albumOk]);
+  if (owner && addons['add-munchkin']) plans.push(['add-munchkin', '먼치킨 더하기(앨범 끝나는 날까지)', true]);
+  const any = plans.some(([, , ok]) => ok);
+  if (!plans.some(([k, , ok]) => k === d.plan && ok)) d.plan = (plans.find(([, , ok]) => ok) || plans[0])[0];
+  if (![1, 12].includes(d.months)) d.months = 1;
+  const quote = addons[d.plan] || null;
+  const amount = quote ? quote.amount : d.months === 12 ? (Y[d.plan] || 0) : (P[d.plan] || 0) * d.months;
+  const full = (P[d.plan] || 0) * 12;
+  // 1년 할인: 먼치킨 + 추억앨범은 따로 한 달씩 낼 때(먼치킨 + 추억앨범 월값 × 12)와 비교(2026-11-23 사용자 "30%할인으로"), 나머지는 그 종류 월값 × 12
+  const sepYear = d.plan === 'bundle' && P.munchkin > 0 && P.album > 0 ? (P.munchkin + P.album) * 12 : 0;
+  const yearSale = sepYear ? pct(sepYear, Y.bundle || 0) : pct(full, Y[d.plan] || 0);
+  return { plans, quote, amount, full, sepYear, yearSale, any };
+}
+// 종류·기간을 바꾸면 위 칸이 접히거나 펼쳐질 수 있으니, 그 칸(anchor)이 화면에서 제자리에 있게 하고 고른 단추에 초점을 돌려준다
+const pickKeep = (anchor, seg, apply) => (v) => {
+  const top = $(anchor)?.getBoundingClientRect().top;
+  apply(v); saveDraft(); paint();
+  const now = $(anchor);
+  if (now && top != null) window.scrollBy(0, now.getBoundingClientRect().top - top);
+  now?.querySelector(`[aria-label="${seg}"] [aria-pressed="true"]`)?.focus({ preventScroll: true });
+};
+// [종류] [기간] 고르기 + 금액 + 아낀 돈·도움말
+function planBlock(m, d, anchor) {
+  return [
+    segOf(m.plans, d.plan, pickKeep(anchor, '이용권 종류', (v) => { d.plan = v; }), '이용권 종류'),
+    m.quote ? h('p', { class: 'small', text: `${d.plan === 'add-album' ? '쓰고 있는 먼치킨' : '추억앨범'}이 끝나는 ${dayText(m.quote.until)}까지 함께 써요(${m.quote.days}일 · 한 달 ${won(m.quote.perMonth)} 기준).` })
+      : segOf([[1, '1개월'], [12, ['1년', sale(m.yearSale)]]], d.months, pickKeep(anchor, '기간', (v) => { d.months = v; }), '기간'),
+    h('p', { class: 'amount', text: won(m.amount) }),
+    // 아낀 돈: 1년 할인 표시와 같은 기준 — 먼치킨 + 추억앨범은 따로 한 달씩 낼 때((먼치킨 + 추억앨범 월값) × 12)와 비교(2026-11-23)
+    !m.quote && d.months === 12 && m.sepYear > m.amount ? h('p', { class: 'small good', text: `먼치킨·추억앨범을 따로 한 달씩 내는 것보다 ${won(m.sepYear - m.amount)} 아껴요 (한 달 ${won(Math.round(m.amount / 12))}꼴)` })
+      : !m.quote && d.months === 12 && !m.sepYear && m.full > m.amount ? h('p', { class: 'small good', text: `한 달씩보다 ${won(m.full - m.amount)} 아껴요 (한 달 ${won(Math.round(m.amount / 12))}꼴)` }) : null,
+    d.plan === 'bundle' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램) 이용권도 같은 기간만큼 함께 늘어나요.' }) : null,
+    d.plan === 'munchkin' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램)만 쓸 때예요. 추억앨범은 만들지 않아요.' }) : null,
+    m.amount > 0 ? null : h('p', { class: 'hint', text: '이 이용권은 아직 준비 중이에요.' })
+  ];
+}
+// 결제 단추 묶음: [카드로 결제](card.show — 결제창은 canPay 일 때만, 아니면 꺼 두고 CARD_CLOSED) + 계좌이체(card.show 가 꺼져 있으면 예전 "신청하기" 하나)
+//  body = 서버에 보낼 신청 내용 · ready = 지금 신청할 수 있나 · key = 결제하는 분 칸 이름을 나누는 글자
+function payActions({ amount, body, ready, notReady, wantAlbum, key }) {
+  const card = cardOn(), canPay = cardCanPay();
+  const st = statusEl();
+  const bankLead = `신청하면 계좌와 입금자명이 나와요. 이체한 뒤 "입금했어요"를 누르면 돼요. ${wantAlbum ? WAIT_ALBUM : WAIT_PLAN}`;
+  orderReady = ready; payBtnRef = null;
+  // 카드로 결제할 수 있으면 계좌이체는 보조 단추. 카드 단추가 꺼져 있으면(심사 중) 계좌이체가 주 단추.
+  const btn = h('button', { class: canPay ? 'btn line block' : 'btn main block big', type: 'button', text: canPay ? '계좌이체로 신청' : card ? `${won(amount)} 계좌이체로 신청` : `${won(amount)} 신청하기`, disabled: true, onclick: () => busy(btn, st, async () => {
+    if (!ready()) throw notReady();
+    const r = await billCall('order', body());
+    toast('신청했어요. 계좌로 이체해 주세요');
+    S.draft = { label: '', name: '', plan: 'album', months: 1, album: '' }; saveDraft(); S.labelOk = null;
+    // 먼치킨.com 첫 페이지에서 신청했으면 계좌·입금자명이 보이는 신청 화면으로
+    if (HOME) { go('apply'); return; }
+    await loadInfo(); S.view = 'apply'; paint();
+    setTimeout(() => $('#order-' + r.order.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }) });
+  orderBtnRef = btn;
+  if (!card) return [h('p', { class: 'lead-s', text: bankLead }), st, btn];
+  const cst = statusEl();
+  const payer = canPay ? payerBox(key, cst) : null;
+  const payBtn = h('button', { class: canPay ? 'btn main block big' : 'btn line block', type: canPay ? 'submit' : 'button', text: `${won(amount)} 카드로 결제`, disabled: true, 'aria-describedby': canPay ? null : 'card-closed-' + key });
+  if (canPay) payBtnRef = payBtn;
+  return [
+    canPay ? [
+      h('p', { class: 'lead-s', text: wantAlbum ? '카드로 결제하면 바로 앨범이 만들어져요.' : '카드로 결제하면 바로 이용 기간이 늘어나요.' }),
+      testBadge(),
+      h('form', { class: 'stack', noValidate: true, onsubmit: (e) => {
+        e.preventDefault();
+        busy(payBtn, cst, async () => { if (!ready()) throw notReady(); await payWithCard(body(), cst, payer); });
+      } }, payer.el, cst, payBtn)
+    ] : [payBtn, h('p', { class: 'hint', id: 'card-closed-' + key, text: CARD_CLOSED })],
+    orLine('또는 계좌이체'),
+    canPay ? null : h('p', { class: 'lead-s', text: bankLead }),
+    st, btn,
+    canPay ? h('p', { class: 'hint', text: `계좌이체는 ${bankLead}` }) : null
+  ];
+}
+// 첫 화면 이용권 칸(2026-11-23 사용자 "메인 화면에서도 결제 창 볼 수 있게, 회원가입 로그인도 — 추억앨범 화면에서도"):
+//  먼치킨.com 첫 페이지(#mk-pay)와 추억앨범 첫 화면이 같이 쓴다. 로그인 전에도 종류·기간·금액이 보이고, 신청·결제는 로그인한 뒤.
+//  먼치킨만은 여기서 바로 결제, 추억앨범이 들어가면 주소·앨범 이름을 정하러 신청 화면으로(고른 것 그대로).
+function payBox() {
+  const src = S.session ? S.info : S.pub;
+  if (S.session) ensureInfo(); else ensurePub();
+  const out = [paidBanner()];
+  if (S.payDone) out.push(payResult());
+  const auth = (main) => h('div', { class: 'row-btns' },
+    h('button', { class: 'btn line', type: 'button', text: '회원가입', onclick: () => openSheet('signup') }),
+    h('button', { class: 'btn main', type: 'button', text: main, onclick: () => openSheet('login') }));
+  if (!src) return [...out, h('p', { class: 'muted', text: S.session && S.infoError ? S.infoError : '이용권을 불러오는 중이에요…' })];
+  if (!src.prices) return [...out, h('p', { class: 'lead-s', text: '로그인하면 이용권과 가격을 보고 바로 신청할 수 있어요.' }), auth('로그인')];
+  if (src.open === false) return [...out, h('p', { class: 'notice', text: '신청을 준비하고 있어요. 조금 뒤에 다시 와 주세요.' })];
+  const d = S.draft;
+  const m = planModel(src, d, { albumOk: src.albumOpen !== false });
+  if (!m.any) return [...out, h('p', { class: 'notice', text: '이용권을 준비하고 있어요.' })];
+  out.push(planBlock(m, d, '#mk-pay'));
+  if (!S.session) {
+    const c = src.card;
+    return [...out, c?.show ? h('p', { class: 'hint', text: c.mode === 'live' ? '결제는 카드나 계좌이체로 해요.' : CARD_CLOSED }) : null,
+      h('p', { class: 'hint', text: '신청과 결제는 먼치킨 계정으로 로그인한 뒤에 해요.' }), auth('로그인하고 신청하기')];
+  }
+  const waiting = (S.info.orders || []).filter((o) => o.state === 'pending').length;
+  if (waiting) out.push(h('p', { class: 'notice' }, h('span', { text: `확인을 기다리는 신청이 ${waiting}개 있어요.` }), linkBtn('신청 화면에서 보기', () => go('apply'))));
+  if (S.payNote) out.push(h('p', { class: 'status' + (S.payNote.bad ? ' bad' : ''), role: 'status', text: S.payNote.text }));
+  if (d.plan !== 'munchkin') return [...out, h('p', { class: 'hint', text: '추억앨범은 주소 이름과 앨범 이름을 정한 뒤 결제해요.' }),
+    h('button', { class: 'btn main block big', type: 'button', text: '주소·앨범 이름 정하고 결제하기', onclick: () => go('apply') })];
+  if (!S.me?.nickname) return [...out, h('p', { class: 'lead-s', text: '입금자명에 닉네임이 쓰여요. 닉네임을 먼저 정해 주세요.' }),
+    h('button', { class: 'btn main block', type: 'button', text: '닉네임 정하기', onclick: () => openSheet('nickname', {}) })];
+  setTimeout(refreshOrderBtn, 0);
+  return [...out, payActions({ amount: m.amount, body: () => ({ plan: 'munchkin', months: d.months }), ready: () => m.amount > 0, notReady: () => Error('신청 내용을 다시 봐 주세요.'), wantAlbum: false, key: 'h' })];
+}
+
 function applyView() {
   const info = S.info;
   const me = S.me || {};
@@ -1037,7 +1180,7 @@ function applyView() {
   const albumClosed = !owner && info.albumOpen !== true;
   const albumBlocked = !owner && Boolean(pendingNew);
   const albumOk = !albumClosed && !albumBlocked;
-  const munchkinOk = info.prices?.munchkin > 0 && Date.now() >= (Number(info.munchkinFrom) || 0);
+  const munchkinOk = munchkinOpen(info);
   if (albumClosed) {
     parts[1] = munchkinOk ? sectionHead('이용권 신청', '먼치킨 이용권 신청하기') : sectionHead('추억앨범 신청', '아직 신청을 받지 않아요');
     parts.push(betaBox());
@@ -1052,35 +1195,18 @@ function applyView() {
   }
 
   const d = S.draft;
-  const P = info.prices || {}, Y = info.year || {};
-  const price = (plan, m) => (m === 12 ? Y[plan] : (P[plan] || 0) * m);
   const addons = info.addons || {};
-  // 할인 표시(2026-11-23 사용자 "n% sale"): 서버 가격으로 계산하고 내림(부풀리지 않기). 0 이하이거나 값이 없으면 안 보임
-  const pct = (whole, val) => (whole > 0 && val > 0 && val < whole ? Math.floor(((whole - val) * 100) / whole) : 0);
-  const sale = (n) => (n > 0 ? [' ', h('span', { class: 'chip sale', text: `${n}% 할인` })] : null);   // 앞 빈칸: 화면 읽기가 "1년 16% 할인"으로 띄어 읽게
-  const bundleSale = P.munchkin > 0 && P.album > 0 ? pct(P.munchkin + P.album, P.bundle) : 0;
-  // 고를 수 있는 이용권(이 차례로): 추억앨범만(앨범이 있으면 연장) · 먼치킨만 · 먼치킨 + 추억앨범 · (먼치킨을 쓰는 중이면) 먼치킨 끝나는 날에 맞춰 추억앨범 더하기 · (앨범 주인) 먼치킨 더하기
-  const plans = [['album', owner ? '추억앨범 연장' : '추억앨범만', albumOk && P.album > 0], ['munchkin', '먼치킨만', munchkinOk],
-    ['bundle', ['먼치킨 + 추억앨범', sale(bundleSale)], albumOk && P.bundle > 0]];
-  if (addons['add-album']) plans.push(['add-album', '먼치킨 끝나는 날에 맞춰 더하기', owner || albumOk]);
-  if (owner && addons['add-munchkin']) plans.push(['add-munchkin', '먼치킨 더하기(앨범 끝나는 날까지)', true]);
-  if (!plans.some(([k, , ok]) => k === d.plan && ok)) d.plan = (plans.find(([, , ok]) => ok) || plans[0])[0];
-  if (![1, 12].includes(d.months)) d.months = 1;
-  const quote = addons[d.plan] || null;
-  const amount = quote ? quote.amount : price(d.plan, d.months);
-  const full = (P[d.plan] || 0) * 12;
-  // 1년 할인: 먼치킨 + 추억앨범은 따로 한 달씩 낼 때(먼치킨 + 추억앨범 월값 × 12)와 비교(2026-11-23 사용자 "30%할인으로"), 나머지는 그 종류 월값 × 12
-  const sepYear = d.plan === 'bundle' && P.munchkin > 0 && P.album > 0 ? (P.munchkin + P.album) * 12 : 0;   // 먼치킨 + 추억앨범을 따로 1년 내면
-  const yearSale = sepYear ? pct(sepYear, Y.bundle || 0) : pct(full, Y[d.plan] || 0);
+  // 종류·기간·금액·할인은 첫 화면 이용권 칸과 같은 planModel
+  const m = planModel(info, d, { owner, albumOk, addons });
+  const { quote, amount } = m;
   const album = owner ? (albums.find((a) => a.id === d.album) || albums[0]) : null;
   // 먼치킨만(먼치킨 더하기)은 앨범이 필요 없다 — 주소 이름·앨범 이름 칸을 접는다
   const wantAlbum = !owner && d.plan !== 'munchkin' && d.plan !== 'add-munchkin';
 
-  const st = statusEl();
   const nameIn = input('a-name', { maxlength: '40', value: d.name, placeholder: `${me.nickname} 추억앨범` });
   nameIn.addEventListener('input', () => { d.name = nameIn.value; saveDraft(); refreshOrderBtn(); });
   const nameOk = () => { const n = [...(d.name.trim() || `${me.nickname} 추억앨범`)].length; return n >= 2 && n <= 40; };
-  orderReady = () => amount > 0 && (!wantAlbum || (S.labelOk && S.labelOk.label === d.label && nameOk()));
+  const ready = () => amount > 0 && (!wantAlbum || (S.labelOk && S.labelOk.label === d.label && nameOk()));
   const orderBody = () => {
     const body = { plan: d.plan, ...(quote ? {} : { months: d.months }) };
     if (owner && album && d.plan !== 'munchkin') body.album = album.id;
@@ -1088,16 +1214,6 @@ function applyView() {
     return body;
   };
   const notReady = () => Error(wantAlbum && !S.labelOk ? '주소 이름을 먼저 정해 주세요.' : '신청 내용을 다시 봐 주세요.');
-  // 카드로 결제할 수 있으면 계좌이체는 보조 단추. 카드 단추가 꺼져 있으면(심사 중) 계좌이체가 주 단추.
-  const btn = h('button', { class: canPay ? 'btn line block' : 'btn main block big', type: 'button', text: canPay ? '계좌이체로 신청' : card ? `${won(amount)} 계좌이체로 신청` : `${won(amount)} 신청하기`, disabled: true, onclick: () => busy(btn, st, async () => {
-    if (!orderReady()) throw notReady();
-    const r = await billCall('order', orderBody());
-    toast('신청했어요. 계좌로 이체해 주세요');
-    S.draft = { label: '', name: '', plan: 'album', months: 1, album: '' }; saveDraft(); S.labelOk = null;
-    await loadInfo(); paint();
-    setTimeout(() => $('#order-' + r.order.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-  }) });
-  orderBtnRef = btn;
 
   const cards = [];
   if (owner) {
@@ -1127,48 +1243,11 @@ function applyView() {
         field('a-name', '앨범 이름', nameIn, `사이트 맨 위와 링크 미리 보기에 보여요. 비우면 "${me.nickname} 추억앨범"`)));
     if (d.label) setTimeout(() => checkLabel(d.label, out), 0);
   }
-  // 3. 이용권·기간 — 종류를 바꾸면 위 칸이 접히거나 펼쳐지니, 이 칸이 화면에서 제자리에 있게 하고 고른 단추에 초점을 돌려준다
-  const pick = (seg, apply) => (v) => {
-    const top = $('#plan-card')?.getBoundingClientRect().top;
-    apply(v); saveDraft(); paint();
-    const now = $('#plan-card');
-    if (now && top != null) window.scrollBy(0, now.getBoundingClientRect().top - top);
-    now?.querySelector(`[aria-label="${seg}"] [aria-pressed="true"]`)?.focus({ preventScroll: true });
-  };
-  cards.push(h('article', { class: 'card', id: 'plan-card' }, h('h3', { text: owner ? '이용권·기간' : '3. 이용권·기간' }),
-    segOf(plans, d.plan, pick('이용권 종류', (v) => { d.plan = v; }), '이용권 종류'),
-    quote ? h('p', { class: 'small', text: `${d.plan === 'add-album' ? '쓰고 있는 먼치킨' : '추억앨범'}이 끝나는 ${dayText(quote.until)}까지 함께 써요(${quote.days}일 · 한 달 ${won(quote.perMonth)} 기준).` })
-      : segOf([[1, '1개월'], [12, ['1년', sale(yearSale)]]], d.months, pick('기간', (v) => { d.months = v; }), '기간'),
-    h('p', { class: 'amount', text: won(amount) }),
-    // 아낀 돈: 1년 할인 표시와 같은 기준 — 먼치킨 + 추억앨범은 따로 한 달씩 낼 때((먼치킨 + 추억앨범 월값) × 12)와 비교(2026-11-23)
-    !quote && d.months === 12 && sepYear > amount ? h('p', { class: 'small good', text: `먼치킨·추억앨범을 따로 한 달씩 내는 것보다 ${won(sepYear - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` })
-      : !quote && d.months === 12 && !sepYear && full > amount ? h('p', { class: 'small good', text: `한 달씩보다 ${won(full - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` }) : null,
-    d.plan === 'bundle' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램) 이용권도 같은 기간만큼 함께 늘어나요.' }) : null,
-    d.plan === 'munchkin' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램)만 쓸 때예요. 추억앨범은 만들지 않아요.' }) : null,
-    amount > 0 ? null : h('p', { class: 'hint', text: '이 이용권은 아직 준비 중이에요.' })));
+  // 3. 이용권·기간
+  cards.push(h('article', { class: 'card', id: 'plan-card' }, h('h3', { text: owner ? '이용권·기간' : '3. 이용권·기간' }), planBlock(m, d, '#plan-card')));
   // 4. 결제(card.show — 모두에게 [카드로 결제], 결제창은 canPay 일 때만) · 4. 신청하고 이체하기(card.show 가 꺼져 있으면 예전 그대로)
-  const bankLead = `신청하면 계좌와 입금자명이 나와요. 이체한 뒤 "입금했어요"를 누르면 돼요. ${wantAlbum ? WAIT_ALBUM : WAIT_PLAN}`;
-  if (card) {
-    const cst = statusEl();
-    const payer = canPay ? payerBox('a', cst) : null;
-    const payBtn = h('button', { class: canPay ? 'btn main block big' : 'btn line block', type: canPay ? 'submit' : 'button', text: `${won(amount)} 카드로 결제`, disabled: true, 'aria-describedby': canPay ? null : 'card-closed-a' });
-    if (canPay) payBtnRef = payBtn;
-    cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '결제' : '4. 결제' }),
-      canPay ? [
-        h('p', { class: 'lead-s', text: wantAlbum ? '카드로 결제하면 바로 앨범이 만들어져요.' : '카드로 결제하면 바로 이용 기간이 늘어나요.' }),
-        testBadge(),
-        h('form', { class: 'stack', noValidate: true, onsubmit: (e) => {
-          e.preventDefault();
-          busy(payBtn, cst, async () => { if (!orderReady()) throw notReady(); await payWithCard(orderBody(), cst, payer); });
-        } }, payer.el, cst, payBtn)
-      ] : [payBtn, h('p', { class: 'hint', id: 'card-closed-a', text: CARD_CLOSED })],
-      orLine('또는 계좌이체'),
-      canPay ? null : h('p', { class: 'lead-s', text: bankLead }),
-      st, btn,
-      canPay ? h('p', { class: 'hint', text: `계좌이체는 ${bankLead}` }) : null));
-  } else cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '신청' : '4. 신청하고 이체하기' }),
-    h('p', { class: 'lead-s', text: `신청하면 계좌와 입금자명이 나와요. 이체한 뒤 "입금했어요"를 누르면 돼요. ${wantAlbum ? WAIT_ALBUM : WAIT_PLAN}` }),
-    st, btn));
+  cards.push(h('article', { class: 'card' }, h('h3', { text: card ? (owner ? '결제' : '4. 결제') : (owner ? '신청' : '4. 신청하고 이체하기') }),
+    payActions({ amount, body: orderBody, ready, notReady, wantAlbum, key: 'a' })));
   stepperDone = () => [Boolean(S.labelOk), Boolean(S.labelOk) && nameOk(), Boolean(S.labelOk) && amount > 0, false];
   stepperRef = owner || !wantAlbum ? null : stepper(stepperDone());
   parts.push(stepperRef, ...cards);
@@ -1396,4 +1475,32 @@ async function start() {
   }
   ssoRemember();
 }
-start();
+// ---------- 먼치킨.com 첫 페이지 ----------
+// 머리줄: 로그인 전 [로그인] [회원가입] · 로그인하면 [내 정보](album/ 내 정보)
+function homeAuth() {
+  if (S.session && S.me) return h('a', { class: 'btn line sm', href: ALBUM_URL + '#go=me' }, '내 정보');
+  return [h('button', { class: 'btn line sm', type: 'button', text: '로그인', onclick: () => openSheet('login') }),
+    h('button', { class: 'btn line sm join', type: 'button', text: '회원가입', onclick: () => openSheet('signup') })];
+}
+function paintHome() {
+  $('#mk-auth')?.replaceChildren(...[homeAuth()].flat());
+  $('#mk-pay')?.replaceChildren(...payBox().flat(Infinity).filter((x) => x != null && x !== false));
+}
+async function startHome() {
+  paint();
+  const cfg = loadMembersConfig();
+  // 카카오·다른 앨범에서 로그인하고 돌아옴(#bjlogin)
+  if (RETURN.ticket) {
+    try { const r = await memberCall('ticket', { ticket: RETURN.ticket }); setSession(r.session, r.member); ls.set('mk_sso_at', String(Date.now())); }
+    catch (e) { toast(e.message, true); }
+  } else if (S.session) await loadMe();
+  await cfg;
+  paint();
+  if (RETURN.loginError) {
+    if (RETURN.loginError === 'age14') { if (!S.session) openSheet('signup', { kakaoAge: true }); return; }
+    toast(KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail, RETURN.loginError !== 'cancel');
+    return;
+  }
+  if (RETURN.ticket && S.session) afterLogin('로그인했어요');
+}
+if (HOME) startHome(); else start();

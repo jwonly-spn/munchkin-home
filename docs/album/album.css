@@ -1,19 +1,8 @@
 /* 먼치킨.com/album — 첫 페이지와 같은 "밤 11시 라디오". 색·글꼴·단추·밤 무대·아치 창·바닥 색은 ../site.css 것을 같이 써요.
    여기는 추억앨범 신청 화면만의 것: 맨 위 줄 · 처음 화면 · 신청 단계 · 입금 카드 · 내 정보 · 로그인 창 · 먼치킨 안 로그인 창. 휴대폰 먼저. */
+/* (2026-11-23) 로그인 창·카드·칸·단추·결제 묶음 같은 공용 모양은 ../pay.css 로 옮겼어요(먼치킨.com 첫 페이지도 같이 써요). */
 .boot{padding:64px 16px;text-align:center;color:var(--ink-2)}
-.hidden{position:absolute;width:1px;height:1px;border:0;padding:0;opacity:0;pointer-events:none}
-.muted{color:var(--ink-2)}
-.small{font-size:15px}
-.center{text-align:center}
-.good{color:var(--ok)}
-.bad{color:var(--bad)}
-.mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .ico{stroke-width:2.2}
-.btn.big{min-height:58px;font-size:18px}
-.btn.block{display:flex;width:100%}
-.link-btn{display:inline-flex;align-items:center;min-height:44px;background:none;border:0;padding:0 6px;color:var(--link);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
-.icon-btn{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.13);color:inherit;display:grid;place-items:center;cursor:pointer;flex:none}
-.icon-gap{width:44px;flex:none}
 
 /* 맨 위 줄: 밤 남색 띠 */
 .top{position:sticky;top:0;z-index:5;background:var(--night);padding-top:env(safe-area-inset-top,0px)}
@@ -36,11 +25,8 @@
 .head{display:grid;gap:12px;margin-bottom:40px;justify-items:start}
 .eyebrow{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--ink-2)}
 .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--coral);flex:none}
-.lead-s{color:var(--ink-2);font-size:16px}
 .note{margin-top:16px;font-size:15px;color:var(--ink-2)}
-.hint{font-size:15px;color:var(--ink-2)}
 .sub{font:700 20px/1.3 var(--display);letter-spacing:var(--tight)}
-.stack{display:grid;gap:12px}
 
 /* 처음 화면: 밤 첫 화면 */
 .mine-strip{background:var(--night);padding:8px 0 4px}
@@ -68,6 +54,12 @@
 .holds .ico{color:var(--ok);stroke-width:3}
 .view-home .start-section{margin-top:104px}
 .faq .wrap{width:min(100% - 32px,820px)}
+/* 첫 화면 이용권 칸(2026-11-23) */
+.pay-home{padding-bottom:0}
+.pay-home .pay-wrap{width:min(100% - 32px,720px)}
+/* 스크립트가 돌기 전 처음 HTML 의 이용권·가격 글(자동 점검·스크립트 꺼진 브라우저용 — 화면이 그려지면 바뀜) */
+.boot-prices{width:min(100% - 32px,560px);margin:0 auto 64px;display:grid;gap:10px}
+.boot-prices li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 
 /* 좁은 화면들(신청 · 내 정보 · 프로그램 로그인): 밤 머리판 + 흰 카드 */
 .sect.narrow{width:min(100% - 32px,680px);margin-inline:auto;display:grid;gap:16px;padding:28px 0 80px}
@@ -82,19 +74,6 @@
 .view-me .sect.narrow>.head h2,.app-card h2.dyn{font-family:var(--body);font-weight:800;letter-spacing:-.02em}
 
 /* 카드 */
-.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:24px;display:grid;gap:12px;box-shadow:var(--lift)}
-.card h3{font-size:21px}
-.chip{display:inline-flex;align-items:center;gap:4px;font-size:15px;font-weight:700;line-height:1.3;padding:5px 11px;border-radius:999px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
-.chip.bad{background:var(--bad-soft);color:var(--bad)}
-.chip.wait{background:var(--warn-soft);color:var(--warn)}
-.chip.ok{background:var(--ok-soft);color:var(--ok)}
-.notice{background:var(--sky);color:var(--sky-ink);border-radius:16px;padding:14px 16px;font-size:16px;display:grid;gap:8px}
-.notice.warn{background:var(--warn-soft);color:var(--warn)}
-.notice.bad{background:var(--bad-soft);color:var(--bad)}
-.status{min-height:1.4em;font-size:16px;color:var(--ink-2)}
-.status:empty{min-height:0}
-.status.bad{color:var(--bad);font-weight:600}
-.status.good{color:var(--ok);font-weight:700}
 .beta-box{background:var(--t-butter);border:0;box-shadow:none;padding:28px;gap:14px;--ink-2:#55482A}
 .beta-box .btn{justify-self:start}
 
@@ -114,44 +93,12 @@
 .stepper .done b{background:var(--coral);color:#1A2040}
 .stepper .done span{color:var(--ink);font-weight:700}
 .stepper .ico{width:18px;height:18px;stroke-width:3}
-.field{display:grid;gap:6px}
-.field label{font-weight:700;font-size:15px}
-.input{width:100%;min-height:52px;padding:0 14px;border-radius:14px;border:1.5px solid var(--field-line);background:var(--bg);color:var(--ink);font-size:17px}
-.input::placeholder{color:var(--ink-2);opacity:1}
-.input:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 .addr{display:flex;align-items:center;gap:2px;background:var(--bg);border:1.5px solid var(--field-line);border-radius:16px;padding:0 14px;min-height:60px}
 .addr:focus-within{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 .addr-pre,.addr-suf{color:var(--ink-2);font-weight:600;white-space:nowrap}
 .addr .input{border:0;background:transparent;min-height:56px;padding:0 4px;font-size:20px;font-weight:700;min-width:0;flex:1;text-align:right}
 .addr .input:focus{outline:none}
-.seg{display:flex;flex-wrap:wrap;gap:8px}
-.seg button{flex:1 1 auto;min-height:48px;padding:6px 16px;border-radius:14px;border:1.5px solid var(--field-line);background:var(--card);color:var(--ink);font-weight:700;font-size:16px;cursor:pointer}
-.seg button.on{border-color:var(--ink);background:var(--ink);color:var(--bg)}
-.seg button:disabled{opacity:.4;cursor:not-allowed}
-/* 할인 표시(2026-11-23 — 위 .chip 그대로, 단추 안에서만 작게) */
-.seg .chip{margin-left:2px;font-size:13px;padding:2px 8px;vertical-align:1px}
-.amount{font:800 36px/1.2 var(--body);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.small-amount{font-size:28px}
-/* 카드 결제: 결제하는 분 칸 묶음(2026-11-23 — 칸 모양은 위 .field·.input 그대로) */
-.payer{border:0;margin:0;padding:0;min-width:0;display:grid;gap:12px}
-.payer legend{padding:0;margin-bottom:6px;font-weight:700;font-size:16px}
 
-/* 입금 기다림 카드 */
-.pay{border:2px solid var(--coral)}
-.pay.sent{border-color:var(--ok)}
-.pay-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.pay-title{font-weight:700;font-size:18px}
-.pay-album{display:flex;align-items:center;gap:8px;background:var(--sky);color:var(--sky-ink);border-radius:14px;padding:10px 14px;font-size:16px}
-.kv{margin:0;display:grid}
-.kv-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:4px 0;border-bottom:1px solid var(--line)}
-.kv-row:last-child{border-bottom:0}
-.kv-row dt{width:76px;flex:none;color:var(--ink-2);font-size:15px}
-.kv-row dd{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;flex:1}
-.copy-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-left:auto;border:0;border-radius:999px;background:var(--chip);color:var(--ink);font-weight:700;font-size:15px;padding:0 14px;cursor:pointer}
-.copy-chip .ico{width:16px;height:16px}
-.row-btns{display:grid;grid-template-columns:auto 1fr;gap:8px}
-.row-btns:has(> :only-child){grid-template-columns:1fr}
-.wrap-btns{display:flex;flex-wrap:wrap}
 .more{gap:10px}
 .more summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;cursor:pointer;font-weight:700;color:var(--ink-2);list-style:none}
 .more summary::-webkit-details-marker{display:none}
@@ -164,13 +111,6 @@
 .my-album-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .addr-line{color:var(--ink-2);font-size:15px}
 .my-album .row-btns{display:flex;flex-wrap:wrap}
-.orders{display:grid}
-.orders li{display:flex;justify-content:space-between;align-items:center;gap:14px;min-height:52px;padding:6px 0;border-bottom:1px solid var(--line);font-size:16px}
-.orders li:last-child{border-bottom:0}
-.orders small{color:var(--ink-2);font-size:15px;white-space:nowrap}
-.pay-album b,.addr-line{white-space:nowrap}
-.orders li>:first-child{min-width:0}
-.orders li>:last-child{flex:none;white-space:nowrap}
 
 /* 프로그램 로그인 승인 · 먼치킨 안 로그인 창 */
 .view-app .sect.narrow{width:min(100% - 32px,480px);padding-top:40px}
@@ -194,35 +134,6 @@ html.in-app .top{position:static;background:transparent}
 html.in-app .view-app .sect.narrow{padding:8px 0 24px}
 html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
 
-/* 창(로그인·가입·찾기·닉네임·비밀번호) */
-.sheet{border:0;padding:0;background:transparent;color:var(--ink);max-width:min(480px,calc(100vw - 24px));width:100%;max-height:94dvh;overflow:visible}
-.sheet::backdrop{background:rgba(15,19,40,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.sheet-in{background:var(--card);border-radius:28px;box-shadow:0 30px 80px -30px rgba(0,0,0,.7);max-height:94dvh;display:flex;flex-direction:column;overflow:hidden}
-.sheet-head{display:flex;align-items:center;gap:8px;padding:12px;background:linear-gradient(160deg,#171C3A,#2C3670);color:#F6F1E7;--focus:#FFD98A}
-.sheet-head h2{flex:1;text-align:center;font-size:21px}
-.sheet-body{padding:20px 28px 28px;overflow:auto;display:grid;gap:16px}
-.sheet-body::before{content:"";justify-self:center;width:84px;height:90px;border-radius:42px 42px 18px 18px;background:url("../art/aegyo-1.webp") center 70%/90% auto no-repeat,var(--t-blush)}
-.sheet-body>.lead-s{text-align:center}
-.sheet .stack{gap:14px}
-.kakao-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;border-radius:14px;background:#FEE500;color:rgba(0,0,0,.85);font-weight:700;font-size:17px;cursor:pointer}
-.kakao-btn.big{min-height:58px;font-size:18px}
-.kakao-sym{width:18px;height:18px}
-.or{display:flex;align-items:center;gap:10px;color:var(--ink-2);font-size:15px}
-.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
-.links{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
-.sep{width:1px;height:14px;background:var(--line)}
-.sso-link{justify-self:center;font-size:16px}
-.agree{display:grid;gap:6px;background:var(--soft);border-radius:16px;padding:10px 14px}
-.agree-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.check{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-size:16px}
-.agree-row .check{flex:1 1 auto;min-width:0}
-.check input{width:24px;height:24px;accent-color:var(--accent);flex:none}
-.check em{font-style:normal;color:var(--link);font-weight:700}
-.agree-all{font-weight:700;border-bottom:1px solid var(--line)}
-.agree-view{flex:none;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px;padding:0 6px;font-size:15px;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px}
-.found-id{display:grid;gap:2px;background:var(--soft);border-radius:14px;padding:14px;text-align:center}
-.found-id span{color:var(--ink-2);font-size:15px}
-.found-id strong{font-size:22px;font-family:var(--mono)}
 
 /* 바닥: 첫 페이지와 같은 깊은 남색 */
 .foot{background:var(--foot-bg);color:var(--foot-ink);padding:40px 0 calc(40px + env(safe-area-inset-bottom,0px));font-size:15px;--focus:#FFD98A}
@@ -234,14 +145,9 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
 .foot-biz summary{color:var(--foot-ink)}
 .foot-biz p{display:block}
 
-/* 알림 */
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:#171C3A;color:#F6F1E7;padding:13px 20px;border-radius:16px;font-weight:600;font-size:16px;max-width:calc(100vw - 32px);box-shadow:0 0 0 1px rgba(246,241,231,.22),0 14px 34px rgba(0,0,0,.4);text-align:center}
-#toast.bad{background:#B42318;color:#FFF}
 
 @media (prefers-color-scheme:dark){
   .beta-box{--ink-2:#D5D8EC}
-  .sheet-in{box-shadow:0 0 0 1px var(--line),0 30px 80px -30px #000}
-  .sheet-body::before{background-color:#2C3670}
 }
 @media (max-width:860px){
   .top-in{min-height:60px}
@@ -262,7 +168,6 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
   .sect.narrow{padding:16px 0 56px;gap:14px}
   .sect.narrow>.head{min-height:132px;padding:22px 108px 22px 20px;border-radius:24px}
   .sect.narrow>.head::after{right:14px;width:84px;height:94px;border-radius:42px 42px 16px 16px}
-  .card{padding:20px 18px;border-radius:20px}
   .beta-box{padding:22px 18px}
   .beta-box .btn{width:100%;white-space:normal;text-align:center;line-height:1.3;padding-block:8px}
   .stepper{padding:16px 2px 14px}
@@ -271,12 +176,7 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
   .album-mini .chip{margin-left:56px}
   .addr-pre{display:none}
   .addr .input{font-size:18px}
-  .row-btns .btn{white-space:normal}
-  .sheet{max-width:calc(100vw - 16px)}
-  .sheet-in{border-radius:24px}
-  .sheet-body{padding:18px 20px 22px;gap:14px}
-  .sheet-body::before{width:72px;height:78px;border-radius:36px 36px 16px 16px}
-  .app-card{padding:0 18px 24px}
+  .app-card{padding:0 18px 24px;border-radius:20px}
   .app-card::before{margin:0 -18px;height:128px}
   .app-card h2{font-size:23px}
 }
