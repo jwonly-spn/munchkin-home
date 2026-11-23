@@ -325,6 +325,50 @@ h2{font-size:clamp(28px,3.8vw,44px);line-height:1.25}
 @media (prefers-reduced-motion:no-preference){.shot .hit{animation:ihPulse 1.6s ease-in-out infinite}}
 @keyframes ihPulse{50%{box-shadow:0 0 0 3px var(--shot-win),0 0 0 9px var(--shot-hit-glow)}}
 
+/* 먼치킨을 사용해야 하는 이유(2026-11-23 사용자 글): 첫 화면 바로 아래. 값 묶음은 밤 무대 카드(.bt-hello 와 같은 남색), 기능 묶음은 하늘 칸(.bt-song 과 같은 색) */
+.why{padding:96px 0 0}
+.why .section-head .lead{max-width:44em}
+.why-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;align-items:start}
+.why-price{position:relative;overflow:hidden;border-radius:32px;padding:36px 40px 40px;display:grid;gap:20px;align-content:start;justify-items:start;background:linear-gradient(160deg,#171C3A,#2C3670);--win:rgba(255,255,255,.1)}
+.why-price::before{content:"";position:absolute;right:-12%;top:-30%;width:70%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.2),transparent);pointer-events:none}
+.why-price>*{position:relative}
+.why-price-head{display:flex;align-items:center;gap:20px;justify-content:space-between;width:100%}
+.why-price h3{font-size:clamp(26px,2.6vw,34px);margin-bottom:8px}
+.why-promise{font-size:18px;font-weight:600}
+.why-price .awin{flex:0 0 132px;width:132px;margin:0}
+.why-other{color:var(--ink-2);font-size:16px;border-bottom:1px solid var(--line);width:100%;padding-bottom:16px}
+.why-plans{display:grid;gap:18px;width:100%}
+.why-plans>div{display:grid;gap:2px}
+.why-plans dt{font-weight:700;color:var(--ink-2);font-size:16px}
+.why-plans dd{margin:0;display:grid;gap:2px}
+.why-plans b{font:700 clamp(38px,4.4vw,54px)/1.12 var(--display);letter-spacing:-.03em;color:var(--star);font-variant-numeric:tabular-nums}
+.why-plans span{font-size:16px;color:var(--ink)}
+.why-year{font:800 clamp(20px,2vw,24px)/1.45 var(--body);letter-spacing:-.02em;background:var(--chip);border-radius:20px;padding:18px 20px;width:100%;text-wrap:balance}
+.why-year small{display:block;margin-top:6px;font:500 15px/1.5 var(--body);letter-spacing:0;color:var(--ink-2)}
+.why-feats{border-radius:32px;padding:36px 36px 40px;background:var(--t-sky);--ink-2:#3A4468;display:grid;gap:10px;align-content:start}
+.why-feats h3{font-size:clamp(24px,2.4vw,30px)}
+.why-feats>p{color:var(--ink-2)}
+.why-list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;row-gap:10px;margin:14px 0 0}
+.why-side{display:grid;gap:8px;align-content:start}
+.why-trust{display:grid;padding:0 8px}
+.why-trust li{display:grid;gap:4px;padding:16px 0;border-top:1px solid var(--line)}
+.why-trust li:first-child{border-top:0}
+.why-trust b{font-size:17px}
+.why-trust span{color:var(--ink-2);font-size:16px}
+.why-trust a{color:var(--link);font-weight:600;text-underline-offset:4px}
+.why-trust .ico{width:16px;height:16px;margin-left:2px;vertical-align:-2px}
+@media (prefers-color-scheme:dark){.why-feats{--ink-2:#D5D8EC}}
+@media (max-width:860px){
+  .why{padding:56px 0 0}
+  .why-grid{grid-template-columns:1fr;gap:14px}
+  .why-price{border-radius:26px;padding:24px 20px 26px;gap:16px}
+  .why-price .awin{flex-basis:96px;width:96px}
+  .why-promise{font-size:17px}
+  .why-feats{border-radius:26px;padding:24px 20px 26px}
+  .why-trust{padding:0 4px}
+}
+@media (max-width:520px){.why-list{grid-template-columns:1fr}}
+
 @media (min-width:861px){
   .bt-hello h3{font-size:clamp(32px,3vw,42px);margin-bottom:14px}
   .bt-hello p{font-size:19px}
