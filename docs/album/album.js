@@ -450,6 +450,7 @@ function openSheet(step, data = {}) {
     h('h2', { text: v.title }),
     h('button', { class: 'icon-btn', type: 'button', 'aria-label': '닫기', onclick: () => closeSheet() }, icon('close')));
   sheet.box.replaceChildren(head, h('div', { class: 'sheet-body' }, v.body));
+  breakSentences(sheet.box);
   sheet.d.setAttribute('aria-label', v.title);
   if (v.focus && !matchMedia('(pointer: coarse)').matches) setTimeout(() => v.focus.focus(), 30);
   v.after?.();
@@ -626,6 +627,37 @@ const STEPS = {
   }
 };
 
+// 줄바꿈(2026-11-23 사용자 "글들이 줄바꿈 없이 난해해 보여 — PC 에서도 모바일에서도 깔끔하게"): 문장이 둘 이상인 긴 문단은
+//  문장마다 줄을 나눈다(글은 그대로 — <br class="br-s"> 만 넣는다). 첫 페이지 처음 HTML 도 같은 규칙으로 미리 나눠 두었다.
+//  문단 40자 이상 · 한 덩어리 글 12자 이상(링크 앞 문장 끝에서도 나눔) · 앞 문장이 3자 이하("네.")면 안 나눔 · 링크·단추·굵은 글 안과 상태 글·숫자 칸은 건드리지 않는다.
+const SENT_END = /([가-힣][.?!]+)[ \t\n]+(?=\S|$)/g;
+const BREAK_SKIP = '.status, .amount, .pt-price, .pt-sub, .pt-badge, .chip, .eyebrow, .kicker, .who, .why-year';
+function breakSentences(root) {
+  if (!root) return;
+  for (const el of root.querySelectorAll('p, .ih-why span')) {
+    if (el.matches(BREAK_SKIP) || el.closest('button, a, .seg, #toast') || (el.textContent || '').length < 40) continue;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (n.parentElement.closest('a, button, b, strong, kbd, abbr, label') && n.parentElement !== el) continue;
+      if (n.nodeValue.trim().length >= 12) nodes.push(n);
+    }
+    for (const n of nodes) {
+      const t = n.nodeValue, frag = [];
+      let last = 0, cut = 0;
+      for (const m of t.matchAll(SENT_END)) {
+        const end = m.index + m[1].length;
+        if (t.slice(last, end).replace(/\s/g, '').length <= 3) continue;   // "네." 같은 짧은 첫 마디
+        frag.push(document.createTextNode(t.slice(last, end)), h('br', { class: 'br-s' }));
+        last = m.index + m[0].length; cut++;
+      }
+      if (!cut) continue;
+      frag.push(document.createTextNode(t.slice(last)));
+      n.replaceWith(...frag);
+    }
+  }
+}
+
 // ---------- 화면 ----------
 const app = $('#app');
 function paint() {
@@ -634,6 +666,7 @@ function paint() {
   const name = S.view === 'app' ? 'app' : S.view === 'apply' || (S.view === 'me' && S.session) ? S.view : 'home';
   const main = h('main', { class: 'page view-' + name, id: 'main' }, viewBody());
   app.replaceChildren(topbar(), main, footer());
+  breakSentences(main);
 }
 function viewBody() {
   if (S.view === 'app') return appView();
@@ -1560,6 +1593,7 @@ function paintHome() {
     return;
   }
   box.replaceChildren(...priceTable(src).flat(Infinity).filter((x) => x != null && x !== false));
+  breakSentences(box);
 }
 async function startHome() {
   paint();
