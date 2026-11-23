@@ -31,7 +31,7 @@ const card = legacy ? undefined : kind === 'cardoff' ? { show: false, canPay: fa
 const PAID_FROM = Date.parse('2027-01-01T00:00:00+09:00');
 const pub = () => ({ ok: true, open: true, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], albumOpen: kind !== 'beta', munchkinPaidFrom: PAID_FROM, now: Date.now(),
   card: { show: kind !== 'cardoff', canPay: false, mode: 'test', storeId: '', channelKey: '' } });
-const amountOf = (b) => (b.plan === 'bundle' ? 5000 * (b.months || 1) : 3000 * (b.months || 1));
+const amountOf = (b) => (b.months === 12 ? (b.plan === 'bundle' ? 50000 : 30000) : b.plan === 'bundle' ? 5000 * (b.months || 1) : 3000 * (b.months || 1));
 const periodOf = (o) => (o.months === 12 ? '1년' : o.months + '개월');
 const newOrder = (b, pay) => ({ id: 'o' + Math.random().toString(36).slice(2, 13).padEnd(11, 'z'), plan: b.plan, months: b.months || 0, amount: amountOf(b), payer: '밤톨' + (1000 + Math.floor(Math.random() * 9000)), album: b.album || null, state: 'pending', created: Date.now(), sent: null, done: null, nick: st.me.nickname, until_to: null,
   // 심사 보기 신청은 새 앨범 주소를 잡아 두지 않는다(설계안 3장 — want_host 비움 → newAlbum 없음)

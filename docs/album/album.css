@@ -128,6 +128,8 @@
 .seg button{flex:1 1 auto;min-height:48px;padding:6px 16px;border-radius:14px;border:1.5px solid var(--field-line);background:var(--card);color:var(--ink);font-weight:700;font-size:16px;cursor:pointer}
 .seg button.on{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 .seg button:disabled{opacity:.4;cursor:not-allowed}
+/* 할인 표시(2026-11-23 — 위 .chip 그대로, 단추 안에서만 작게) */
+.seg .chip{margin-left:2px;font-size:13px;padding:2px 8px;vertical-align:1px}
 .amount{font:800 36px/1.2 var(--body);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .small-amount{font-size:28px}
 /* 카드 결제: 결제하는 분 칸 묶음(2026-11-23 — 칸 모양은 위 .field·.input 그대로) */
