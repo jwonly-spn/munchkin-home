@@ -1069,7 +1069,8 @@ function applyView() {
   const quote = addons[d.plan] || null;
   const amount = quote ? quote.amount : price(d.plan, d.months);
   const full = (P[d.plan] || 0) * 12;
-  const yearSale = pct(full, Y[d.plan] || 0);
+  // 1년 할인: 먼치킨 + 추억앨범은 따로 한 달씩 낼 때(먼치킨 + 추억앨범 월값 × 12)와 비교(2026-11-23 사용자 "30%할인으로"), 나머지는 그 종류 월값 × 12
+  const yearSale = d.plan === 'bundle' && P.munchkin > 0 && P.album > 0 ? pct((P.munchkin + P.album) * 12, Y.bundle || 0) : pct(full, Y[d.plan] || 0);
   const album = owner ? (albums.find((a) => a.id === d.album) || albums[0]) : null;
   // 먼치킨만(먼치킨 더하기)은 앨범이 필요 없다 — 주소 이름·앨범 이름 칸을 접는다
   const wantAlbum = !owner && d.plan !== 'munchkin' && d.plan !== 'add-munchkin';
