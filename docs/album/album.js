@@ -881,9 +881,9 @@ function homeView() {
         beta ? null : h('button', { class: 'btn main', type: 'button', onclick: showBundle, text: '먼치킨 + 추억앨범 이용권 보기' })))),
     // ⑦ 이용권 칸(2026-11-23 사용자 "추억앨범 화면에서도 결제 창·회원가입·로그인"): 로그인 전에도 종류·기간·금액이 보인다
     h('section', { class: 'section pay-home', id: 'pay', 'aria-labelledby': 'pay-title' }, h('div', { class: 'wrap pay-wrap' },
-      h('div', { class: 'head' }, h('h2', { id: 'pay-title', tabindex: '-1', text: '이용권 신청' }),
-        h('p', { class: 'lead', text: '종류와 기간을 고르면 금액이 바로 보여요. 추억앨범만 써도 되고, 먼치킨과 함께 쓸 수도 있어요.' })),
-      h('article', { class: 'card pay-box', id: 'mk-pay' }, payBox()))),
+      h('div', { class: 'head' }, h('h2', { id: 'pay-title', tabindex: '-1', text: '이용권' }),
+        h('p', { class: 'lead', text: '추억앨범만 쓰거나, 먼치킨 봇과 함께 쓸 수 있어요. 기간을 고르고 신청하기를 누르세요.' })),
+      h('div', { class: 'pt pay-box', id: 'mk-pay' }, payBox()))),
     // ⑧ 만드는 법
     h('section', { class: 'start-section night' }, sky(), h('div', { class: 'wrap' },
       sectionHead('', '이렇게 만들어요', beta ? '공개되면 세 단계면 끝나요. 지금은 베타 테스트 중이라 신청을 받지 않아요.' : '세 단계면 끝나요. 앨범이 생기면 바로 글을 올릴 수 있어요.'),
@@ -1258,44 +1258,67 @@ function payActions({ amount, body, ready, notReady, wantAlbum, key }) {
     canPay ? h('p', { class: 'hint', text: `계좌이체는 ${bankLead}` }) : null
   ];
 }
-// 첫 화면 이용권 칸(2026-11-23 사용자 "메인 화면에서도 결제 창 볼 수 있게, 회원가입 로그인도 — 추억앨범 화면에서도"):
-//  먼치킨.com 첫 페이지(#mk-pay)와 추억앨범 첫 화면이 같이 쓴다. 로그인 전에도 종류·기간·금액이 보이고, 신청·결제는 로그인한 뒤.
-//  먼치킨만은 여기서 바로 결제, 추억앨범이 들어가면 주소·앨범 이름을 정하러 신청 화면으로(고른 것 그대로).
-// [회원가입] [로그인…] 줄(첫 화면 이용권 칸)
-const authRow = (main) => h('div', { class: 'row-btns' },
-  h('button', { class: 'btn line', type: 'button', text: '회원가입', onclick: () => openSheet('signup') }),
-  h('button', { class: 'btn main', type: 'button', text: main, onclick: () => openSheet('login') }));
+// 추억앨범 첫 화면 이용권 칸(2026-11-23 사용자 "이용권 신청 쪽이 좀 부자연스럽다" → 상품 상세 페이지의 "옵션 고르기"처럼):
+//  맨 위 띠(글 그대로) → [1개월 | 1년] 한 줄 → 추억앨범 상품 카드 둘(추억앨범만 · 먼치킨 + 추억앨범 — 첫 페이지 가격표 .pt 모양) → 먼치킨만은 작은 링크.
+//  값·할인은 신청 화면·첫 페이지 가격표와 같은 planModel(서버 가격 — 숫자를 새로 박지 않는다). 신청 단추는 카드마다 하나:
+//  로그인 전이면 로그인 창(가입 길은 그 안과 아래 작은 글), 로그인했으면 고른 종류·기간 그대로 신청 화면(주소·앨범 이름 → 결제).
+//  먼치킨.com 첫 페이지(HOME)는 priceTable(카드 셋)을 따로 쓴다 — 여기는 추억앨범 페이지만.
+const ALBUM_PLANS = [['album', '추억앨범만', '내이름.먼치킨.com 추억앨범'], ['bundle', '먼치킨 + 추억앨범', '추억앨범과 먼치킨 봇 · 송출은 무료 덤']];
+function albumApply(k) {
+  S.draft.plan = k; saveDraft();
+  if (!S.session) { S.next = 'apply'; openSheet('login'); return; }
+  go('apply');
+}
 function payBox() {
   const src = S.session ? S.info : S.pub;
   if (S.session) ensureInfo(); else ensurePub();
   const out = [paidBanner()];
   if (S.payDone) out.push(payResult());
-  const auth = authRow;
+  const join = () => S.session ? null : h('p', { class: 'pt-join' }, '계정이 없나요? ', linkBtn('1분이면 가입해요', () => openSheet('signup')));
   // 서버 가격을 아직 못 받았거나 못 받았으면: 처음 HTML 의 가격 글을 그대로(불러오는 동안 깜빡이지 않게 · 서버가 답하지 않아도 가격이 보이게)
   if (!src?.prices) {
     const list = STATIC_PRICES ? Object.assign(STATIC_PRICES.cloneNode(true), { className: 'orders' }) : h('p', { class: 'muted', text: '이용권을 불러오는 중이에요…' });
-    if (!S.session) return [...out, list, h('p', { class: 'hint', text: '신청과 결제(카드·계좌이체)는 먼치킨 계정으로 로그인한 뒤에 해요.' }), auth('로그인하고 신청하기')];
+    if (!S.session) return [...out, list, h('button', { class: 'btn main block', type: 'button', text: '로그인하고 신청하기', onclick: () => { S.next = 'apply'; openSheet('login'); } }), join()];
     return [...out, list, S.infoError && !src ? [h('p', { class: 'status bad', text: S.infoError }), h('button', { class: 'btn line', type: 'button', text: '다시 불러오기', onclick: () => ensureInfo(true) })] : null];
   }
   if (src.open === false) return [...out, h('p', { class: 'notice', text: '신청을 준비하고 있어요. 조금 뒤에 다시 와 주세요.' })];
-  const d = S.draft;
-  const m = planModel(src, d, { albumOk: src.albumOpen !== false });
-  if (!m.any) return [...out, h('p', { class: 'notice', text: '이용권을 준비하고 있어요.' })];
-  out.push(planBlock(m, d, '#mk-pay'));
-  if (!S.session) {
-    const c = src.card;
-    return [...out, c?.show ? h('p', { class: 'hint', text: c.mode === 'live' ? '결제는 카드나 계좌이체로 해요.' : CARD_CLOSED }) : null,
-      h('p', { class: 'hint', text: '신청과 결제는 먼치킨 계정으로 로그인한 뒤에 해요.' }), auth('로그인하고 신청하기')];
+  if (S.session) {
+    const waiting = (S.info.orders || []).filter((o) => o.state === 'pending').length;
+    if (waiting) out.push(h('p', { class: 'notice' }, h('span', { text: `확인을 기다리는 신청이 ${waiting}개 있어요.` }), linkBtn('신청 화면에서 보기', () => go('apply'))));
+    if (S.payNote) out.push(h('p', { class: 'status' + (S.payNote.bad ? ' bad' : ''), role: 'status', text: S.payNote.text }));
   }
-  const waiting = (S.info.orders || []).filter((o) => o.state === 'pending').length;
-  if (waiting) out.push(h('p', { class: 'notice' }, h('span', { text: `확인을 기다리는 신청이 ${waiting}개 있어요.` }), linkBtn('신청 화면에서 보기', () => go('apply'))));
-  if (S.payNote) out.push(h('p', { class: 'status' + (S.payNote.bad ? ' bad' : ''), role: 'status', text: S.payNote.text }));
-  if (d.plan !== 'munchkin') return [...out, h('p', { class: 'hint', text: '추억앨범은 주소 이름과 앨범 이름을 정한 뒤 결제해요.' }),
-    h('button', { class: 'btn main block big', type: 'button', text: '주소·앨범 이름 정하고 결제하기', onclick: () => go('apply') })];
-  if (!S.me?.nickname) return [...out, h('p', { class: 'lead-s', text: '입금자명에 닉네임이 쓰여요. 닉네임을 먼저 정해 주세요.' }),
-    h('button', { class: 'btn main block', type: 'button', text: '닉네임 정하기', onclick: () => openSheet('nickname', {}) })];
-  setTimeout(refreshOrderBtn, 0);
-  return [...out, payActions({ amount: m.amount, body: () => ({ plan: 'munchkin', months: d.months }), ready: () => m.amount > 0, notReady: () => Error('신청 내용을 다시 봐 주세요.'), wantAlbum: false, key: 'h' })];
+  const d = S.draft;
+  if (![1, 12].includes(d.months)) d.months = 1;
+  const year = d.months === 12;
+  const albumOk = src.albumOpen !== false;
+  const owns = Boolean(S.session && S.info?.albums?.length);
+  // 카드마다 따로 계산한다(S.draft.plan 은 건드리지 않는다 — #go=apply&plan=munchkin 으로 온 사람의 고른 것 그대로)
+  const at = (k, months) => planModel(src, { plan: k, months }, { albumOk });
+  const okOf = (m, k) => Boolean(m.plans.find(([kk]) => kk === k)?.[2]);
+  const best = Math.max(0, ...ALBUM_PLANS.map(([k]) => { const m = at(k, 12); return okOf(m, k) ? m.yearSale : 0; }));
+  const toggle = segOf([[1, '1개월'], [12, ['1년', best > 0 ? [' ', h('span', { class: 'chip sale', text: `최대 ${best}% 할인` })] : null]]], d.months,
+    pickKeep('#mk-pay', '기간', (v) => { d.months = v; }), '기간');
+  const cardOf = ([k, name, desc]) => {
+    const m = at(k, d.months), y = at(k, 12), ok = okOf(m, k);
+    // 할인 표시(사실만): 1년이면 그 종류의 1년 할인, 1개월이면 먼치킨 + 추억앨범이 따로 내는 것보다 싼 만큼
+    const off = year ? m.yearSale : k === 'bundle' ? m.bundleSale : 0;
+    const label = k === 'album' && owns ? '연장하기' : '신청하기';
+    return h('article', { class: 'card pt-card' + (k === 'album' ? ' pt-main' : '') },
+      // 먼치킨 + 추억앨범: 둘 다 쓰는 분께만 이득이라 그렇게 적는다(따로 내는 것보다 싼 만큼 — bundleSale)
+      k === 'bundle' && ok && m.bundleSale > 0 ? h('p', { class: 'pt-badge soft', text: '먼치킨도 쓴다면' }) : null,
+      h('h3', { text: name }),
+      h('p', { class: 'hint', text: desc }),
+      h('p', { class: 'pt-price' }, h('b', { text: ok ? won(m.amount) : '—' }), h('span', { text: year ? ' / 1년' : ' / 월' })),
+      h('p', { class: 'pt-sub' }, ok ? (year ? `한 달 ${won(Math.round(m.amount / 12))}꼴` : `1년 결제 시 ${won(y.amount)}`) : '준비 중이에요', off > 0 && ok ? [' ', h('span', { class: 'chip sale', text: `${off}% 할인` })] : null),
+      h('button', { class: 'btn block ' + (k === 'album' ? 'main' : 'line'), type: 'button', text: ok ? label : '준비 중', disabled: !ok, 'aria-label': `${name} ${ok ? label : '준비 중'}`, onclick: () => albumApply(k) }));
+  };
+  const c = src.card;
+  const munchkinOk = okOf(at('munchkin', d.months), 'munchkin');
+  out.push(h('div', { class: 'pt-top' }, toggle), h('div', { class: 'pt-grid two' }, ALBUM_PLANS.map(cardOf)),
+    munchkinOk ? h('p', { class: 'pt-more' }, '먼치킨 봇만 필요하신가요? ', linkBtn('먼치킨만 신청하기', () => albumApply('munchkin'))) : null,
+    h('p', { class: 'hint pt-how', text: c?.show ? (c.mode === 'live' ? '결제는 카드나 계좌이체로 해요.' : CARD_CLOSED) : '결제는 계좌이체로 해요.' }),
+    join());
+  return out;
 }
 
 function applyView() {

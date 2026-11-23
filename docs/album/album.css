@@ -142,9 +142,18 @@
 .syn-foot .btn{flex:none}
 .view-home .start-section{margin-top:104px}
 .faq .wrap{width:min(100% - 32px,820px)}
-/* 첫 화면 이용권 칸(2026-11-23) */
+/* 첫 화면 이용권 칸(2026-11-23 "옵션 고르기"처럼 — 첫 페이지 가격표 .pt 카드 모양을 같이 써요) */
 .pay-home{padding-bottom:0}
-.pay-home .pay-wrap{width:min(100% - 32px,720px)}
+.pay-home .pay-wrap{width:min(100% - 32px,760px)}
+.pay-home .pt{gap:14px}
+.pay-home .pt-top .seg{flex:1 1 auto;max-width:420px}
+.pt-grid.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pt-main{border:2px solid var(--coral)}
+.pt-badge.soft{background:var(--t-sky);color:var(--ink)}
+.pt-more{margin-top:4px;color:var(--ink-2)}
+.pt-more .link-btn,.pt-join .link-btn{padding:0 2px}
+.pt-how{font-size:15px;color:var(--ink-2)}
+.pt-join{font-size:15px;color:var(--ink-2);margin-top:-6px}
 /* 스크립트가 돌기 전 처음 HTML 의 이용권·가격 글(자동 점검·스크립트 꺼진 브라우저용 — 화면이 그려지면 바뀜) */
 .boot-prices{width:min(100% - 32px,560px);margin:0 auto 64px;display:grid;gap:10px}
 .boot-prices li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -264,6 +273,7 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
 }
 @media (max-width:600px){
   .for-card{padding:16px 18px 16px 14px;border-radius:24px}
+  .pt-grid.two{grid-template-columns:1fr;gap:24px}
   .for-card .awin{flex-basis:84px;width:84px}
   .vs-card{padding:22px 18px;border-radius:24px}
   .vs-sum{text-align:left;margin-top:28px}
