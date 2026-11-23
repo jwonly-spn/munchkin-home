@@ -55,6 +55,8 @@ const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 //  같은 주소(먼치킨.com)라 로그인 표(localStorage mk_session)를 그대로 같이 쓴다. 신청 화면·내 정보는 album/ 로 넘어간다.
 const HOME = !document.getElementById('app') && Boolean(document.getElementById('mk-pay'));
 const ALBUM_URL = HOME ? 'album/' : './';
+// 처음 HTML 의 가격 글(첫 페이지 #mk-pay · 추억앨범 #app) — 서버 가격을 아직 못 받았거나 못 받으면 이것을 그대로 보인다(첫 그리기 전에 떠 둔다)
+const STATIC_PRICES = (() => { const ul = document.querySelector('#mk-pay ul, #app .boot-prices ul'); return ul ? ul.cloneNode(true) : null; })();
 
 // ---------- 저장 ----------
 const store = (pick) => ({
@@ -344,14 +346,14 @@ async function trySso() {
 // 로그인한 뒤 한 번: 서버에 쿠키를 맡겨 둔다(없으면 서버 주소에 잠깐 들렀다 돌아온다 — 50일에 한 번쯤).
 //  신청 중이거나 프로그램 로그인 중에는 하지 않는다(화면이 바뀌면 안 되니까).
 async function ssoRemember() {
-  if (HOME || !S.session || S.app || S.view === 'apply' || $('dialog[open]')) return;
+  if (!S.session || S.app || S.view === 'apply' || $('dialog[open]')) return;
   if (Date.now() - Number(ls.get('mk_sso_at') || 0) < SSO_FRESH_MS) return;
   try {
     const r = await fetch(API + 'sso-check?' + new URLSearchParams({ h: location.host, peek: '1' }), { credentials: 'include', cache: 'no-store' }).then((x) => x.json());
     if (r?.has) { ls.set('mk_sso_at', String(Date.now())); return; }
     if (!r?.ok) return;
     const t = await memberCall('sso-ticket');
-    ss.set('mk_after_sso', S.view);
+    ss.set('mk_after_sso', HOME ? 'pay' : S.view);
     location.href = API + 'sso-set?' + new URLSearchParams({ t: t.ticket, h: location.host, r: location.pathname });
   } catch { /* 다음에 다시 */ }
 }
@@ -1120,16 +1122,22 @@ function payActions({ amount, body, ready, notReady, wantAlbum, key }) {
 // 첫 화면 이용권 칸(2026-11-23 사용자 "메인 화면에서도 결제 창 볼 수 있게, 회원가입 로그인도 — 추억앨범 화면에서도"):
 //  먼치킨.com 첫 페이지(#mk-pay)와 추억앨범 첫 화면이 같이 쓴다. 로그인 전에도 종류·기간·금액이 보이고, 신청·결제는 로그인한 뒤.
 //  먼치킨만은 여기서 바로 결제, 추억앨범이 들어가면 주소·앨범 이름을 정하러 신청 화면으로(고른 것 그대로).
+// [회원가입] [로그인…] 줄(첫 화면 이용권 칸)
+const authRow = (main) => h('div', { class: 'row-btns' },
+  h('button', { class: 'btn line', type: 'button', text: '회원가입', onclick: () => openSheet('signup') }),
+  h('button', { class: 'btn main', type: 'button', text: main, onclick: () => openSheet('login') }));
 function payBox() {
   const src = S.session ? S.info : S.pub;
   if (S.session) ensureInfo(); else ensurePub();
   const out = [paidBanner()];
   if (S.payDone) out.push(payResult());
-  const auth = (main) => h('div', { class: 'row-btns' },
-    h('button', { class: 'btn line', type: 'button', text: '회원가입', onclick: () => openSheet('signup') }),
-    h('button', { class: 'btn main', type: 'button', text: main, onclick: () => openSheet('login') }));
-  if (!src) return [...out, h('p', { class: 'muted', text: S.session && S.infoError ? S.infoError : '이용권을 불러오는 중이에요…' })];
-  if (!src.prices) return [...out, h('p', { class: 'lead-s', text: '로그인하면 이용권과 가격을 보고 바로 신청할 수 있어요.' }), auth('로그인')];
+  const auth = authRow;
+  // 서버 가격을 아직 못 받았거나 못 받았으면: 처음 HTML 의 가격 글을 그대로(불러오는 동안 깜빡이지 않게 · 서버가 답하지 않아도 가격이 보이게)
+  if (!src?.prices) {
+    const list = STATIC_PRICES ? Object.assign(STATIC_PRICES.cloneNode(true), { className: 'orders' }) : h('p', { class: 'muted', text: '이용권을 불러오는 중이에요…' });
+    if (!S.session) return [...out, list, h('p', { class: 'hint', text: '신청과 결제(카드·계좌이체)는 먼치킨 계정으로 로그인한 뒤에 해요.' }), auth('로그인하고 신청하기')];
+    return [...out, list, S.infoError && !src ? [h('p', { class: 'status bad', text: S.infoError }), h('button', { class: 'btn line', type: 'button', text: '다시 불러오기', onclick: () => ensureInfo(true) })] : null];
+  }
   if (src.open === false) return [...out, h('p', { class: 'notice', text: '신청을 준비하고 있어요. 조금 뒤에 다시 와 주세요.' })];
   const d = S.draft;
   const m = planModel(src, d, { albumOk: src.albumOpen !== false });
@@ -1484,7 +1492,18 @@ function homeAuth() {
 }
 function paintHome() {
   $('#mk-auth')?.replaceChildren(...[homeAuth()].flat());
-  $('#mk-pay')?.replaceChildren(...payBox().flat(Infinity).filter((x) => x != null && x !== false));
+  const box = $('#mk-pay');
+  if (!box) return;
+  // 서버 가격을 아직 못 받았거나 못 받았으면: 처음 HTML(위 띠·가격 글)을 그대로 두고, 로그인 전이면 album/ 로 가던 링크만
+  //  이 페이지에서 여는 [회원가입] [로그인하고 신청하기] 줄로 바꾼다(깜빡임 없게 — 2026-11-23 검토)
+  const src = S.session ? S.info : S.pub;
+  if (!src?.prices && !S.payDone) {
+    if (S.session) ensureInfo(); else ensurePub();
+    const link = box.querySelector(':scope > a.btn');
+    if (link && !S.session) link.replaceWith(authRow('로그인하고 신청하기'));
+    return;
+  }
+  box.replaceChildren(...payBox().flat(Infinity).filter((x) => x != null && x !== false));
 }
 async function startHome() {
   paint();
@@ -1495,7 +1514,10 @@ async function startHome() {
     catch (e) { toast(e.message, true); }
   } else if (S.session) await loadMe();
   await cfg;
+  if (RETURN.sso === 'ok') ls.set('mk_sso_at', String(Date.now()));
   paint();
+  // 로그인한 뒤 서버 쿠키를 맡기고 돌아왔으면 이용권 칸으로
+  if (ss.get('mk_after_sso') === 'pay') { ss.del('mk_after_sso'); setTimeout(() => $('#pay')?.scrollIntoView({ block: 'start' }), 300); }
   if (RETURN.loginError) {
     if (RETURN.loginError === 'age14') { if (!S.session) openSheet('signup', { kakaoAge: true }); return; }
     toast(KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail, RETURN.loginError !== 'cancel');
