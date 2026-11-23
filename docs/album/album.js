@@ -1070,7 +1070,8 @@ function applyView() {
   const amount = quote ? quote.amount : price(d.plan, d.months);
   const full = (P[d.plan] || 0) * 12;
   // 1년 할인: 먼치킨 + 추억앨범은 따로 한 달씩 낼 때(먼치킨 + 추억앨범 월값 × 12)와 비교(2026-11-23 사용자 "30%할인으로"), 나머지는 그 종류 월값 × 12
-  const yearSale = d.plan === 'bundle' && P.munchkin > 0 && P.album > 0 ? pct((P.munchkin + P.album) * 12, Y.bundle || 0) : pct(full, Y[d.plan] || 0);
+  const sepYear = d.plan === 'bundle' && P.munchkin > 0 && P.album > 0 ? (P.munchkin + P.album) * 12 : 0;   // 먼치킨 + 추억앨범을 따로 1년 내면
+  const yearSale = sepYear ? pct(sepYear, Y.bundle || 0) : pct(full, Y[d.plan] || 0);
   const album = owner ? (albums.find((a) => a.id === d.album) || albums[0]) : null;
   // 먼치킨만(먼치킨 더하기)은 앨범이 필요 없다 — 주소 이름·앨범 이름 칸을 접는다
   const wantAlbum = !owner && d.plan !== 'munchkin' && d.plan !== 'add-munchkin';
@@ -1139,7 +1140,9 @@ function applyView() {
     quote ? h('p', { class: 'small', text: `${d.plan === 'add-album' ? '쓰고 있는 먼치킨' : '추억앨범'}이 끝나는 ${dayText(quote.until)}까지 함께 써요(${quote.days}일 · 한 달 ${won(quote.perMonth)} 기준).` })
       : segOf([[1, '1개월'], [12, ['1년', sale(yearSale)]]], d.months, pick('기간', (v) => { d.months = v; }), '기간'),
     h('p', { class: 'amount', text: won(amount) }),
-    !quote && d.months === 12 && full > amount ? h('p', { class: 'small good', text: `한 달씩보다 ${won(full - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` }) : null,
+    // 아낀 돈: 1년 할인 표시와 같은 기준 — 먼치킨 + 추억앨범은 따로 한 달씩 낼 때((먼치킨 + 추억앨범 월값) × 12)와 비교(2026-11-23)
+    !quote && d.months === 12 && sepYear > amount ? h('p', { class: 'small good', text: `먼치킨·추억앨범을 따로 한 달씩 내는 것보다 ${won(sepYear - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` })
+      : !quote && d.months === 12 && !sepYear && full > amount ? h('p', { class: 'small good', text: `한 달씩보다 ${won(full - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` }) : null,
     d.plan === 'bundle' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램) 이용권도 같은 기간만큼 함께 늘어나요.' }) : null,
     d.plan === 'munchkin' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램)만 쓸 때예요. 추억앨범은 만들지 않아요.' }) : null,
     amount > 0 ? null : h('p', { class: 'hint', text: '이 이용권은 아직 준비 중이에요.' })));
