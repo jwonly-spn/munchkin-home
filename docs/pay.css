@@ -105,6 +105,21 @@
 .site-header .mk-auth .btn.line{box-shadow:inset 0 0 0 1.5px rgba(246,241,231,.5)}
 .pay-section{padding:96px 0 0}
 .pay-section .pay-box{max-width:720px}
+/* 첫 페이지 가격표(2026-11-23 시안): [1개월 | 1년] · 카드 셋(먼치킨만 ★추천 — 위 .pay 와 같은 산호색 테두리·.must-badge 와 같은 배지 색) */
+.pt{display:grid;gap:16px}
+.pt-top{display:flex}
+.pt-top .seg{flex:0 1 460px}
+.pt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;padding-top:14px}
+.pt-card{position:relative;display:flex;flex-direction:column;gap:6px;padding:28px 24px 24px}
+.pt-card h3{font-size:22px}
+.pt-card .btn{margin-top:auto}
+.pt-best{border:2px solid var(--coral)}
+.pt-badge{position:absolute;top:-15px;left:22px;display:inline-flex;align-items:center;min-height:30px;padding:0 13px;border-radius:999px;background:#FF7B6E;color:#1A2040;font-weight:700;font-size:15px}
+.pt-price{display:flex;align-items:baseline;gap:2px;margin-top:8px}
+.pt-price b{font:800 clamp(32px,3vw,40px)/1.1 var(--body);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.pt-price span{color:var(--ink-2);font-weight:600}
+.pt-sub{color:var(--ink-2);font-size:15px;margin-bottom:14px}
+.pt-pay{max-width:720px}
 .pay-box .seg{margin-top:4px}
 
 @media (prefers-color-scheme:dark){
@@ -114,6 +129,9 @@
 @media (max-width:860px){
   .mk-auth .btn{padding:0 12px;font-size:15px}
   .pay-section{padding:56px 0 0}
+  .pt-grid{grid-template-columns:1fr;gap:22px}
+  .pt-best{order:-1}
+  .pt-top .seg{flex:1 1 auto}
 }
 @media (max-width:480px){
   /* 좁은 휴대폰: 머리줄에 [로그인]이 들어갈 자리를 위해 이름 글자는 숨기고 그림만(글자는 화면 읽기에는 그대로) */

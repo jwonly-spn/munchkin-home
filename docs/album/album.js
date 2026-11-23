@@ -450,6 +450,7 @@ function openSheet(step, data = {}) {
     h('h2', { text: v.title }),
     h('button', { class: 'icon-btn', type: 'button', 'aria-label': '닫기', onclick: () => closeSheet() }, icon('close')));
   sheet.box.replaceChildren(head, h('div', { class: 'sheet-body' }, v.body));
+  breakSentences(sheet.box);
   sheet.d.setAttribute('aria-label', v.title);
   if (v.focus && !matchMedia('(pointer: coarse)').matches) setTimeout(() => v.focus.focus(), 30);
   v.after?.();
@@ -626,6 +627,37 @@ const STEPS = {
   }
 };
 
+// 줄바꿈(2026-11-23 사용자 "글들이 줄바꿈 없이 난해해 보여 — PC 에서도 모바일에서도 깔끔하게"): 문장이 둘 이상인 긴 문단은
+//  문장마다 줄을 나눈다(글은 그대로 — <br class="br-s"> 만 넣는다). 첫 페이지 처음 HTML 도 같은 규칙으로 미리 나눠 두었다.
+//  문단 40자 이상 · 한 덩어리 글 12자 이상(링크 앞 문장 끝에서도 나눔) · 앞 문장이 3자 이하("네.")면 안 나눔 · 링크·단추·굵은 글 안과 상태 글·숫자 칸은 건드리지 않는다.
+const SENT_END = /([가-힣][.?!]+)[ \t\n]+(?=\S|$)/g;
+const BREAK_SKIP = '.status, .amount, .pt-price, .pt-sub, .pt-badge, .chip, .eyebrow, .kicker, .who, .why-year';
+function breakSentences(root) {
+  if (!root) return;
+  for (const el of root.querySelectorAll('p, .ih-why span')) {
+    if (el.matches(BREAK_SKIP) || el.closest('button, a, .seg, #toast') || (el.textContent || '').length < 40) continue;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (n.parentElement.closest('a, button, b, strong, kbd, abbr, label') && n.parentElement !== el) continue;
+      if (n.nodeValue.trim().length >= 12) nodes.push(n);
+    }
+    for (const n of nodes) {
+      const t = n.nodeValue, frag = [];
+      let last = 0, cut = 0;
+      for (const m of t.matchAll(SENT_END)) {
+        const end = m.index + m[1].length;
+        if (t.slice(last, end).replace(/\s/g, '').length <= 3) continue;   // "네." 같은 짧은 첫 마디
+        frag.push(document.createTextNode(t.slice(last, end)), h('br', { class: 'br-s' }));
+        last = m.index + m[0].length; cut++;
+      }
+      if (!cut) continue;
+      frag.push(document.createTextNode(t.slice(last)));
+      n.replaceWith(...frag);
+    }
+  }
+}
+
 // ---------- 화면 ----------
 const app = $('#app');
 function paint() {
@@ -634,6 +666,7 @@ function paint() {
   const name = S.view === 'app' ? 'app' : S.view === 'apply' || (S.view === 'me' && S.session) ? S.view : 'home';
   const main = h('main', { class: 'page view-' + name, id: 'main' }, viewBody());
   app.replaceChildren(topbar(), main, footer());
+  breakSentences(main);
 }
 function viewBody() {
   if (S.view === 'app') return appView();
@@ -1055,7 +1088,7 @@ function planModel(info, d, { owner = false, albumOk = true, addons = {} } = {})
   // 1년 할인: 먼치킨 + 추억앨범은 따로 한 달씩 낼 때(먼치킨 + 추억앨범 월값 × 12)와 비교(2026-11-23 사용자 "30%할인으로"), 나머지는 그 종류 월값 × 12
   const sepYear = d.plan === 'bundle' && P.munchkin > 0 && P.album > 0 ? (P.munchkin + P.album) * 12 : 0;
   const yearSale = sepYear ? pct(sepYear, Y.bundle || 0) : pct(full, Y[d.plan] || 0);
-  return { plans, quote, amount, full, sepYear, yearSale, any };
+  return { plans, quote, amount, full, sepYear, yearSale, bundleSale, any };
 }
 // 종류·기간을 바꾸면 위 칸이 접히거나 펼쳐질 수 있으니, 그 칸(anchor)이 화면에서 제자리에 있게 하고 고른 단추에 초점을 돌려준다
 const pickKeep = (anchor, seg, apply) => (v) => {
@@ -1484,6 +1517,62 @@ async function start() {
   ssoRemember();
 }
 // ---------- 먼치킨.com 첫 페이지 ----------
+// 첫 페이지 가격표(2026-11-23 시안 — 사용자 "이거 저기 있는게 좋은거야?" 뒤 제안): 맨 위 [1개월 | 1년] → 카드 셋(추억앨범만 · 먼치킨만 ★추천 · 먼치킨 + 추억앨범)
+//  → 위 띠. 값·할인은 신청 화면과 같은 planModel(두 벌 만들지 않기). [신청하기]: 로그인 전이면 로그인, 먼치킨만이면 이 자리 아래 결제 칸(payActions),
+//  추억앨범이 들어가면 album/#go=apply&plan=…&months=… 로.
+const PT_PLANS = [['album', '추억앨범만', '나만의 추억앨범 사이트'], ['munchkin', '먼치킨만', '먼치킨 봇·송출 모두'], ['bundle', '먼치킨 + 추억앨범', '봇·송출 + 추억앨범']];
+function ptApply(k) {
+  S.draft.plan = k; saveDraft();
+  if (!S.session) { openSheet('login'); return; }
+  if (k !== 'munchkin') { go('apply'); return; }
+  if (!S.me?.nickname) { openSheet('nickname', {}); return; }
+  S.ptPick = 'munchkin'; paint();
+  setTimeout(() => { const p = $('#pt-pay'); p?.scrollIntoView({ behavior: 'smooth', block: 'start' }); p?.querySelector('h3')?.focus({ preventScroll: true }); }, 50);
+}
+function priceTable(src) {
+  const d = S.draft;
+  if (![1, 12].includes(d.months)) d.months = 1;
+  const albumOk = src.albumOpen !== false;
+  const year = d.months === 12;
+  const at = (k, months) => planModel(src, { plan: k, months }, { albumOk });
+  const okOf = (m, k) => Boolean(m.plans.find(([kk]) => kk === k)?.[2]);
+  // 1년 단추의 작은 표시: 종류마다 1년 할인 가운데 가장 큰 것(내림 — planModel 그대로)
+  const best = Math.max(0, ...PT_PLANS.map(([k]) => { const m = at(k, 12); return okOf(m, k) ? m.yearSale : 0; }));
+  const toggle = segOf([[1, '1개월'], [12, ['1년', best > 0 ? [' ', h('span', { class: 'chip sale', text: `최대 ${best}% 할인` })] : null]]], d.months,
+    pickKeep('#mk-pay', '기간', (v) => { d.months = v; }), '기간');
+  const cardOf = ([k, name, desc]) => {
+    const m = at(k, d.months), y = at(k, 12), ok = okOf(m, k);
+    const off = year ? m.yearSale : k === 'bundle' ? m.bundleSale : 0;
+    return h('article', { class: 'card pt-card' + (k === 'munchkin' ? ' pt-best' : '') + (S.ptPick === k ? ' on' : '') },
+      k === 'munchkin' ? h('p', { class: 'pt-badge', text: '★ 추천' }) : null,
+      h('h3', { text: name }),
+      h('p', { class: 'hint', text: desc }),
+      h('p', { class: 'pt-price' }, h('b', { text: ok ? won(m.amount) : '—' }), h('span', { text: year ? ' / 1년' : ' / 월' })),
+      h('p', { class: 'pt-sub' }, ok ? (year ? `한 달 ${won(Math.round(m.amount / 12))}꼴` : `1년 결제 시 ${won(y.amount)}`) : '준비 중이에요', off > 0 && ok ? [' ', h('span', { class: 'chip sale', text: `${off}% 할인` })] : null),
+      h('button', { class: 'btn block ' + (k === 'munchkin' ? 'main' : 'line'), type: 'button', text: ok ? '신청하기' : '준비 중', disabled: !ok, 'aria-label': `${name} 신청하기`, onclick: () => ptApply(k) }));
+  };
+  const out = [];
+  if (S.payDone) out.push(payResult());
+  if (S.session) {
+    const waiting = (S.info?.orders || []).filter((o) => o.state === 'pending').length;
+    if (waiting) out.push(h('p', { class: 'notice' }, h('span', { text: `확인을 기다리는 신청이 ${waiting}개 있어요.` }), linkBtn('신청 화면에서 보기', () => go('apply'))));
+  }
+  out.push(h('div', { class: 'pt-top' }, toggle), h('div', { class: 'pt-grid' }, PT_PLANS.map(cardOf)));
+  // 먼치킨만 [신청하기]를 누른 뒤(로그인함): 이 자리에서 결제 — 카드/계좌이체 규칙은 신청 화면과 같은 payActions
+  if (S.session && S.ptPick === 'munchkin' && S.draft.plan === 'munchkin') {
+    const m = at('munchkin', d.months);
+    out.push(h('article', { class: 'card pt-pay', id: 'pt-pay' },
+      h('h3', { tabindex: '-1', text: `먼치킨만 · ${year ? '1년' : '1개월'} ${won(m.amount)}` }),
+      S.payNote ? h('p', { class: 'status' + (S.payNote.bad ? ' bad' : ''), role: 'status', text: S.payNote.text }) : null,
+      payActions({ amount: m.amount, body: () => ({ plan: 'munchkin', months: d.months }), ready: () => m.amount > 0, notReady: () => Error('신청 내용을 다시 봐 주세요.'), wantAlbum: false, key: 'h' })));
+    setTimeout(refreshOrderBtn, 0);
+  }
+  const c = src.card;
+  out.push(paidBanner(),
+    !S.session ? h('p', { class: 'hint', text: '신청과 결제(카드·계좌이체)는 먼치킨 계정으로 로그인한 뒤에 해요.' }) : null,
+    !S.session && c?.show && c.mode !== 'live' ? h('p', { class: 'hint', text: CARD_CLOSED }) : null);
+  return out;
+}
 // 머리줄: 로그인 전 [로그인] [회원가입] · 로그인하면 [내 정보](album/ 내 정보)
 function homeAuth() {
   if (S.session && S.me) return h('a', { class: 'btn line sm', href: ALBUM_URL + '#go=me' }, '내 정보');
@@ -1499,11 +1588,12 @@ function paintHome() {
   const src = S.session ? S.info : S.pub;
   if (!src?.prices && !S.payDone) {
     if (S.session) ensureInfo(); else ensurePub();
-    const link = box.querySelector(':scope > a.btn');
-    if (link && !S.session) link.replaceWith(authRow('로그인하고 신청하기'));
+    // 가격표의 [신청하기](album/ 로 가는 처음 링크)를 이 페이지에서 로그인 창을 여는 단추로
+    if (!S.session) for (const a of box.querySelectorAll('.pt-card a.btn')) a.replaceWith(h('button', { class: a.className, type: 'button', text: a.textContent, 'aria-label': a.getAttribute('aria-label'), onclick: () => openSheet('login') }));
     return;
   }
-  box.replaceChildren(...payBox().flat(Infinity).filter((x) => x != null && x !== false));
+  box.replaceChildren(...priceTable(src).flat(Infinity).filter((x) => x != null && x !== false));
+  breakSentences(box);
 }
 async function startHome() {
   paint();

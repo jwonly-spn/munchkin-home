@@ -54,6 +54,10 @@ h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.22;letter-spac
 h1{font-size:clamp(34px,4.1vw,58px);line-height:1.2}
 h2{font-size:clamp(28px,3.8vw,44px);line-height:1.25}
 .lead{color:var(--ink-2);font-size:18px;line-height:1.7;text-wrap:pretty}
+/* 줄바꿈(2026-11-23 사용자 "글들이 줄바꿈 없이 난해해 보여"): 문단 끝줄에 한두 글자만 남지 않게 · 구역 머리 설명은 읽기 좋은 너비(이유 구역과 같은 44em).
+   문장이 둘 이상인 긴 문단은 문장마다 줄을 나눴어요(<br class="br-s"> — 첫 페이지는 처음 HTML, 화면이 그리는 글은 album.js breakSentences). */
+p,li,dd,summary,figcaption{text-wrap:pretty}
+.section-head .lead{max-width:44em}
 
 /* 밤 무대: 남색 바탕 위에서는 글·칸·초점 색이 바뀌어요 */
 .night,.on-night{color:var(--cream);--ink:#F6F1E7;--ink-2:#C3C8E3;--link:#FFD98A;--card:rgba(255,255,255,.09);--chip:rgba(255,255,255,.13);--focus:#FFD98A;--line:rgba(246,241,231,.2);--lift:none;--ok:#8FE3B4;--ok-soft:rgba(143,227,180,.16);--bad:#FFB1A8;--bad-soft:rgba(255,120,110,.2);--warn:#FFD98A;--warn-soft:rgba(255,217,138,.16)}
@@ -337,12 +341,13 @@ h2{font-size:clamp(28px,3.8vw,44px);line-height:1.25}
 .why-promise{font-size:18px;font-weight:600}
 .why-price .awin{flex:0 0 132px;width:132px;margin:0}
 .why-other{color:var(--ink-2);font-size:16px;border-bottom:1px solid var(--line);width:100%;padding-bottom:16px}
-.why-plans{display:grid;gap:18px;width:100%}
-.why-plans>div{display:grid;gap:2px}
-.why-plans dt{font-weight:700;color:var(--ink-2);font-size:16px}
-.why-plans dd{margin:0;display:grid;gap:2px}
-.why-plans b{font:700 clamp(38px,4.4vw,54px)/1.12 var(--display);letter-spacing:-.03em;color:var(--star);font-variant-numeric:tabular-nums}
-.why-plans span{font-size:16px;color:var(--ink)}
+/* 값은 한 줄씩 작게(2026-11-23 — 큰 값은 아래 가격표에서만): "먼치킨은 월 3,000원" · 그 아래 1년 글 */
+.why-plans{display:grid;gap:12px;width:100%}
+.why-plans>div{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:8px;row-gap:2px}
+.why-plans dt{font-weight:700;color:var(--ink);font-size:17px}
+.why-plans dd{margin:0;display:contents}
+.why-plans b{font:700 clamp(22px,2.2vw,26px)/1.2 var(--display);letter-spacing:-.02em;color:var(--star);font-variant-numeric:tabular-nums}
+.why-plans span{flex-basis:100%;font-size:15px;color:var(--ink-2)}
 .why-year{font:800 clamp(20px,2vw,24px)/1.45 var(--body);letter-spacing:-.02em;background:var(--chip);border-radius:20px;padding:18px 20px;width:100%;text-wrap:balance}
 .why-year small{display:block;margin-top:6px;font:500 15px/1.5 var(--body);letter-spacing:0;color:var(--ink-2)}
 .why-feats{border-radius:32px;padding:36px 36px 40px;background:var(--t-sky);--ink-2:#3A4468;display:grid;gap:10px;align-content:start}
