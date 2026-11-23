@@ -774,6 +774,7 @@ function homeView() {
   const sky = () => h('i', { class: 'sky', 'aria-hidden': 'true' });
   const head = (id, title, lead) => h('div', { class: 'head' }, h('h2', { id, text: title }), lead ? h('p', { class: 'lead', text: lead }) : null);
   const EXAMPLE = '예시 화면이에요. 이름과 사진은 지어낸 거예요.';
+  const FEED_EXAMPLE = '예시 화면이에요. 이름은 지어낸 거고, 사진은 AI로 생성한 이미지예요.';
   // 할 수 있는 것: 기능 하나에 큰 화면 하나
   const feat = (cls, name, title, text, pic, cap) => h('li', { class: 'feat ' + cls },
     h('div', { class: 'feat-copy' }, h('p', { class: 'feat-name', text: name }), h('h3', { text: title }), [].concat(text).map((t) => h('p', { text: t }))),
@@ -824,7 +825,7 @@ function homeView() {
       head('feat-title', '추억앨범에서 할 수 있는 것', '피드, 게시물, 박제판, 달력. 탭 네 개에 방송의 순간이 모여요.'),
       h('ul', { class: 'feat-list' },
         feat('t-butter', '피드', '인스타그램처럼 내려 봐요', ['일상 사진과 글을 올리면 위에서 아래로 넘겨 봐요.', '한 글에 사진 10장까지, 어떤 비율이든 자르지 않고 올라가요.'],
-          h('div', { class: 'phone small' }, shot('feed-top', 802, 1640, '추억앨범 피드 탭 예시. 먼치 추억앨범 프로필 아래 피드 탭이 골라져 있고, 노을 지는 창가 그림 게시물이 크게 보여요.')), EXAMPLE),
+          h('div', { class: 'phone small' }, shot('feed-cat', 787, 1640, '추억앨범 피드 예시. 먼치의 게시물에 길가에서 고양이 그림자 자세를 한 사진이 크게 보이고, 아래에 하트 24개와 "예전에 유행한 고양이 자세 찍어봤음 ㅋ-ㅋ" 글, 댓글 5개 모두 보기가 있어요.')), FEED_EXAMPLE),
         feat('t-blush', '게시물', '최초 박제판을 한눈에', ['최초 박제판마다 판 이름과 종료까지 남은 날(D-7)이 함께 보여요.', '먼치킨 봇이 올린 판은 채운 칸 수도 보여요.'],
           h('div', { class: 'pc-frame' }, shot('album-pc-posts', 1200, 770, '한이준 추억앨범 게시물 탭(PC). 최초 박제판 세 장 아래에 판 이름과 채운 칸(8/10칸, 8/8칸, 15/16칸), 종료와 D-7 표시가 있어요.')), '실제 한이준 추억앨범 화면(PC)이에요.'),
         feat('t-sky', '박제판', '박제 사진을 한곳에 모아요', ['박제판과 박제편지 사진을 자르지 않고 그대로 모아요.', '사진 위에 후원한 분 닉네임도 적어 둘 수 있어요.'],
