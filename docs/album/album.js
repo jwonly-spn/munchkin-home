@@ -773,7 +773,7 @@ function homeView() {
   const art = (name, w, hh, alt = '') => h('img', { class: 'art', src: `../art/${name}.webp`, width: String(w), height: String(hh), alt, decoding: 'async', loading: 'lazy' });
   const sky = () => h('i', { class: 'sky', 'aria-hidden': 'true' });
   const head = (id, title, lead) => h('div', { class: 'head' }, h('h2', { id, text: title }), lead ? h('p', { class: 'lead', text: lead }) : null);
-  const EXAMPLE = '예시 화면이에요. 이름과 사진은 지어낸 거예요.';
+  const EXAMPLE = '예시 화면이에요. 이름은 지어낸 거예요.';
   const FEED_EXAMPLE = '예시 화면이에요. 이름은 지어낸 거고, 사진은 AI로 생성한 이미지예요.';
   // 할 수 있는 것: 기능 하나에 큰 화면 하나
   const feat = (cls, name, title, text, pic, cap) => h('li', { class: 'feat ' + cls },
@@ -815,7 +815,7 @@ function homeView() {
           h('ul', { class: 'x-list' }, ['1:1 비율이 아니면 사진이 어색하게 잘려요', '사진은 3장까지만 올라가요', '3장을 올려도 예쁘게, 한눈에 들어오지 않아요', '글을 써도 한눈에 읽히지 않아요'].map((t) => h('li', { text: t })))),
         h('article', { class: 'vs-card vs-album', 'aria-labelledby': 'vs-album-t' },
           h('h3', { id: 'vs-album-t', text: '추억앨범이 있다면' }),
-          h('figure', { class: 'vs-pic' }, h('div', { class: 'phone small' }, shot('feed-post', 802, 1428, '추억앨범 피드의 게시물 예시. 노을 지는 창가 그림이 화면 너비 가득 보이고 1/2 표시로 사진이 두 장임을 알려요. 아래에 하트 24개와 글 두 줄, 댓글 5개 모두 보기가 있어요.')),
+          h('figure', { class: 'vs-pic' }, h('div', { class: 'phone small' }, shot('feed-mdc', 787, 1436, '추억앨범 피드의 게시물 예시. 왼쪽 스푼 포스트와 같은 글을 올린 모습이에요. MDC AWARDS 포스터가 자르지 않고 그대로 보이고, 아래에 하트 7개와 글 일곱 줄이 모두 보이며 댓글 3개 모두 보기가 있어요.')),
             h('figcaption', { text: EXAMPLE })),
           h('ul', { class: 'check-list' }, ['한 글에 사진 10장까지, 비율 그대로', '넘겨 보는 사진과 글이 인스타그램처럼 한눈에', '최초 박제판·박제판·박제편지는 탭마다 따로 모아요', '청취자는 하트와 댓글로 함께해요'].map((t) => h('li', { text: t }))))),
       h('p', { class: 'vs-sum' }, '스푼 포스트엔 ', h('b', { text: '정말 중요한 홍보글만' }), ' 올리세요. 일상 공유와 최초 박제판, 박제판, 박제편지는 추억앨범이 예쁘게 보여 드려요.'),
