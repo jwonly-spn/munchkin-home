@@ -1049,7 +1049,7 @@ function applyView() {
   if (addons['add-album']) plans.push(['add-album', '먼치킨 끝나는 날에 맞춰 더하기', true]);
   if (owner && addons['add-munchkin']) plans.push(['add-munchkin', '먼치킨 더하기(앨범 끝나는 날까지)', true]);
   if (!plans.some(([k, , ok]) => k === d.plan && ok)) d.plan = (plans.find(([, , ok]) => ok) || plans[0])[0];
-  if (![1, 3, 6, 12].includes(d.months)) d.months = 1;
+  if (![1, 12].includes(d.months)) d.months = 1;
   const quote = addons[d.plan] || null;
   const amount = quote ? quote.amount : price(d.plan, d.months);
   const full = (info.prices?.[d.plan] || 0) * 12;
@@ -1111,7 +1111,7 @@ function applyView() {
   cards.push(h('article', { class: 'card' }, h('h3', { text: owner ? '기간' : '3. 이용권·기간' }),
     segOf(plans, d.plan, (v) => { d.plan = v; saveDraft(); paint(); }),
     quote ? h('p', { class: 'small', text: `${d.plan === 'add-album' ? '쓰고 있는 먼치킨' : '추억앨범'}이 끝나는 ${dayText(quote.until)}까지 함께 써요(${quote.days}일 · 한 달 ${won(quote.perMonth)} 기준).` })
-      : segOf([[1, '1개월'], [3, '3개월'], [6, '6개월'], [12, '1년']], d.months, (v) => { d.months = v; saveDraft(); paint(); }),
+      : segOf([[1, '1개월'], [12, '1년']], d.months, (v) => { d.months = v; saveDraft(); paint(); }),
     h('p', { class: 'amount', text: won(amount) }),
     !quote && d.months === 12 && full > amount ? h('p', { class: 'small good', text: `한 달씩보다 ${won(full - amount)} 아껴요 (한 달 ${won(Math.round(amount / 12))}꼴)` }) : null,
     d.plan === 'bundle' ? h('p', { class: 'hint', text: '먼치킨(봇 프로그램) 이용권도 같은 기간만큼 함께 늘어나요.' }) : null,
@@ -1193,7 +1193,7 @@ function munchkinOnly(info) {
   const seg = h('div');
   const card = cardOn(), canPay = cardCanPay();
   const payBtn = card ? h('button', { class: canPay ? 'btn main block' : 'btn line block', type: canPay ? 'submit' : 'button', disabled: !canPay, 'aria-describedby': canPay ? null : 'card-closed-m' }) : null;
-  const paintSeg = () => { seg.replaceChildren(segOf([[1, '1개월'], [3, '3개월'], [6, '6개월'], [12, '1년']], months, (v) => { months = v; paintSeg(); })); amt.textContent = won(price(months)); if (payBtn) payBtn.textContent = `${won(price(months))} 카드로 결제`; };
+  const paintSeg = () => { seg.replaceChildren(segOf([[1, '1개월'], [12, '1년']], months, (v) => { months = v; paintSeg(); })); amt.textContent = won(price(months)); if (payBtn) payBtn.textContent = `${won(price(months))} 카드로 결제`; };
   paintSeg();
   const btn = h('button', { class: card && !canPay ? 'btn main block' : 'btn line block', type: 'button', text: card ? '계좌이체로 신청' : '먼치킨 이용권 신청하기', onclick: () => busy(btn, st, async () => {
     const r = await billCall('order', { plan: 'munchkin', months });
