@@ -992,6 +992,43 @@ function payerBox(key, st) {
   };
   return { el, read };
 }
+// 현금영수증 받기(선택, 2026-11-25): 계좌이체 "입금했어요" 위의 접힌 칸 — 펼치면 개인(소득공제)·사업자(지출증빙) 고르기 + 번호 칸.
+//  기본은 접힘·비어 있음. 접혀 있거나 번호가 비어 있으면 보내지 않는다(전과 같음). 번호 검사는 서버가 — 틀리면 서버 글을 이 칸 아래에(bad).
+//  추억앨범 app.js receiptBox 와 같은 글자. 번호는 이 페이지의 메모리에만(RECEIPT — localStorage·sessionStorage 에 안 씀, 화면을 다시 그려도 남게).
+const RECEIPT_KINDS = [['personal', '개인(소득공제)', '휴대폰 번호 또는 현금영수증 카드 번호'], ['business', '사업자(지출증빙)', '사업자등록번호']];
+const RECEIPT = {};   // 신청 번호 → {open, kind, number}
+function receiptBox(key) {
+  const id = (k) => `rc-${key}-${k}`;
+  const mem = (RECEIPT[key] ||= { open: false, kind: RECEIPT_KINDS[0][0], number: '' });
+  const st = statusEl();
+  st.id = id('status');
+  const num = input(id('no'), { type: 'text', inputmode: 'numeric', autocomplete: 'off', maxlength: '30', value: mem.number });
+  const box = field(id('no'), RECEIPT_KINDS.find((x) => x[0] === mem.kind)[2], num);
+  const label = box.querySelector('label');
+  const calm = () => { num.removeAttribute('aria-invalid'); num.removeAttribute('aria-describedby'); say(st, ''); };
+  num.addEventListener('input', () => { mem.number = num.value; calm(); });
+  const pick = (v) => {
+    mem.kind = v;
+    for (const b of btns) { const on = b.dataset.kind === v; b.className = on ? 'on' : ''; b.setAttribute('aria-pressed', String(on)); }
+    label.textContent = RECEIPT_KINDS.find((x) => x[0] === v)[2];
+    calm();
+  };
+  const btns = RECEIPT_KINDS.map(([v, text]) => h('button', { type: 'button', class: v === mem.kind ? 'on' : '', 'aria-pressed': String(v === mem.kind), dataset: { kind: v }, onclick: () => pick(v) }, text));
+  const el = h('details', { class: 'more receipt', open: mem.open },
+    h('summary', { text: '현금영수증 받기(선택)' }),
+    h('fieldset', { class: 'payer', 'aria-label': '현금영수증', 'aria-describedby': id('note') },
+      h('div', { class: 'seg', role: 'group', 'aria-label': '현금영수증 종류' }, btns),
+      box,
+      h('p', { class: 'hint', id: id('note'), text: '입금을 확인한 뒤 발급해 드려요.' }),
+      st));
+  el.addEventListener('toggle', () => { mem.open = el.open; });
+  const read = () => {
+    const number = num.value.replace(/[\s-]+/g, '');
+    return el.open && number ? { kind: mem.kind, number } : null;
+  };
+  const bad = (message) => { el.open = true; num.setAttribute('aria-invalid', 'true'); num.setAttribute('aria-describedby', st.id); say(st, message, true); num.focus(); };
+  return { el, read, bad };
+}
 // 결제 안 끝난 카드 신청으로 화면을 옮기고 [다시 결제](또는 [결제 다시 확인])에 초점
 function showOrder(id, focusSel = 'button[type="submit"]') {
   setTimeout(() => {
@@ -1115,6 +1152,7 @@ function orderCard(o, info) {
   if (o.pay === 'card') return cardOrderCard(o);
   const st = statusEl(), bank = info.bank;
   const na = o.newAlbum;
+  const rc = o.sent ? null : receiptBox(o.id);
   return h('article', { class: 'card pay' + (o.sent ? ' sent' : ''), id: 'order-' + o.id },
     h('div', { class: 'pay-top' },
       h('span', { class: 'chip ' + (o.sent ? 'ok' : 'wait'), text: o.sent ? '입금 알림 보냄 · 확인 기다리는 중' : '이체를 기다리고 있어요' }),
@@ -1129,6 +1167,7 @@ function orderCard(o, info) {
       kvRow('입금자명', h('b', { class: 'mono', text: o.payer }), copyChip(o.payer, '입금자명'))) : null,
     o.sent ? h('p', { class: 'notice', text: `입금했다고 알렸어요. ${na ? WAIT_ALBUM : WAIT_PLAN}` })
       : h('p', { class: 'hint', text: '이체할 때 받는 분에게 보이는 이름(입금자명)을 위 글자 그대로 적어 주세요. 이체한 뒤 "입금했어요"를 눌러 주세요.' }),
+    rc?.el,
     st,
     h('div', { class: 'row-btns' },
       h('button', { class: 'btn line', type: 'button', text: '신청 취소', onclick: (e) => busy(e.currentTarget, st, async () => {
@@ -1136,7 +1175,12 @@ function orderCard(o, info) {
         await billCall('cancel', { id: o.id }); toast('신청을 취소했어요'); await loadInfo(); paint();
       }) }),
       !o.sent ? h('button', { class: 'btn main', type: 'button', text: '입금했어요', onclick: (e) => busy(e.currentTarget, st, async () => {
-        await billCall('sent', { id: o.id }); toast('운영자에게 알렸어요'); await loadInfo(); paint();
+        // 현금영수증(선택): 펼쳐서 번호를 적었으면 함께 보낸다 — 번호가 틀리면(400) 서버 글을 그 칸 아래에
+        const receipt = rc.read();
+        try { await billCall('sent', { id: o.id, ...(receipt ? { receipt } : {}) }); }
+        catch (err) { if (receipt && err.status === 400) { rc.bad(err.message); return; } throw err; }
+        delete RECEIPT[o.id];
+        toast(receipt ? '운영자에게 알렸어요. 현금영수증도 신청했어요' : '운영자에게 알렸어요'); await loadInfo(); paint();
       }) }) : null));
 }
 const segOf = (items, cur, on, label) => h('div', { class: 'seg', role: 'group', 'aria-label': label || null }, items.map(([v, label, ok = true]) =>
