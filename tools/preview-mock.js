@@ -1,4 +1,4 @@
-// 가짜 서버(미리 보기만): supabase 함수 부르기를 가로채 지어낸 답을 준다. ?mock=new(앨범 없음) · owner(앨범 있음) · pending(신청 기다림) · open(new 와 같음 — 예전 이름)
+// 가짜 서버(미리 보기만): supabase 함수 부르기를 가로채 지어낸 답을 준다. ?mock=new(앨범 없음) · owner(앨범 있음) · pending(신청 기다림 — 입금 화면·현금영수증 칸) · open(new 와 같음 — 예전 이름)
 //  2026-11-23 모두에게 결제창: 서버 기본이 열림(albumOpen true · 먼치킨 신청 지금부터) · 카드 단추는 모두(show) · 결제창은 canPay 인 심사 계정·운영자만(테스트 채널)
 //  tester(심사 계정 — canPay·테스트 모드) · tester-wait(심사 계정 + 결제 안 끝난 카드 신청 하나) · beta(운영자가 albumOpen:false 로 끔) · cardoff(card.on off)
 //  legacy(바뀌기 전 서버 답 — card 없음·albumOpen 없음·먼치킨 12/1) · 로그인 전 prices 는 sessionStorage mock_pub=0 이면 예전 서버처럼 401
@@ -96,7 +96,17 @@ window.fetch = async (url, init = {}) => {
         if (p === 'fail') return reply({ ok: true, state: 'failed', order: o, message: '카드사에서 결제를 거절했어요. 다른 카드로 다시 해 주세요.' });
         return reply({ ok: true, state: 'pending', order: o });
       }
-      case 'sent': { const o = st.orders.find((x) => x.id === b.id); if (o) o.sent = Date.now(); save(); return reply({ ok: true, order: o }); }
+      // 현금영수증(선택, 2026-11-25): 서버 bakje-billing v7 과 같은 검사 — 틀리면 400 · 번호는 회원 답에 넣지 않는다
+      case 'sent': {
+        const r = b.receipt, number = r && typeof r.number === 'string' ? r.number.replace(/[\s-]+/g, '') : '';
+        if (r != null && (typeof r !== 'object' || Array.isArray(r))) return reply({ ok: false, error: '현금영수증 번호를 다시 확인해 주세요.' }, 400);
+        if (number) {
+          if (r.kind !== 'personal' && r.kind !== 'business') return reply({ ok: false, error: '현금영수증 종류를 골라 주세요.' }, 400);
+          const good = r.kind === 'personal' ? /^01[0-9]{8,9}$/.test(number) || /^[0-9]{13,19}$/.test(number) : /^[0-9]{10}$/.test(number);
+          if (!good) return reply({ ok: false, error: '현금영수증 번호를 다시 확인해 주세요.' }, 400);
+        }
+        const o = st.orders.find((x) => x.id === b.id); if (o) o.sent = Date.now(); save(); return reply({ ok: true, order: o });
+      }
       case 'cancel': { const o = st.orders.find((x) => x.id === b.id); if (o) { o.state = 'canceled'; o.done = Date.now(); } save(); return reply({ ok: true, order: o }); }
     }
   }
