@@ -684,7 +684,7 @@ function viewBody() {
 // 베타테스터 신청 화면(#go=beta)은 beta.js — 그 화면을 열 때만 불러온다(betaView 가 album.js 의 도구를 받아 그림)
 let betaMod = null, betaJob = null, betaFail = false;
 function betaBody() {
-  if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText });
+  if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText, key: KEY });
   if (!betaJob && !betaFail) betaJob = import('./beta.js?v=1').then((m) => { betaMod = m; }, () => { betaFail = true; }).finally(() => { betaJob = null; paint(); });
   return h('section', { class: 'sect narrow' }, h('p', { class: betaFail ? 'status bad' : 'muted', text: betaFail ? '화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고침해 주세요.' : '불러오는 중이에요…' }));
 }
