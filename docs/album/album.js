@@ -4,6 +4,7 @@
 // 주소로 들어오는 것:
 //  #bjlogin=<표>      카카오 로그인·먼치킨 프로그램(web-ticket)이 로그인된 채 열 때 → 표를 세션으로 바꾼다
 //  #go=apply|me|find  그 화면으로(프로그램의 [신청하기]·[내 정보 관리]·[아이디·비밀번호 찾기])
+//  #go=beta           추억앨범 베타테스터 신청(2026-11-25 — 봇·송출 큰 창 [신청하기]가 #bjlogin=<표>&go=beta 로 연다 · 화면은 beta.js)
 //  ?app=<자리>        먼치킨 프로그램 카카오 로그인 — 여기서 로그인한 뒤 "먼치킨 프로그램에서 로그인할까요?" [로그인] → app-approve
 //  ?app=<자리>&kakao=1  (2026-11-06 쉬운 로그인) 먼치킨이 띄운 카카오 로그인 창: 로그인이 안 돼 있으면 바로 카카오로 넘기고,
 //                     로그인되면 묻지 않고 승인한다 — 단, 그 창의 preload 가 준 표시(window.munchkinLogin — inApp·같은 자리 번호)가 있을 때만.
@@ -81,7 +82,7 @@ const RETURN = (() => {
     if (TICKET_RE.test(hp.get('bjlogin') || '')) out.ticket = hp.get('bjlogin');
     if (/^[-a-z0-9]{1,20}$/.test(hp.get('bjlogin-error') || '')) out.loginError = hp.get('bjlogin-error');   // age14 처럼 숫자도
     if (/^[a-z]{1,10}$/.test(hp.get('bjsso') || '')) out.sso = hp.get('bjsso');
-    if (['apply', 'me', 'find'].includes(hp.get('go'))) out.go = hp.get('go');
+    if (['apply', 'me', 'find', 'beta'].includes(hp.get('go'))) out.go = hp.get('go');
     if (['munchkin', 'album', 'bundle'].includes(hp.get('plan'))) out.plan = hp.get('plan');   // #go=apply&plan=munchkin — 3번 칸에서 미리 고를 이용권
     if (['1', '12'].includes(hp.get('months'))) out.months = Number(hp.get('months'));          // &months=1|12 — 첫 화면에서 고른 기간
     const q = new URLSearchParams(location.search);
@@ -350,7 +351,7 @@ async function trySso() {
 // 로그인한 뒤 한 번: 서버에 쿠키를 맡겨 둔다(없으면 서버 주소에 잠깐 들렀다 돌아온다 — 50일에 한 번쯤).
 //  신청 중이거나 프로그램 로그인 중에는 하지 않는다(화면이 바뀌면 안 되니까).
 async function ssoRemember() {
-  if (!S.session || S.app || S.view === 'apply' || $('dialog[open]')) return;
+  if (!S.session || S.app || S.view === 'apply' || S.view === 'beta' || $('dialog[open]')) return;
   if (Date.now() - Number(ls.get('mk_sso_at') || 0) < SSO_FRESH_MS) return;
   try {
     const r = await fetch(API + 'sso-check?' + new URLSearchParams({ h: location.host, peek: '1' }), { credentials: 'include', cache: 'no-store' }).then((x) => x.json());
@@ -401,14 +402,14 @@ function afterLogin(message) {
 function continueNext() {
   const n = S.next || ss.get('mk_next');
   S.next = null; ss.del('mk_next');
-  if (n === 'apply' || n === 'me') go(n);
+  if (n === 'apply' || n === 'me' || n === 'beta') go(n);
   else paint();
   ssoRemember();
 }
 // 로그인이 필요한 화면은 로그인부터
 function go(view) {
   if (HOME) {
-    if (view === 'apply' || view === 'me') location.href = ALBUM_URL + '#go=' + view + (view === 'apply' ? `&plan=${S.draft.plan}&months=${S.draft.months}` : '');
+    if (view === 'apply' || view === 'me' || view === 'beta') location.href = ALBUM_URL + '#go=' + view + (view === 'apply' ? `&plan=${S.draft.plan}&months=${S.draft.months}` : '');
     else paint();
     return;
   }
@@ -422,7 +423,7 @@ function go(view) {
     window.scrollTo({ top: 0 });
     return;
   }
-  if ((view === 'apply' || view === 'me' || view === 'app') && !S.session) {
+  if ((view === 'apply' || view === 'me' || view === 'app' || view === 'beta') && !S.session) {
     if (view !== 'app') S.next = view;
     S.view = view === 'app' ? 'app' : S.view;
     paint();
@@ -666,8 +667,8 @@ function breakSentences(root) {
 const app = $('#app');
 function paint() {
   if (HOME) { paintHome(); return; }
-  // 모양만: 어느 화면인지 CSS 가 알게 이름을 적어 둔다(view-home · view-apply · view-me · view-app)
-  const name = S.view === 'app' ? 'app' : S.view === 'apply' || (S.view === 'me' && S.session) ? S.view : 'home';
+  // 모양만: 어느 화면인지 CSS 가 알게 이름을 적어 둔다(view-home · view-apply · view-me · view-app · view-beta)
+  const name = S.view === 'app' ? 'app' : S.view === 'apply' || ((S.view === 'me' || S.view === 'beta') && S.session) ? S.view : 'home';
   const main = h('main', { class: 'page view-' + name, id: 'main' }, viewBody());
   app.replaceChildren(topbar(), main, footer());
   breakSentences(main);
@@ -677,7 +678,15 @@ function viewBody() {
   if (S.view === 'apply' && S.session) return applyView();
   if (S.view === 'apply') return applyGuest();
   if (S.view === 'me' && S.session) return meView();
+  if (S.view === 'beta' && S.session) return betaBody();
   return homeView();
+}
+// 베타테스터 신청 화면(#go=beta)은 beta.js — 그 화면을 열 때만 불러온다(betaView 가 album.js 의 도구를 받아 그림)
+let betaMod = null, betaJob = null, betaFail = false;
+function betaBody() {
+  if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText });
+  if (!betaJob && !betaFail) betaJob = import('./beta.js?v=1').then((m) => { betaMod = m; }, () => { betaFail = true; }).finally(() => { betaJob = null; paint(); });
+  return h('section', { class: 'sect narrow' }, h('p', { class: betaFail ? 'status bad' : 'muted', text: betaFail ? '화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고침해 주세요.' : '불러오는 중이에요…' }));
 }
 function topbar() {
   // 먼치킨 안의 카카오 로그인 창: 이름표만(다른 화면으로 가는 단추 없음)
@@ -699,7 +708,7 @@ function topbar() {
       } }, h('em', { text: '추억앨범' }))),
     h('nav', { class: 'top-nav' },
       h('a', { class: 'btn line small get-link', href: '../#get', text: '먼치킨 받기' }),
-      S.view !== 'apply' && S.view !== 'app' ? (albumBeta() && !ownsAlbum()
+      S.view !== 'apply' && S.view !== 'app' && S.view !== 'beta' ? (albumBeta() && !ownsAlbum()
         ? h('a', { class: 'btn line small hide-s', href: PREVIEW_URL, target: '_blank', rel: 'noopener', text: '미리 보기' })
         : h('button', { class: 'btn line small hide-s', type: 'button', text: '신청하기', onclick: () => go('apply') })) : null,
       right)));
@@ -1634,7 +1643,7 @@ async function start() {
   }
   const want = RETURN.go || ss.get('mk_next') || back || '';
   if (want === 'find') { openSheet('find'); return; }
-  if (want === 'apply' || want === 'me') {
+  if (want === 'apply' || want === 'me' || want === 'beta') {
     ss.del('mk_next');
     if (!S.session) { S.next = want; openSheet('login'); return; }
     if (RETURN.ticket && S.me && !S.me.nickname) { S.next = want; openSheet('nickname', { join: true }); return; }
