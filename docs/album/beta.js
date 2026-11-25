@@ -454,7 +454,8 @@ export function betaView(ctx) {
         : C.h('p', { class: 'muted bt-loading', text: '불러오는 중이에요…' }));
   }
   const m = d.mine || {};
-  const ended = Boolean(d.closedAt) || (Number(d.left) <= 0 && Number(d.seats) > 0) || Date.now() > untilOf(d) || Number(d.picked) > 0;
+  // 모집이 열려 있지 않을 때: 서버 closedAt(닫은 때 ms — 없으면 null)이 있거나 until 이 지났으면 끝남, 둘 다 아니면 시작 전
+  const ended = d.closedAt != null || Date.now() > untilOf(d);
   if (m.state === 'picked') return pickedView(d, m);
   if (m.hasAlbum) return ownerView(m);
   if (m.state === 'wait') return B.edit && m.canApply ? formView(d, m) : waitView(d, m);
