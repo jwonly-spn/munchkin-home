@@ -5,6 +5,8 @@
 //  #bjlogin=<표>      카카오 로그인·먼치킨 프로그램(web-ticket)이 로그인된 채 열 때 → 표를 세션으로 바꾼다
 //  #go=apply|me|find  그 화면으로(프로그램의 [신청하기]·[내 정보 관리]·[아이디·비밀번호 찾기])
 //  #go=beta           추억앨범 베타테스터 신청(2026-11-25 — 봇·송출 큰 창 [신청하기]가 #bjlogin=<표>&go=beta 로 연다 · 화면은 beta.js)
+//                     2026-11-26 쉬운 신청: 짧은 주소 먼치킨.com/beta(docs/beta/index.html)가 여기로 넘긴다 · 로그인 창을 먼저 띄우지 않고 설명·3단계부터
+//  #go=beta&preview=1 운영자(또는 이미 앨범이 있는 분)가 신청 화면 세 단계를 미리 본다(보내기는 안 됨 — 이 탭 sessionStorage mk_beta_preview)
 //  ?app=<자리>        먼치킨 프로그램 카카오 로그인 — 여기서 로그인한 뒤 "먼치킨 프로그램에서 로그인할까요?" [로그인] → app-approve
 //  ?app=<자리>&kakao=1  (2026-11-06 쉬운 로그인) 먼치킨이 띄운 카카오 로그인 창: 로그인이 안 돼 있으면 바로 카카오로 넘기고,
 //                     로그인되면 묻지 않고 승인한다 — 단, 그 창의 preload 가 준 표시(window.munchkinLogin — inApp·같은 자리 번호)가 있을 때만.
@@ -16,6 +18,7 @@ const SB = 'https://aksegkhhugqvvaidgvro.supabase.co';
 const KEY = 'sb_publishable_45cIqG4dGLSlev-rmNiVDg_uG8szVzD';
 const API = SB + '/functions/v1/bakje/';
 const BILL = SB + '/functions/v1/bakje-billing';
+const BETA_FN = SB + '/functions/v1/bakje-beta';
 const TERMS = 'https://xn--hu5bi2af5y.com/terms.html';
 const PRIVACY = 'https://xn--hu5bi2af5y.com/privacy.html';
 const SUFFIX = '먼치킨.com';
@@ -56,6 +59,7 @@ const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 //  같은 주소(먼치킨.com)라 로그인 표(localStorage mk_session)를 그대로 같이 쓴다. 신청 화면·내 정보는 album/ 로 넘어간다.
 const HOME = !document.getElementById('app') && Boolean(document.getElementById('mk-pay'));
 const ALBUM_URL = HOME ? 'album/' : './';
+const BETA_PAGE = HOME ? 'beta/' : '../beta/';   // 짧은 주소 먼치킨.com/beta(→ album/#go=beta)
 // 처음 HTML 의 가격 글(첫 페이지 #mk-pay · 추억앨범 #app) — 서버 가격을 아직 못 받았거나 못 받으면 이것을 그대로 보인다(첫 그리기 전에 떠 둔다)
 const STATIC_PRICES = (() => { const ul = document.querySelector('#mk-pay ul, #app .boot-prices ul'); return ul ? ul.cloneNode(true) : null; })();
 
@@ -76,7 +80,7 @@ if (LOCAL && (new URLSearchParams(location.search).has('mock') || ss.get('mk_moc
 
 // ---------- 주소로 들어온 값 — 맨 먼저 떼어 두고 주소를 깨끗하게 ----------
 const RETURN = (() => {
-  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false, pay: null, plan: '', months: 0 };
+  const out = { ticket: '', loginError: '', sso: '', go: '', app: '', kakao: false, pay: null, plan: '', months: 0, preview: false };
   try {
     const hp = new URLSearchParams(location.hash.slice(1));
     if (TICKET_RE.test(hp.get('bjlogin') || '')) out.ticket = hp.get('bjlogin');
@@ -85,6 +89,7 @@ const RETURN = (() => {
     if (['apply', 'me', 'find', 'beta'].includes(hp.get('go'))) out.go = hp.get('go');
     if (['munchkin', 'album', 'bundle'].includes(hp.get('plan'))) out.plan = hp.get('plan');   // #go=apply&plan=munchkin — 3번 칸에서 미리 고를 이용권
     if (['1', '12'].includes(hp.get('months'))) out.months = Number(hp.get('months'));          // &months=1|12 — 첫 화면에서 고른 기간
+    out.preview = out.go === 'beta' && hp.get('preview') === '1';                             // #go=beta&preview=1 — 베타 신청 화면 미리 보기
     const q = new URLSearchParams(location.search);
     if (APP_RE.test(q.get('app') || '')) out.app = q.get('app');
     out.kakao = Boolean(out.app) && q.get('kakao') === '1';
@@ -94,7 +99,7 @@ const RETURN = (() => {
   } catch { /* 이상한 주소 — 그냥 첫 화면 */ }
   if (HOME) {
     if (out.ticket || out.loginError || out.sso) { try { history.replaceState(null, '', location.pathname + location.search); } catch { /* 그대로 */ } }
-    return { ...out, go: '', app: '', kakao: false, pay: null, plan: '', months: 0 };
+    return { ...out, go: '', app: '', kakao: false, pay: null, plan: '', months: 0, preview: false };
   }
   try { history.replaceState(null, '', location.pathname + (out.app ? '?app=' + out.app : '')); } catch { /* 그대로 */ }
   return out;
@@ -115,8 +120,12 @@ const S = {
   labelOk: null,                 // {label, host} — album-name 이 쓸 수 있다고 한 것
   pub: null,                     // 로그인 전 이용권·가격(세션 없이 묻는 prices — 서버가 주면) · 못 받으면 {failed: true}
   payDone: null,                 // 카드 결제 결과 {state: checking·paid·test, order}
-  payNote: null                  // 결제 안 끝난 카드 신청에 보일 글 {id, text, bad}
+  payNote: null,                 // 결제 안 끝난 카드 신청에 보일 글 {id, text, bad}
+  betaPub: null,                 // 베타테스터 모집 띠: 공개 status {open, seats, left} · 못 받으면 {open: false}
+  // 베타 신청 미리 보기: 주소에 preview=1 → 이 탭 동안 기억(카카오에서 돌아와도) · 미리 보기 없이 #go=beta 로 오면 끔
+  betaPreview: RETURN.preview || (RETURN.go !== 'beta' && ss.get('mk_beta_preview') === '1')
 };
+if (RETURN.preview) ss.set('mk_beta_preview', '1'); else if (RETURN.go === 'beta') ss.del('mk_beta_preview');
 // 결제하는 분(카드 결제창에 넘김) — 저장하지 않는다(localStorage·sessionStorage 에도 안 씀). 화면을 다시 그려도 쓴 글이 남게 메모리에만.
 const PAYER = { name: '', phone: '', email: '' };
 if (RETURN.plan) S.draft.plan = RETURN.plan;
@@ -153,6 +162,7 @@ const ICONS = {
   check: '<path d="M5 12.5l4.2 4.2L19 7"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   left: '<path d="M15 5l-7 7 7 7"/>',
+  right: '<path d="M9 5l7 7-7 7"/>',
   user: '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/>',
   copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/>',
   out: '<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4"/>',
@@ -423,7 +433,14 @@ function go(view) {
     window.scrollTo({ top: 0 });
     return;
   }
-  if ((view === 'apply' || view === 'me' || view === 'app' || view === 'beta') && !S.session) {
+  // 베타테스터 신청도 로그인 전에 연다(설명·3단계부터 — 로그인은 그 화면의 [카카오로 시작하기], 2026-11-26)
+  if (view === 'beta' && !S.session) {
+    S.view = 'beta';
+    paint();
+    window.scrollTo({ top: 0 });
+    return;
+  }
+  if ((view === 'apply' || view === 'me' || view === 'app') && !S.session) {
     if (view !== 'app') S.next = view;
     S.view = view === 'app' ? 'app' : S.view;
     paint();
@@ -668,7 +685,7 @@ const app = $('#app');
 function paint() {
   if (HOME) { paintHome(); return; }
   // 모양만: 어느 화면인지 CSS 가 알게 이름을 적어 둔다(view-home · view-apply · view-me · view-app · view-beta)
-  const name = S.view === 'app' ? 'app' : S.view === 'apply' || ((S.view === 'me' || S.view === 'beta') && S.session) ? S.view : 'home';
+  const name = S.view === 'app' ? 'app' : S.view === 'apply' || S.view === 'beta' || (S.view === 'me' && S.session) ? S.view : 'home';
   const main = h('main', { class: 'page view-' + name, id: 'main' }, viewBody());
   app.replaceChildren(topbar(), main, footer());
   breakSentences(main);
@@ -678,14 +695,40 @@ function viewBody() {
   if (S.view === 'apply' && S.session) return applyView();
   if (S.view === 'apply') return applyGuest();
   if (S.view === 'me' && S.session) return meView();
-  if (S.view === 'beta' && S.session) return betaBody();
+  if (S.view === 'beta') return betaBody();
   return homeView();
 }
 // 베타테스터 신청 화면(#go=beta)은 beta.js — 그 화면을 열 때만 불러온다(betaView 가 album.js 의 도구를 받아 그림)
 let betaMod = null, betaJob = null, betaFail = false;
+// 베타 화면의 [아이디로 로그인] — 로그인하면 베타 화면으로 돌아온다
+function betaLogin() { S.next = 'beta'; openSheet('login'); }
+function setBetaPreview(on) {
+  S.betaPreview = Boolean(on);
+  if (on) ss.set('mk_beta_preview', '1'); else ss.del('mk_beta_preview');
+  paint(); window.scrollTo({ top: 0 });
+}
+// 베타테스터 모집 띠(먼치킨.com 첫 화면 · album/ 처음 화면, 2026-11-26): 세션 없이 공개 status 를 한 번 물어
+//  모집 중(open)이고 남은 자리가 있을 때만 그린다 → 짧은 주소 먼치킨.com/beta. 못 물으면 안 보인다.
+let betaPubJob = null;
+function ensureBetaPub() {
+  if (S.betaPub || betaPubJob) return;
+  betaPubJob = call('', { method: 'POST', body: { action: 'status' }, base: BETA_FN })
+    .then((r) => { S.betaPub = { open: r.open === true && Number(r.left) > 0, seats: Number(r.seats) || 10, left: Math.max(0, Number(r.left) || 0) }; })
+    .catch(() => { S.betaPub = { open: false }; })
+    .finally(() => { betaPubJob = null; if (S.betaPub.open) paint(); });
+}
+function betaStrip() {
+  ensureBetaPub();
+  if (!S.betaPub?.open) return null;
+  return h('a', { class: 'beta-strip', href: BETA_PAGE, onclick: HOME ? null : (e) => { e.preventDefault(); go('beta'); } },
+    h('span', { class: 'bs-tag', text: '모집 중' }),
+    h('span', { class: 'bs-text' }, '추억앨범 베타테스터', h('span', { class: 'bs-more', text: ` ${S.betaPub.seats}명 추가 모집 · 뽑히면 12월 31일까지 무료` })),
+    h('span', { class: 'bs-go' }, '신청하기', icon('right')));
+}
 function betaBody() {
-  if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText, key: KEY });
-  if (!betaJob && !betaFail) betaJob = import('./beta.js?v=1').then((m) => { betaMod = m; }, () => { betaFail = true; }).finally(() => { betaJob = null; paint(); });
+  if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText, key: KEY,
+    login: betaLogin, kakao: () => { S.next = 'beta'; kakaoLogin(); }, kakaoButton, preview: S.betaPreview, setPreview: setBetaPreview });
+  if (!betaJob && !betaFail) betaJob = import('./beta.js?v=2').then((m) => { betaMod = m; }, () => { betaFail = true; }).finally(() => { betaJob = null; paint(); });
   return h('section', { class: 'sect narrow' }, h('p', { class: betaFail ? 'status bad' : 'muted', text: betaFail ? '화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고침해 주세요.' : '불러오는 중이에요…' }));
 }
 function topbar() {
@@ -790,6 +833,7 @@ function homeView() {
     h('figure', { class: 'feat-pic' }, pic, cap ? h('figcaption', { text: cap }) : null));
   const top = (name, w, hh, alt) => h('div', { class: 'real-pic' }, shot(name, w, hh, alt));
   return [
+    betaStrip(),
     mine ? h('section', { class: 'mine-strip on-night' }, h('div', { class: 'wrap mine-row' }, mine.map(albumMini))) : null,
     // ① 첫 화면
     h('section', { class: 'hero a-hero night hero-night', 'aria-labelledby': 'a-title' }, sky(), h('div', { class: 'wrap hero-in' },
@@ -1673,6 +1717,8 @@ async function start() {
   if (RETURN.pay) { await payReturn(RETURN.pay); return; }
 
   if (RETURN.loginError) {
+    // 베타 신청에서 [카카오로 시작하기]를 눌렀다가 돌아옴(그만둠·처음 가입 만 14세 체크 등) → 뒤 화면은 베타 신청 그대로
+    if (ss.get('mk_next') === 'beta' && !S.session) { ss.del('mk_next'); S.next = 'beta'; S.view = 'beta'; paint(); }
     // 처음 카카오로 가입하는데 만 14세 체크가 없었다 → 가입 화면(맨 위 체크 칸)에서 다시
     if (RETURN.loginError === 'age14') { if (!S.session) openSheet('signup', { kakaoAge: true }); return; }
     toast(KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail, RETURN.loginError !== 'cancel');
@@ -1689,6 +1735,8 @@ async function start() {
   if (want === 'find') { openSheet('find'); return; }
   if (want === 'apply' || want === 'me' || want === 'beta') {
     ss.del('mk_next');
+    // 베타 신청은 로그인 창을 먼저 띄우지 않는다(설명·3단계부터, 2026-11-26)
+    if (!S.session && want === 'beta') { go('beta'); return; }
     if (!S.session) { S.next = want; openSheet('login'); return; }
     if (RETURN.ticket && S.me && !S.me.nickname) { S.next = want; openSheet('nickname', { join: true }); return; }
     go(want);
@@ -1764,6 +1812,7 @@ function homeAuth() {
 }
 function paintHome() {
   $('#mk-auth')?.replaceChildren(...[homeAuth()].flat());
+  $('#mk-beta')?.replaceChildren(...[betaStrip()].filter(Boolean));
   const box = $('#mk-pay');
   if (!box) return;
   // 서버 가격을 아직 못 받았거나 못 받았으면: 처음 HTML(위 띠·가격 글)을 그대로 두고, 로그인 전이면 album/ 로 가던 링크만

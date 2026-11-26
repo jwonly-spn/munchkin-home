@@ -466,3 +466,12 @@ p,li,dd,summary,figcaption{text-wrap:pretty}
 @media (prefers-color-scheme:dark){.why-move{--ink-2:#E8DCC0}}
 @media (max-width:860px){.why-move{border-radius:26px;padding:24px 20px 26px;grid-template-columns:1fr;gap:12px;margin-top:14px}.why-move .awin{width:112px;grid-row:1}}
 @media (max-width:520px){.why-move-list{grid-template-columns:1fr}}
+
+/* 추억앨범 베타테스터 모집 띠(2026-11-26 쉬운 신청) — 모집 중일 때만 album.js 가 그린다: 첫 페이지 #mk-beta · album/ 처음 화면 맨 위 → 짧은 주소 먼치킨.com/beta.
+   산호색 띠 + 남색 글(단추 색과 같은 짝). 휴대폰은 "추억앨범 베타테스터 신청하기"만 한 줄로. */
+.beta-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;min-height:48px;padding:8px 16px;background:var(--coral);color:#1A2040;font-size:16px;font-weight:700;line-height:1.4;text-decoration:none}
+.bs-tag{flex:none;padding:3px 10px;border-radius:999px;background:#1A2040;color:#FFFFFF;font-size:14px;font-weight:800}
+.bs-go{flex:none;display:inline-flex;align-items:center;gap:2px;text-decoration:underline;text-underline-offset:4px}
+.bs-go .ico{width:18px;height:18px;stroke-width:2.6}
+.beta-strip:focus-visible{outline:3px solid #1A2040;outline-offset:-6px;border-radius:0}
+@media (max-width:600px){.beta-strip{justify-content:flex-start;font-size:15px;gap:4px 8px}.bs-more{display:none}}

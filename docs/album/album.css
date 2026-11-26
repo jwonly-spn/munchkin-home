@@ -233,13 +233,14 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
 
 
 /* 추억앨범 베타테스터 신청(#go=beta, 2026-11-25 — 시안 기획\베타테스터-20261125\시안\apply.html 모양 그대로 · beta.js 가 그림).
-   휴대폰은 바탕 위에 바로(시안), PC 는 흰 카드 하나. 분홍 = 베타 표시·남은 자리, 파랑 = 동의 칸·보기 링크(시안 색), 신청 단추는 짙은 글자색(시안). */
+   휴대폰은 바탕 위에 바로(시안), PC 는 흰 카드 하나. 분홍 = 베타 표시·남은 자리, 파랑 = 동의 칸·보기 링크(시안 색), 신청 단추는 짙은 글자색(시안).
+   (2026-11-26) 바깥 상자 이름 .bt → .bt-box: ../site.css 의 첫 페이지 기능 칸 .bt(.bt p 글 크기·휴대폰 가운데 맞춤)와 겹쳐 글 크기·폭이 바뀌던 것을 막음. */
 .view-beta{--bt-pink:#C2255C;--bt-pink-soft:#FFF0F4;--bt-pink-line:#FFC9D5;--bt-blue:#0062C4}
 .view-beta .sect.narrow{width:min(100% - 32px,600px)}
-.bt{display:grid;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:36px 40px 32px;box-shadow:var(--lift)}
+.bt-box{display:grid;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:36px 40px 32px;box-shadow:var(--lift)}
 .bt-eyebrow{font-size:14px;font-weight:800;color:var(--bt-pink);letter-spacing:.06em}
-.bt h1{margin-top:6px;font-size:clamp(28px,6vw,34px);line-height:1.25}
-.bt h1:focus{outline:none}
+.bt-box h1{margin-top:6px;font-size:clamp(28px,6vw,34px);line-height:1.25}
+.bt-box h1:focus{outline:none}
 .bt-sub{margin-top:8px;font-size:16px;line-height:1.6;color:var(--ink-2)}
 .bt-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .bt-chips li{padding:5px 11px;border-radius:10px;background:var(--soft);box-shadow:inset 0 0 0 1px var(--line);font-size:14px;font-weight:800;line-height:1.4}
@@ -292,6 +293,45 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
 .bt-album .ico:last-child{margin-left:auto;color:var(--ink-2)}
 .bt-after{margin-top:16px}
 .bt-loading{margin-top:18px}
+/* (2026-11-26 쉬운 신청 — 안 A · 시안 기획\베타테스터-20261125\쉽게\후-A-2) 로그인 전 설명·3단계 첫 화면 · 한 화면에 한 가지(진행 막대 + "2 / 3") · 뽑힌 뒤 주소 정하기.
+   첫 화면 머리는 밤 남색(휴대폰은 맨 위 줄과 이어져 화면 끝까지, PC 는 카드 위쪽 + 먼치킨 그림) · 휴대폰은 아래 단추가 화면 맨 아래(시안). */
+.bt-hero{position:relative;overflow:hidden;margin:-36px -40px 0;padding:30px 170px 30px 40px;border-radius:27px 27px 0 0;background:linear-gradient(160deg,#171C3A,#2C3670);color:#F6F1E7;--ink:#F6F1E7;--ink-2:#C3C8E3;--focus:#FFD98A}
+.bt-hero::before{content:"";position:absolute;right:-40px;bottom:-90px;width:280px;height:230px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.24),transparent)}
+.bt-hero::after{content:"";position:absolute;right:34px;bottom:0;width:120px;height:150px;background:url("../art/album.webp") center bottom/contain no-repeat}
+.bt-hero>*{position:relative}
+.bt-badge{display:inline-flex;padding:5px 12px;border-radius:999px;background:var(--coral);color:#1A2040;font-size:14px;font-weight:800;line-height:1.4}
+.bt-box .bt-hero h1{margin-top:12px;color:#F6F1E7;font-size:clamp(28px,6.6vw,36px);line-height:1.22}
+.bt-hero-sub{margin-top:10px;font-size:16px;line-height:1.6;color:#C3C8E3}
+.bt-hero .bt-chips li{background:rgba(255,255,255,.12);box-shadow:none;color:#F6F1E7}
+.bt-hero .bt-chips .hot{background:#FFE1E7;color:#B0234F;box-shadow:none}
+.bt-steps{display:grid;gap:8px;margin-top:24px}
+.bt-steps li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--soft)}
+.bt-num{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);font-size:14px;font-weight:800;line-height:1}
+.bt-step-t{display:block;font-size:17px;font-weight:800;line-height:1.4}
+.bt-steps small{display:block;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.bt-note{margin-top:14px;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.bt-cta{display:grid;gap:8px;margin-top:28px}
+.bt-cta>.status:empty{display:none}
+.bt-cta .bt-go{margin-top:0}
+.bt-alt{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;text-align:center}
+.bt-alt .link-btn{color:var(--ink-2);font-weight:600}
+.bt-alt .sep{width:1px;height:14px;background:var(--line)}
+p.bt-alt.hint{display:block;font-size:14px}
+.bt-preview{margin-top:16px;padding:10px 14px;font-size:15px;gap:0}
+.bt-preview .link-btn{justify-self:start;padding:0;min-height:40px;color:inherit}
+.bt-step>.bt-preview{margin:0 0 16px}
+/* 단계 화면: 진행 막대 + "2 / 3" + 굵은 제목 하나 */
+.bt-prog{display:flex;gap:6px;margin-top:14px}
+.bt-prog i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.bt-prog i.on{background:var(--coral)}
+.bt-stepno{margin-top:14px;font-size:14px;font-weight:800;line-height:1.3;color:var(--link)}
+.bt-step h1{margin-top:4px;font-size:clamp(24px,5.8vw,30px)}
+.bt-photos{display:grid;gap:8px;margin-top:18px}
+.bt-photos .bt-count{margin:4px 0 0;font-size:15px;white-space:normal}
+.bt-count.more{color:var(--bt-pink)}
+.bt-photo-hint{margin-top:4px;font-size:14px;line-height:1.55}
+.bt-later{display:flex;align-items:flex-start;gap:8px;margin-top:20px;font-size:15px;line-height:1.55}
+.bt-later .ico{width:18px;height:18px;margin-top:3px}
 
 /* 바닥: 첫 페이지와 같은 깊은 남색 */
 .foot{background:var(--foot-bg);color:var(--foot-ink);padding:40px 0 calc(40px + env(safe-area-inset-bottom,0px));font-size:15px;--focus:#FFD98A}
@@ -370,7 +410,13 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
   .app-card{padding:0 18px 24px;border-radius:20px}
   .app-card::before{margin:0 -18px;height:128px}
   .app-card h2{font-size:23px}
-  .bt{background:none;border:0;border-radius:0;box-shadow:none;padding:4px 2px 8px}
+  .bt-box{background:none;border:0;border-radius:0;box-shadow:none;padding:4px 2px 8px}
+  /* 쉬운 신청: 한 화면이 휴대폰 화면 높이(맨 위 줄 60 + 위 여백 20 을 뺀 만큼) — 아래 단추가 맨 아래에 붙는다 */
+  .bt-full{display:flex;flex-direction:column;min-height:calc(100svh - 80px - env(safe-area-inset-top,0px))}
+  .bt-full>.bt-form{flex:1 0 auto;display:flex;flex-direction:column}
+  .bt-full .bt-cta{margin-top:auto;padding-top:24px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .bt-hero{margin:-20px -18px 0;padding:18px 18px 24px;border-radius:0}
+  .bt-hero::before,.bt-hero::after{display:none}
 }
 @media (max-width:400px){
   .brand-split .brand-home span{display:none}
