@@ -866,25 +866,30 @@ function homeView() {
           h('p', { class: 'lead', text: '먼치킨 계정으로 로그인하면 누구나 댓글과 답글을 달 수 있어요. 이름 옆 표시로 누가 썼는지 바로 보여요.' })),
         h('ul', { class: 'who-list' },
           [['fan', '리스너', '로그인한 청취자예요.'],
-            ['dj', 'DJ', '이용권을 쓰는 다른 DJ예요.'],
+            ['dj', 'DJ', '이용권을 결제한 다른 DJ예요.'],
             ['owner', 'DJ', '이 앨범의 주인이에요.']]
-            .map(([r, tag, text]) => h('li', null, h('span', { class: 'who-mark' }, demoRole(r), h('span', { class: 'dc-tag t-' + r, text: tag })), h('span', { text }))))),
+            .map(([r, tag, text]) => h('li', null, h('span', { class: 'who-mark' }, demoRole(r), h('span', { class: 'dc-tag t-' + r, text: tag })), h('span', { text })))),
+        h('a', { class: 'guard-link', href: '#guard', onclick: (e) => {
+          e.preventDefault();
+          $('#guard')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+          $('#guard-title')?.focus({ preventScroll: true });
+        } }, '악플은 신고·지우기·막기로 막아요', icon('right'))),
       h('figure', { class: 'talk-pic' },
         h('div', { class: 'sheet' },
           h('div', { class: 'sheet-post' },
             h('img', { src: 'shots/feed-cafe.webp', width: '810', height: '1080', alt: '', decoding: 'async', loading: 'lazy' }),
             h('div', null, h('b', { text: '먼치' }), h('span', { text: '카페에 왔다가 생각나서 글 써 봐요.' }))),
-          h('div', { class: 'sheet-count', text: '댓글 5개' }),
-          demoThread()),
+          h('div', { class: 'sheet-count', text: '댓글 5개 중 3개' }),
+          demoThread(2)),
         h('figcaption', { text: EXAMPLE })))),
     // ③ 악플: 박제관 supabase/functions/bakje/index.ts 에서 확인한 것만. 마지막 줄(같은 명의 가입 막기)은 본인인증이 열려야 돼서 "준비 중"
-    h('section', { class: 'x-sec guard', 'aria-labelledby': 'guard-title' }, h('div', { class: 'wrap' },
-      xhead('guard-title', '악플 걱정은 덜어 두세요', '댓글 창을 열어 두어도 괜찮게, 막는 방법을 여러 겹으로 뒀어요.'),
+    h('section', { class: 'x-sec guard', id: 'guard', 'aria-labelledby': 'guard-title' }, h('div', { class: 'wrap' },
+      h('div', { class: 'x-head' }, h('h2', { id: 'guard-title', tabindex: '-1', text: '악플 걱정은 덜어 두세요' }), h('p', { class: 'lead', text: '댓글 창을 열어 두어도 괜찮게, 막는 방법을 여러 겹으로 뒀어요.' })),
       h('ul', { class: 'guard-list' },
         [['user', '댓글은 로그인한 사람만', '먼치킨 계정으로 로그인해야 댓글을 달 수 있어요.'],
           ['shield', '신고하고, 지우고, 막아요', '악플은 로그인한 누구나 신고할 수 있어요. DJ는 바로 지우거나, 그 사람이 내 앨범에 댓글을 못 달게 막아요. 댓글을 아예 닫을 수도 있어요.'],
           ['close', '막힌 계정은 로그인부터 안 돼요', '운영자가 계정을 막으면 그 계정으로는 로그인할 수 없어요.'],
-          ['key', '같은 명의로 다시 가입할 수 없게', '본인인증 가입이 열리면, 악플로 막힌 분은 같은 명의로 다시 가입할 수 없어요.', '준비 중']]
+          ['key', '같은 명의로 다시 가입할 수 없게', '본인인증 가입이 열린 뒤에 악플로 막힌 분은 같은 명의로 다시 가입할 수 없게 할 거예요.', '준비 중']]
           .map(([ic, t, d, soon]) => h('li', { class: soon ? 'soon' : null },
             h('span', { class: 'guard-ico' }, icon(ic)),
             h('h3', null, t, soon ? h('span', { class: 'soon-tag', text: soon }) : null),
@@ -907,7 +912,7 @@ function homeView() {
     // ⑤ 먼치킨 봇과 함께면 저절로 — 후원 → 박제판 칸에 닉네임 → 앨범 게시물(봇 features/firstboard.mjs) + 뽑기판 LIVE(pick.mjs)
     h('section', { class: 'x-sec syn night', 'aria-labelledby': 'syn-title' }, sky(), h('div', { class: 'wrap' },
       xhead('syn-title', '먼치킨 봇과 함께면 저절로', '방송에서 먼치킨 봇이 한 일이 앨범에 저절로 남아요.'),
-      h('ol', { class: 'flow sky-keep' },
+      flowOnce(h('ol', { class: 'flow sky-keep' },
         h('li', null, h('h3', { text: '방송 중에 후원이 와요' }),
           h('div', { class: 'stagebox' }, h('div', { class: 'giftcard', role: 'img', 'aria-label': '후원 예시. 달무리 님이 100스푼을 보냈어요.' }, '달무리', h('b', { text: '100스푼' }))),
           h('p', { text: '방송 중 후원이 오면 먼치킨 봇이 같은 스푼 수의 최초 박제판 칸에 닉네임을 적어요.' })),
@@ -922,7 +927,7 @@ function homeView() {
             h('div', { class: 'meta' }, h('small', { text: '최초 박제판' }), h('b', { text: '12월 박제판' }), h('div', { class: 'bar' }, h('s')),
               h('span', { class: 'cnt' }, h('span', { class: 'b4', text: '3 / 8칸' }), h('span', { class: 'a5', text: '4 / 8칸' })),
               h('span', { class: 'fresh', text: '사진이 새로 바뀌었어요' })))),
-          h('p', { text: '이름이 적힌 판은 앨범 게시물 탭에 저절로 올라가요. 칸이 더 채워지면 같은 글의 사진이 새로 바뀌어요.' }))),
+          h('p', { text: '이름이 적힌 판은 앨범 게시물 탭에 저절로 올라가요. 칸이 더 채워지면 같은 글의 사진이 새로 바뀌어요.' })))),
       // 뽑기판 예시 사진: 진짜 추억앨범 사이트를 숨은 창으로 열고 그 창 안에서만 지어낸 판·"먼치"로 바꿔 찍은 것(2026-11-23)
       h('div', { class: 'pickrow sky-keep' },
         h('figure', { class: 'pick-pic' }, shot('pick-phone', 786, 1546, '휴대폰 화면 예시. 할로윈 100칸 뽑기가 LIVE로 떠 있고, 남은 칸과 상품마다 남은 수가 보여요.')),
@@ -999,7 +1004,7 @@ function demoIco(name) {
   return el;
 }
 const demoRole = (r) => h('span', { class: 'dc-role r-' + r, 'aria-hidden': 'true' }, demoIco(r === 'fan' ? 'headphones' : 'mic'));
-// 예시 댓글(모두 지어낸 이름): r = owner 앨범 주인 · dj 이용권을 쓰는 다른 DJ · fan 리스너
+// 예시 댓글(모두 지어낸 이름): r = owner 앨범 주인 · dj 이용권을 결제한 다른 DJ · fan 리스너
 const DEMO_COMMENTS = [
   { r: 'fan', nick: '밤톨', ago: '1시간 전', text: '저 지금 퇴근길 지하철이요 ㅠㅠ 커피 맛있겠다',
     re: [{ r: 'owner', nick: '먼치', ago: '54분 전', text: '조심히 들어가요! 이따 방송에서 봐요 ㅎㅎ' }] },
@@ -1015,10 +1020,12 @@ function demoComment(c) {
     h('div', { class: 'dc-text', text: c.text }),
     c.re ? h('ul', { class: 'dc-re' }, c.re.map(demoComment)) : null);
 }
-const demoThread = () => h('ul', { class: 'dc-list' }, DEMO_COMMENTS.map(demoComment));
+// n 을 주면 앞에서 n 개만(답글은 함께) — 댓글 칸의 큰 종이는 리스너·주인 답글·다른 DJ 세 개만 보여 준다
+const demoThread = (n = DEMO_COMMENTS.length) => h('ul', { class: 'dc-list' }, DEMO_COMMENTS.slice(0, n).map(demoComment));
 const DEMO_TABS = [['feed', '피드'], ['posts', '게시물'], ['boards', '박제판'], ['cal', '달력']];
 const DEMO_REAL = '앨범 이름은 지어낸 예시예요. 안의 사진은 실제 한이준 추억앨범 화면이에요.';
-const DEMO_CAPS = { feed: '예시 화면이에요. 이름은 지어낸 거예요. 화면을 내리면 댓글이 보여요.', posts: DEMO_REAL, boards: DEMO_REAL, cal: DEMO_REAL };
+// 박제판 탭 사진(demo-boards.webp)은 실제 화면(album-boards.webp)에서 사진마다 왼쪽 위 닉네임 글자만 지어낸 이름으로 바꾼 것(2026-11-27 검토 — 지어낸 "먼치" 앨범 안에 실제 후원자 닉네임이 보이지 않게)
+const DEMO_CAPS = { feed: '예시 화면이에요. 이름은 지어낸 거예요. 화면을 내리면 댓글이 보여요.', posts: DEMO_REAL, boards: '앨범 이름과 사진 왼쪽 위 닉네임은 지어낸 예시예요. 사진은 실제 한이준 추억앨범의 박제판이에요.', cal: DEMO_REAL };
 const DEMO = { tab: 'feed', heart: false };
 function albumDemo() {
   const HEARTS = 24, ALL = 73;
@@ -1036,17 +1043,20 @@ function albumDemo() {
     feed: [
       h('div', { class: 'ab-post-h' }, h('img', { src: '../munchkin-64.png', width: '26', height: '26', alt: '' }), h('b', { text: '먼치' }), '2시간 전'),
       h('div', { class: 'ab-photo' }, shot('feed-cafe', 810, 1080, '카페 탁자 위에 아이스 커피 한 잔과 검은 모자가 놓여 있는 사진', false)),
-      h('div', { class: 'ab-act' }, heart, h('span', null, demoIco('talk'))),
+      h('div', { class: 'ab-act' }, heart, h('button', { type: 'button', class: 'ab-talk', 'aria-label': '댓글 보기', onclick: () => {
+        const list = view.querySelector('.ab-cm');
+        if (list) view.scrollTo({ top: list.offsetTop - view.offsetTop - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      } }, demoIco('talk'))),
       h('div', { class: 'ab-txt' },
         h('b', { 'aria-live': 'polite' }, '하트 ', post, '개'),
         h('div', null, h('b', { text: '먼치' }), ' 카페에 왔다가 생각나서 글 써 봐요.', h('br'), '다들 지금 뭐 하고 있어요? 댓글로 알려 주세요!'),
         h('div', { class: 'ab-cm', text: '댓글 5개' })),
       demoThread()],
     posts: [crop('posts', 'album-home', 786, 1056, '최초 박제판 세 장. 판 이름과 채운 칸(8/10칸, 8/8칸, 15/16칸), 종료와 D-7 표시가 보여요.')],
-    boards: [crop('boards', 'album-boards', 786, 1020, '박제판 사진 여섯 장이 세 장씩 두 줄로 놓여 있고, 사진마다 왼쪽 위에 닉네임이 적혀 있어요.')],
+    boards: [crop('boards', 'demo-boards', 786, 1020, '박제판 사진 여섯 장이 세 장씩 두 줄로 놓여 있고, 사진마다 왼쪽 위에 밤톨, 달무리, 구름빵 같은 닉네임이 적혀 있어요.')],
     cal: [crop('cal', 'album-calendar', 786, 944, '2026년 11월 달력의 날짜 칸마다 그날 올린 박제판 사진이 작게 들어 있어요.')]
   };
-  const view = h('div', { class: 'ab-view', tabindex: '0' });
+  const view = h('div', { class: 'ab-view', tabindex: '0', role: 'region', 'aria-label': '앨범 미리 보기' });
   const tabs = DEMO_TABS.map(([k, name]) => h('button', { type: 'button', role: 'tab', id: 'ab-tab-' + k, 'aria-controls': 'ab-pan-' + k, dataset: { k } }, demoIco(k), name));
   const pans = DEMO_TABS.map(([k]) => h('div', { role: 'tabpanel', id: 'ab-pan-' + k, 'aria-labelledby': 'ab-tab-' + k }, panels[k]));
   const show = (k) => {
@@ -1079,6 +1089,16 @@ function albumDemo() {
       view)),
     h('img', { class: 'art demo-pal', src: '../art/album.webp', width: '581', height: '720', alt: '', decoding: 'async' }),
     cap);
+}
+// 봇 세 걸음 그림의 움직임: 화면에 들어올 때 한 번 시작해 두 바퀴만 돌고 멈춘다(CSS .flow.go — 다시 그려져도 다시 돌지 않는다)
+function flowOnce(el) {
+  if (DEMO.flowDone || !('IntersectionObserver' in window)) return el;
+  const io = new IntersectionObserver((list) => {
+    if (!list.some((e) => e.isIntersecting)) return;
+    io.disconnect(); DEMO.flowDone = true; el.classList.add('go');
+  }, { threshold: 0.3 });
+  io.observe(el);
+  return el;
 }
 // 결제 전에 확인해 보세요 — 먼치킨.com 첫 화면(../index.html 의 .sure 칸)과 글·모양이 같아야 한다(한쪽을 고치면 다른 쪽도).
 //  좁은 화면(859px 까지)에서는 제목만 보이고 눌러 펼친다(첫 화면은 home.js 가 함) · 넓은 화면은 늘 펼침(site.css 가 제목을 못 누르게 함). 펼친 칸은 다시 그려도 그대로.
