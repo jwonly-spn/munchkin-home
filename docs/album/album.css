@@ -28,122 +28,212 @@
 .note{margin-top:16px;font-size:15px;color:var(--ink-2)}
 .sub{font:700 20px/1.3 var(--display);letter-spacing:var(--tight)}
 
-/* 처음 화면: 밤 첫 화면 */
+/* 처음 화면(2026-11-27 개편 — 시안 「눌러 보는 앨범」): 밤 첫 화면에 글·베타 칸 → 눌러 보는 앨범 → 값·신청 단추. 휴대폰 먼저(PC 는 맨 아래 min-width:900px) */
 .mine-strip{background:var(--night);padding:8px 0 4px}
 .mine-row{display:grid;gap:10px}
-.a-hero .hero-in{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:56px;justify-items:start;text-align:left;align-items:center;padding:56px 0 88px}
-.a-hero .kicker{margin-left:0}
-.a-hero .lead{margin:22px 0 0;max-width:34em}
-.a-hero .lead b{color:var(--ink)}
-.a-hero .btn.line{box-shadow:inset 0 0 0 1.5px rgba(246,241,231,.6)}
-.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
 .cta.center{justify-content:center;margin-top:44px}
 .btn .ico:last-child:not(:first-child){width:18px;height:18px}
+.ah{padding:28px 0 56px}
+.ah-in{display:grid;gap:24px}
+.ah-copy{display:grid;gap:16px;justify-items:start;text-align:left;min-width:0}
+.ah-copy .kicker{margin:0}
+.ah-copy h1{font-size:clamp(34px,10vw,42px)}
+.ah-copy .lead{max-width:32em}
+.ah-copy .lead b{color:var(--ink)}
+.ah-copy .beta-cta{margin-top:4px;width:100%}
+.ah-buy{display:grid;gap:12px;justify-items:start;min-width:0}
+.ah-buy .cta{width:100%}
+.ah-buy .btn{flex:1 1 220px}
+.ah-buy .btn.line{box-shadow:inset 0 0 0 1.5px rgba(246,241,231,.6)}
+.ah-price{font-size:17px;color:var(--ink-2)}
+.ah-price b{color:var(--star);font-weight:800}
+.ah-buy .note{margin:0}
 
-/* (2026-11-23) 처음 화면의 그림은 모두 실제 한이준 추억앨범을 찍은 것(shots/) — 휴대폰 틀에 넣어 "인스타그램처럼 익숙한" 모습이 보이게 */
-.real-phone{position:relative;margin:0;display:grid;justify-items:center;gap:14px;width:100%}
-.real-phone::before{content:"";position:absolute;left:2%;right:2%;top:4%;bottom:10%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.3),rgba(255,217,138,.08) 60%,transparent);pointer-events:none}
-.phone{position:relative;width:min(100%,340px);padding:10px;border-radius:42px;background:#0B0F24;box-shadow:0 0 0 1px rgba(246,241,231,.2),0 34px 70px -28px rgba(0,0,0,.7)}
+/* 눌러 보는 앨범: 휴대폰 틀 안은 실제 추억앨범처럼 늘 흰 화면(어두운 화면에서도) */
+.demo{position:relative;margin:0;display:grid;justify-items:center;gap:12px;min-width:0}
+.demo::before{content:"";position:absolute;left:0;right:0;top:6%;bottom:8%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.28),rgba(255,217,138,.07) 60%,transparent);pointer-events:none}
+.demo-hint{position:relative;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;padding:9px 14px;border-radius:999px;background:var(--star);color:#1A2040}
+.phone{position:relative;width:min(100%,352px);padding:10px;border-radius:42px;background:#0B0F24;box-shadow:0 0 0 1px rgba(246,241,231,.2),0 34px 70px -28px rgba(0,0,0,.7)}
 .phone img{width:100%;border-radius:32px;background:#FFFFFF}
-.phone-pal{position:absolute;z-index:1;bottom:30px;left:calc(50% - 170px - 120px);width:128px;height:auto;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35))}
-.real-phone figcaption{position:relative;font-size:15px;color:var(--ink-2)}
+.scr{border-radius:32px;overflow:hidden;background:#FFFFFF;color:#16181D;font-size:14px;line-height:1.45;text-align:left;--focus:#2F6BFF}
+.phone .scr img{border-radius:0;background:none}
+.ab-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px 10px;border-bottom:1px solid #ECECEF}
+.ab-bar b{font:700 17px/1.2 var(--display);letter-spacing:var(--tight)}
+.ab-bar span{font-size:12px;font-weight:700;padding:6px 9px;border-radius:7px;background:#1F5FE0;color:#FFFFFF;white-space:nowrap}
+.ab-prof{display:grid;grid-template-columns:72px 1fr;gap:16px;align-items:center;padding:14px 14px 0}
+.ab-av{width:72px;height:72px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#F6A04D,#D94B8C 55%,#8B4FD9)}
+.phone .scr .ab-av img{width:100%;height:100%;border-radius:50%;background:#FFF4E4;box-shadow:0 0 0 2px #FFFFFF}
+.ab-prof>div>b{font-size:15.5px}
+.ab-nums{display:flex;gap:26px;margin-top:6px;font-size:12px;color:#5A5F6B}
+.ab-nums b{display:block;font-size:15.5px;color:#16181D;font-variant-numeric:tabular-nums}
+.ab-bio{padding:10px 14px 12px}
+.ab-tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #ECECEF}
+.ab-tabs button{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;min-height:46px;padding:0 2px;border:0;background:none;font:600 13px/1 var(--body);color:#676C78;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ab-tabs .ico{width:17px;height:17px}
+.ab-tabs button[aria-selected="true"]{color:#16181D}
+.ab-tabs button[aria-selected="true"]::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:#16181D}
+.ab-tabs button:focus-visible{outline-offset:-3px}
+.ab-view{height:440px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#D5D7DE transparent;border-top:1px solid #ECECEF}
+.ab-view:focus-visible{outline-offset:-3px}
+.ab-post-h{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;color:#676C78}
+.ab-post-h b{color:#16181D}
+.phone .scr .ab-post-h img{width:26px;height:26px;border-radius:50%;background:#FFF4E4;box-shadow:0 0 0 1.5px #E98BB4}
+.ab-photo{aspect-ratio:5/4;overflow:hidden}
+.phone .scr .ab-photo img{height:100%;object-fit:cover;object-position:50% 44%}
+.ab-crop{overflow:hidden}
+.ab-crop.c-posts img{margin-top:-75.3%}
+.ab-crop.c-boards img,.ab-crop.c-cal img{margin-top:-11.7%}
+.ab-act{display:flex;align-items:center;gap:14px;padding:8px 10px 2px}
+.ab-heart{display:grid;place-items:center;width:44px;height:44px;margin:-6px;border:0;background:none;border-radius:50%;cursor:pointer;color:#16181D;-webkit-tap-highlight-color:transparent}
+.ab-act .ico{width:25px;height:25px;stroke-width:1.9}
+.ab-heart[aria-pressed="true"]{color:#E0314B}
+.ab-heart[aria-pressed="true"] .ico{fill:currentColor}
+.ab-act span{display:grid;place-items:center;width:32px;height:32px}
+.ab-txt{padding:4px 12px 12px;display:grid;gap:4px}
+.ab-cm{color:#676C78;font-size:13px;margin-top:2px}
+@media (prefers-reduced-motion:no-preference){.ab-heart.pop .ico{animation:hpop .35s ease-out}}
+@keyframes hpop{40%{transform:scale(1.35)}}
+.demo figcaption{position:relative;font-size:14px;line-height:1.5;color:var(--ink-2);text-align:center;max-width:26em;min-height:3em}
+.demo-pal{position:absolute;z-index:1;left:calc(50% - 176px - 104px);bottom:64px;width:122px;height:auto;filter:drop-shadow(0 12px 18px rgba(0,0,0,.35));display:none}
 
-.real-pic{margin:0 auto;width:min(100%,330px);max-height:460px;overflow:hidden;border-radius:24px;background:#FFFFFF;box-shadow:0 0 0 1px rgba(26,32,64,.12),0 24px 48px -26px rgba(23,28,58,.45)}
-.real-pic img{width:100%}
-.hero-price{margin-top:18px;font-size:17px;color:var(--ink-2)}
-.hero-price b{color:var(--star);font-weight:800}
+/* 예시 댓글 — 실제 추억앨범 댓글 모양(이름 앞 작은 그림 + 이름 뒤 배지 + 답글은 들여쓰기) */
+.dc-list{display:grid;gap:12px;margin:0;padding:2px 12px 18px;list-style:none}
+.dc-head{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;font-size:13px}
+.dc-role{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;flex:none}
+.dc-role .ico{width:12px;height:12px;stroke-width:2.2}
+.dc-role.r-owner,.dc-tag.t-owner{background:#0B6BCB;color:#FFFFFF}
+.dc-role.r-dj,.dc-tag.t-dj{background:#7446E0;color:#FFFFFF}
+.dc-role.r-fan,.dc-tag.t-fan{background:#EDEEF2;color:#555A66}
+.dc-tag{padding:2px 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.4;white-space:nowrap}
+.dc-time{color:#676C78;font-size:12px}
+.dc-text{margin-top:3px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
+.dc-re{display:grid;gap:12px;margin:10px 0 0;padding:0 0 0 26px;list-style:none}
 
-/* (2026-11-23) 상품 상세 페이지 구역들 — 휴대폰 먼저. 사진이 주인공, 제목은 짧고 굵게 */
-.head h2{max-width:20em}
-/* 이런 DJ분께 */
-.for-sec{padding-bottom:40px}
-.for-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.for-card{display:flex;align-items:center;gap:18px;border-radius:28px;padding:20px 22px 20px 18px}
-.for-card .awin{flex:0 0 104px;width:104px;margin:0;align-self:center}
-.for-card h3{font-size:clamp(19px,2vw,22px);margin-bottom:6px}
-.for-card p{font-size:16px;color:var(--ink-2)}
-.t-blush{background:var(--t-blush);--ink-2:#4B3550}
-.t-sky{background:var(--t-sky);--ink-2:#3A4468}
-.t-butter{background:var(--t-butter);--ink-2:#55482A}
-.t-coral{background:var(--t-coral);--ink-2:#3F2630}
-/* 스푼 포스트 vs 추억앨범 */
-.vs-sec{background:var(--soft)}
-.vs-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
-.vs-card{display:flex;flex-direction:column;gap:20px;border-radius:30px;padding:28px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
-.vs-card h3{font-size:clamp(21px,2.4vw,26px)}
-.vs-spoon h3{color:var(--ink-2)}
-.vs-album{box-shadow:inset 0 0 0 2px var(--coral),var(--lift)}
-.vs-pic{margin:0;display:grid;justify-items:center;gap:10px}
-.vs-pic figcaption{font-size:14px;color:var(--ink-2);text-align:center}
-.post-frame{width:min(100%,360px);border-radius:18px;overflow:hidden;background:#FFFFFF;box-shadow:0 0 0 1px rgba(26,32,64,.12),0 20px 40px -24px rgba(23,28,58,.4)}
-.post-frame img{width:100%}
-.vs-pic .phone.small{width:min(100%,270px)}
-.vs-card .check-list,.x-list{margin:auto 0 0}
-.x-list{display:grid;gap:8px}
-.x-list li{display:grid;grid-template-columns:24px 1fr;gap:8px;font-weight:600;color:var(--ink-2)}
-.x-list li::before{content:"";width:14px;height:14px;margin:6px 0 0 4px;background:linear-gradient(45deg,transparent 43%,var(--bad) 43% 57%,transparent 57%),linear-gradient(-45deg,transparent 43%,var(--bad) 43% 57%,transparent 57%)}
-.vs-sum{max-width:30em;margin:40px auto 0;text-align:center;font-size:clamp(19px,2.2vw,22px);line-height:1.6}
+/* 댓글 칸: 왼쪽 글·표시 설명, 오른쪽 댓글 종이(늘 흰색) */
+.talk-in{display:grid;gap:28px}
+.talk-copy{min-width:0}
+.talk-copy .x-head{margin-bottom:22px}
+.who-list{display:grid;gap:10px}
+.who-list li{display:flex;align-items:center;gap:12px;font-weight:600;line-height:1.45}
+.who-mark{flex:none;display:inline-flex;align-items:center;gap:6px;min-width:92px;padding:7px 10px;border-radius:999px;background:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(26,32,64,.14)}
+.who-mark .dc-tag{font-size:12px}
+.talk-pic{margin:0;display:grid;gap:12px;min-width:0}
+.talk-pic figcaption{font-size:14px;color:var(--ink-2);text-align:center}
+.sheet{border-radius:24px;overflow:hidden;background:#FFFFFF;color:#16181D;text-align:left;box-shadow:0 0 0 1px rgba(26,32,64,.12),0 24px 48px -26px rgba(23,28,58,.45)}
+.sheet-post{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #ECECEF}
+.sheet-post img{flex:none;width:52px;height:52px;border-radius:10px;object-fit:cover;object-position:50% 44%}
+.sheet-post div{display:grid;gap:2px;min-width:0;font-size:14.5px;line-height:1.45;color:#555A66}
+.sheet-post b{font-size:15px;color:#16181D}
+.sheet-count{padding:14px 16px 8px;font-size:13.5px;font-weight:700;color:#555A66}
+.sheet .dc-list{gap:16px;padding:4px 16px 22px}
+.sheet .dc-head{font-size:15px;gap:3px 7px}
+.sheet .dc-role{width:22px;height:22px}
+.sheet .dc-role .ico{width:13px;height:13px}
+.sheet .dc-tag{font-size:12px}
+.sheet .dc-time{font-size:13px}
+.sheet .dc-text{font-size:16px;margin-top:4px}
+.sheet .dc-re{gap:16px;margin-top:14px;padding-left:28px}
+
+/* 악플 걱정 칸 */
+.guard{background:var(--soft)}
+.guard-list{display:grid;gap:12px}
+.guard-list li{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:14px;row-gap:6px;align-items:start;align-content:start;border-radius:24px;padding:22px 20px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.guard-ico{grid-row:span 2;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--ok-soft);color:var(--ok)}
+.guard-list h3{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:19px;line-height:1.35;margin-top:2px}
+.guard-d{color:var(--ink-2);font-size:16px;text-wrap:pretty}
+.guard-list li.soon{background:none;box-shadow:none;border:1.5px dashed var(--field-line)}
+.guard-list li.soon .guard-ico{background:var(--warn-soft);color:var(--warn)}
+.soon-tag{padding:3px 10px;border-radius:999px;background:var(--warn-soft);color:var(--warn);font:800 13px/1.5 var(--body);letter-spacing:0;white-space:nowrap}
+
+/* 스푼 포스트 vs 추억앨범(짧게) */
+.x-list{display:grid;gap:9px;margin:0}
+.vs2{display:grid;gap:16px}
+.vs2 article{border-radius:28px;padding:24px 20px;display:grid;gap:16px;align-content:start;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.vs2 article.with-album{box-shadow:inset 0 0 0 2px var(--coral)}
+.vs2 h3{font-size:22px}
+.vs2-row{display:grid;grid-template-columns:118px minmax(0,1fr);gap:16px;align-items:start}
+.vs2 figure{margin:0;display:grid;gap:6px}
+.vs2 figure>img{width:100%;border-radius:12px;box-shadow:0 0 0 1px var(--line)}
+.vs2 .phone{width:118px;padding:5px;border-radius:20px;box-shadow:none}
+.vs2 .phone img{border-radius:15px}
+.vs2 ul{margin:0}
+.vs2 li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-weight:600;font-size:15.5px;line-height:1.45}
+.vs2 .x-list li::before{content:"";width:14px;height:14px;margin-top:4px;background:linear-gradient(45deg,transparent 43%,var(--bad) 43% 57%,transparent 57%),linear-gradient(-45deg,transparent 43%,var(--bad) 43% 57%,transparent 57%)}
+.vs2 .check-list li::before{margin:1px 0 0 5px}
+.vs2 figcaption{font-size:13.5px;line-height:1.4;color:var(--ink-2)}
+.vs-sum{margin-top:24px;font-size:18px;line-height:1.7;max-width:36em}
 .vs-sum b{box-shadow:inset 0 -.45em 0 var(--t-butter)}
-/* 할 수 있는 것 */
-.feat-list{display:grid;gap:20px}
-.feat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:28px 56px;border-radius:32px;padding:40px 48px}
-.feat:nth-child(even) .feat-pic{order:-1}
-.feat-copy{display:grid;gap:10px;align-content:center}
-.feat-copy h3{font-size:clamp(24px,3vw,34px);margin-bottom:4px}
-.feat-copy p{color:var(--ink-2)}
-.feat-name{justify-self:start;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.66);font-weight:800;font-size:15px;color:var(--ink)}
-.feat-pic{margin:0;display:grid;justify-items:center;gap:12px}
-.feat-pic .phone.small{width:min(100%,320px);max-height:640px;overflow:hidden}
-.feat-pic .pc-frame{width:100%;max-width:560px}
-.feat-pic figcaption{font-size:14px;color:var(--ink-2);text-align:center}
-.more-title{margin:56px 0 20px;font-size:clamp(21px,2.4vw,26px)}
+
+/* 먼치킨 봇과 함께면 저절로: 밤 무대 위 세 걸음(후원 → 박제판 칸 → 앨범 게시물) + 뽑기판 */
+.syn .x-head h2{color:#FFFFFF}
+.flow{display:grid;gap:14px;counter-reset:f}
+.flow>li{counter-increment:f;display:grid;gap:12px;align-content:start;padding:18px 16px 20px;border-radius:24px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(246,241,231,.14)}
+.flow h3{display:flex;align-items:center;gap:10px;font-size:19px;color:#FFFFFF}
+.flow h3::before{content:counter(f);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--star);color:#1A2040;font:700 15px/1 var(--display)}
+.flow p{color:var(--cream-2);font-size:16px;line-height:1.6}
+.stagebox{min-height:150px;border-radius:16px;background:#0E1227;display:grid;place-items:center;padding:14px;overflow:hidden}
+.giftcard{display:grid;justify-items:center;gap:6px;padding:14px 22px;border-radius:16px;background:linear-gradient(135deg,#FF9F6B,#FF7B6E);color:#1A2040;font-weight:800;text-align:center}
+.giftcard b{font:700 24px/1.1 var(--display)}
+.board{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.board i{font-style:normal;display:grid;gap:2px;justify-items:center;padding:7px 2px;border-radius:10px;background:#2A1F3F;box-shadow:inset 0 0 0 1px rgba(255,217,138,.3);font-size:12px;color:#E5C98A;min-height:46px;align-content:center;font-variant-numeric:tabular-nums}
+.board i b{font-size:12.5px;color:#FFFFFF;min-height:1.3em}
+.board i.new{box-shadow:inset 0 0 0 2px var(--star);background:#3A2A55}
+.tilecard{width:min(100%,230px);border-radius:14px;overflow:hidden;background:#3B2A2A;color:#FFFFFF;font-size:13px}
+.tilecard .pic{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:10px;background:#2A1F3F}
+.tilecard .pic u{height:16px;border-radius:4px;background:rgba(255,217,138,.25);text-decoration:none}
+.tilecard .pic u.on{background:var(--star)}
+.tilecard .meta{padding:10px 12px 12px;display:grid;gap:5px}
+.tilecard .meta small{color:#FFD98A;font-weight:700}
+.tilecard .meta b{font-size:16px}
+.tilecard .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+.tilecard .bar s{display:block;height:100%;width:50%;background:#FF9F6B}
+.cnt{display:inline-grid;font-variant-numeric:tabular-nums}
+.cnt>*{grid-area:1/1}
+.cnt .b4{opacity:0}
+.fresh{justify-self:start;font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--star);color:#1A2040}
+/* 움직임: 9초에 한 바퀴(후원 카드 → 칸에 닉네임 → 게시물 사진 바뀜). 움직임 줄이기를 켠 분에게는 다 끝난 모습으로 멈춰 있어요 */
+@media (prefers-reduced-motion:no-preference){
+  html:not(.shotmode) .giftcard{animation:g1 9s infinite}
+  html:not(.shotmode) .board i.new{animation:g2box 9s infinite}
+  html:not(.shotmode) .board i.new b{animation:g2 9s infinite}
+  html:not(.shotmode) .tilecard .pic u.late,html:not(.shotmode) .fresh,html:not(.shotmode) .cnt .a5{animation:g3 9s infinite}
+  html:not(.shotmode) .cnt .b4{animation:g3r 9s infinite}
+  html:not(.shotmode) .tilecard .bar s{animation:g3bar 9s infinite}
+}
+@keyframes g1{0%,4%{opacity:0;transform:translateY(14px) scale(.92)}10%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes g2{0%,30%{opacity:0;transform:scale(.4)}36%,94%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes g2box{0%,30%{box-shadow:inset 0 0 0 1px rgba(255,217,138,.3);background:#2A1F3F}36%,94%{box-shadow:inset 0 0 0 2px #FFD98A;background:#3A2A55}100%{box-shadow:inset 0 0 0 1px rgba(255,217,138,.3);background:#2A1F3F}}
+@keyframes g3{0%,58%{opacity:0}64%,94%{opacity:1}100%{opacity:0}}
+@keyframes g3r{0%,58%{opacity:1}64%,94%{opacity:0}100%{opacity:1}}
+@keyframes g3bar{0%,58%{width:37.5%}64%,94%{width:50%}100%{width:37.5%}}
+.pickrow{margin-top:28px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:18px;align-items:center;padding:20px 18px;border-radius:24px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(246,241,231,.14)}
+.pick-pic{margin:0;aspect-ratio:758/1060;overflow:hidden;border-radius:12px;background:#FFFFFF}
+.pick-pic img{width:100%;height:100%;object-fit:cover;object-position:top}
+.pickrow>div{display:grid;gap:8px;min-width:0}
+.pickrow h3{font-size:20px;color:#FFFFFF}
+.pickrow p{color:var(--cream-2);font-size:16px;line-height:1.6}
+.pickrow small{font-size:13.5px;color:var(--cream-2)}
+.syn-foot{margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:16px 40px;flex-wrap:wrap}
+.syn-foot p{max-width:40em;color:var(--cream-2);font-size:16px}
+.syn-foot .btn{flex:none}
+
+/* 이것도 들어 있어요 */
+.more-sec{background:var(--soft)}
 .more-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .more-grid li{display:grid;grid-template-columns:44px 1fr;column-gap:14px;row-gap:4px;align-items:start;border-radius:22px;padding:20px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
 .more-ico{grid-row:span 2;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--chip);color:var(--ink)}
-.more-grid h4{font:700 18px/1.3 var(--display);letter-spacing:var(--tight);margin:2px 0 0}
+.more-grid h3{font:700 18px/1.3 var(--display);letter-spacing:var(--tight);margin:2px 0 0}
 .more-grid p{font-size:15px;color:var(--ink-2)}
-/* 먼치킨 없이도 */
-.solo-sec{background:var(--t-butter);--ink-2:#55482A}
-.solo-in{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr);gap:40px;align-items:center}
-.solo-copy .head{margin-bottom:20px}
-.solo-copy .check-list{margin:0 0 24px}
-.solo-need{border-radius:22px;padding:18px 20px;background:rgba(255,255,255,.6)}
-.solo-need-t{font-weight:800;margin-bottom:6px}
-.solo-need ul{display:grid;gap:4px}
-.solo-need li{position:relative;padding-left:18px;color:var(--ink-2)}
-.solo-need li::before{content:"";position:absolute;left:4px;top:.72em;width:6px;height:6px;border-radius:50%;background:var(--ink-2)}
-.solo-art{justify-self:center;width:min(100%,260px);--win:rgba(255,255,255,.55)}
 /* 마지막 신청(첫 페이지 .final-cta 모양을 같이 씀) */
+.head h2{max-width:20em}
 .end-cta .cta.center{margin-top:12px}
 .end-cta .btn.line{box-shadow:inset 0 0 0 1.5px rgba(246,241,231,.6)}
 .end-cta .lead{max-width:none}
-
-/* 먼치킨 봇과 함께 쓰면: 밤 무대 위 카드 둘(자동 박제 · 추억의 뽑기판) */
-.syn-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
-.syn-card{display:flex;align-items:center;justify-content:space-between;gap:28px 56px;border-radius:32px;padding:34px 32px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(246,241,231,.14)}
-.syn-copy{display:grid;gap:10px;align-content:start;flex:1;min-width:0;max-width:34em}
-.syn-copy .tag{margin:0;color:var(--star)}
-.syn-copy .tag::before{background:var(--star)}
-.syn-copy h3{font-size:clamp(22px,2.4vw,28px);margin-bottom:4px}
-.syn-copy p{color:var(--ink-2)}
-.syn-copy .syn-small{font-size:15px;margin-top:4px}
-.syn-shot{margin:0;flex:0 0 286px;display:grid;justify-items:center;gap:12px}
-.phone.small{width:100%;padding:8px;border-radius:30px}
-.phone.small img{border-radius:23px}
-.syn-shot figcaption{font-size:14px;color:var(--ink-2);text-align:center}
-/* 뽑기판 예시: PC 화면 + 휴대폰 화면(겹쳐 놓기) */
-.pick-shots{position:relative;margin:0;flex:0 1 660px;min-width:0;padding:0 124px 44px 0;display:grid;gap:12px}
-.pc-frame{border-radius:18px;overflow:hidden;background:#FFFFFF;box-shadow:0 0 0 1px rgba(246,241,231,.2),0 30px 60px -28px rgba(0,0,0,.7)}
-.pc-frame img{width:100%}
-.pick-shots .phone{position:absolute;right:0;bottom:30px;width:176px}
-.pick-shots figcaption{font-size:14px;color:var(--ink-2)}
-.syn-foot{margin-top:36px;display:flex;align-items:center;justify-content:space-between;gap:20px 40px;flex-wrap:wrap}
-.syn-foot p{max-width:42em;color:var(--ink-2)}
-.syn-foot .btn{flex:none}
-.view-home .start-section{margin-top:104px}
 .faq .wrap{width:min(100% - 32px,820px)}
 /* 첫 화면 이용권 칸(2026-11-23 "옵션 고르기"처럼 — 첫 페이지 가격표 .pt 카드 모양을 같이 써요) */
-.pay-home{padding-bottom:0}
+.view-home .start-section{margin-top:104px}
+.pay-home{padding:24px 0 0}
 .pay-home .pay-wrap{width:min(100% - 32px,760px)}
 .pay-home .pt{gap:14px}
 .pay-home .pt-top .seg{flex:1 1 auto;max-width:420px}
@@ -351,52 +441,20 @@ p.bt-alt.hint{display:block;font-size:14px}
 
 @media (prefers-color-scheme:dark){
   .beta-box{--ink-2:#D5D8EC}
-  .t-blush,.t-sky,.t-butter,.t-coral,.solo-sec{--ink-2:#D5D8EC}
-  .feat-name{background:rgba(255,255,255,.12)}
-  .solo-need{background:rgba(0,0,0,.18)}
-  .solo-art{--win:rgba(255,255,255,.1)}
-  .real-pic{box-shadow:0 0 0 1px rgba(246,241,231,.16)}
   .view-beta{--bt-pink:#FF8FAB;--bt-pink-soft:rgba(255,107,139,.14);--bt-pink-line:rgba(255,143,171,.4);--bt-blue:#8CBDFF}
 }
 @media (max-width:860px){
   .top-in{min-height:60px}
   .head{margin-bottom:28px}
-  .a-hero .hero-in{grid-template-columns:1fr;gap:36px;padding:20px 0 56px}
-  .a-hero h1{font-size:clamp(34px,10vw,42px)}
-  .a-hero .cta .btn{width:100%}
-  .for-grid{grid-template-columns:1fr;gap:12px}
-  .vs-grid{grid-template-columns:1fr}
-  .feat{grid-template-columns:1fr;padding:32px 28px}
-  .feat:nth-child(even) .feat-pic{order:0}
   .more-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .solo-in{grid-template-columns:1fr;gap:24px}
-  .solo-art{width:min(70%,220px)}
-  .syn-pick{flex-direction:column;align-items:stretch}
-  .syn-pick .syn-copy{max-width:none}
-  .pick-shots{flex:none;width:min(100%,640px);margin-inline:auto}
   .syn-foot .btn{width:100%}
   .view-home .start-section{margin-top:72px}
   .cta.center .btn{width:100%}
 }
 @media (max-width:600px){
-  .for-card{padding:16px 18px 16px 14px;border-radius:24px}
   .pt-grid.two{grid-template-columns:1fr;gap:24px}
-  .for-card .awin{flex-basis:84px;width:84px}
-  .vs-card{padding:22px 18px;border-radius:24px}
-  .vs-sum{text-align:left;margin-top:28px}
-  .feat{padding:26px 20px;border-radius:26px;gap:22px}
-  .more-title{margin-top:40px}
   .more-grid{grid-template-columns:1fr;gap:10px}
   .more-grid li{padding:16px}
-  .phone{width:min(100%,300px);padding:9px;border-radius:38px}
-  .phone img{border-radius:29px}
-  .phone-pal{display:none}
-  .syn-card{padding:26px 22px;border-radius:26px}
-  .syn-first,.syn-pick{flex-direction:column;align-items:stretch}
-  .syn-shot{flex:none;width:min(100%,260px);justify-self:center;margin-inline:auto}
-  .pick-shots{padding:0;gap:14px}
-  .pick-shots .phone{position:static;order:-1;width:min(100%,260px);justify-self:center}
-  .pc-frame{border-radius:14px}
   .hide-s{display:none}
   .top-nav .btn{padding:0 14px}
   .top-nav .btn.get-link{padding:0 8px}
@@ -424,7 +482,32 @@ p.bt-alt.hint{display:block;font-size:14px}
   .bt-hero::before,.bt-hero::after{display:none}
 }
 @media (max-width:400px){
+  .ah-buy .btn{white-space:normal;line-height:1.3;padding-block:8px}
   .brand-split .brand-home span{display:none}
   .top-nav .btn{font-size:15px;padding:0 12px}
-  .a-hero .cta .btn{white-space:normal;line-height:1.3;padding-block:8px}
+}
+/* PC(900px 부터): 첫 화면은 왼쪽 글·값, 오른쪽 눌러 보는 앨범 */
+@media (min-width:900px){
+  .ah{padding:48px 0 80px}
+  .ah-in{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-areas:"copy demo" "buy demo";grid-template-rows:auto 1fr;gap:22px 56px;align-items:start}
+  .ah-copy{grid-area:copy;padding-top:24px}
+  .ah-copy h1{font-size:clamp(40px,4.1vw,58px)}
+  .ah-buy{grid-area:buy}
+  .demo{grid-area:demo}
+  .ah-buy .btn{flex:0 1 auto}
+  .ab-view{height:460px}
+  .demo-pal{display:block}
+  .talk-in{grid-template-columns:minmax(0,1fr) minmax(0,480px);gap:56px;align-items:center}
+  .guard-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .guard-list li{padding:28px}
+  .vs2{grid-template-columns:1fr 1fr}
+  .vs2 article{padding:32px}
+  .vs2-row{grid-template-columns:210px minmax(0,1fr);gap:28px}
+  .vs2 .phone{width:210px;padding:7px;border-radius:28px}
+  .vs2 .phone img{border-radius:20px}
+  .x-sec.syn{padding:104px 0}
+  .flow{grid-template-columns:repeat(3,1fr);gap:18px}
+  .flow>li{padding:24px 22px 26px}
+  .stagebox{min-height:190px}
+  .pickrow{grid-template-columns:170px minmax(0,1fr);gap:32px;padding:28px 32px;max-width:860px}
 }
