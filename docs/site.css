@@ -550,14 +550,14 @@ p,li,dd,summary,figcaption{text-wrap:pretty}
 .s2-part p b{color:var(--s2-ink)}
 .s2-say{display:grid;gap:16px;align-content:start}
 .s2-boss{display:grid;gap:10px;min-width:0}
-.s2 code,.steps3 code{font:700 .92em/1 var(--mono);padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.12);white-space:nowrap}
+.s2 code,.steps3 code{font:700 .95em/1.2 var(--body);padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.14);color:var(--s2-ink);white-space:nowrap}
 /* 영상 틀(.screen): 가로 16:9 · .tall 은 세로 9:16(휴대폰 너비에서만 보이고, 그때 바로 뒤 가로 영상은 숨겨요) */
 .screen{position:relative;margin:0;border-radius:18px;overflow:hidden;background:#15121F;box-shadow:0 0 0 3px #15121F,0 0 0 5px rgba(242,196,106,.55),0 28px 60px -30px rgba(0,0,0,.8)}
 .screen .ratio{position:relative;aspect-ratio:16/9}
 .screen.tall .ratio{aspect-ratio:9/16}
 .screen img,.screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .screen.tall{display:none}
-.cap.has-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cap.has-toggle{max-width:none;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .vid-toggle{flex:none;min-width:56px;min-height:44px;padding:0 14px;border:0;border-radius:12px;background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px rgba(255,241,214,.22);color:var(--s2-ink);font:700 14px/1 var(--body);cursor:pointer}
 .vid-toggle:hover{background:rgba(255,255,255,.2)}
 .vid-toggle:focus-visible{outline:3px solid #F2C46A;outline-offset:2px}
@@ -579,6 +579,11 @@ p,li,dd,summary,figcaption{text-wrap:pretty}
 @keyframes hopL{0%,60%,100%{transform:none}30%{transform:translateX(10px)}}
 @keyframes hopR{0%,60%,100%{transform:scaleX(-1)}30%{transform:scaleX(-1) translateX(10px)}}
 .prize{display:grid;gap:6px;padding:18px 20px;border-radius:18px;background:rgba(242,196,106,.12);box-shadow:inset 0 0 0 1px rgba(242,196,106,.4)}
+.s2-join{margin-top:40px;padding-top:28px;border-top:1px solid var(--line);display:grid;gap:16px;align-items:center}
+.s2-join p{color:var(--ink-2)}
+.s2-join p b{color:#fff;font:700 clamp(19px,2vw,22px)/1.4 var(--display);letter-spacing:var(--tight)}
+.s2-join .get{justify-items:start}
+@media (min-width:900px){.s2-join{grid-template-columns:minmax(0,1fr) auto;gap:32px}}
 .prize b{font:700 19px/1.4 var(--display);letter-spacing:var(--tight);color:var(--s2-gold)}
 .prize>span{font-size:15px;color:var(--ink-2)}
 @media (max-width:720px){
@@ -599,7 +604,22 @@ p,li,dd,summary,figcaption{text-wrap:pretty}
 @media (prefers-color-scheme:dark){.sure-grid dt::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6 11.5l3.2 3.2L16 8' fill='none' stroke='%2374D8A0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}}
 .sure-grid dd{margin:0;color:var(--ink-2);font-size:16px;line-height:1.65}
 .sure-grid dd b{color:var(--ink);font-variant-numeric:tabular-nums}
-.sure-grid a{color:var(--link);font-weight:700;text-underline-offset:4px}
+.sure-grid a{display:inline-flex;align-items:center;min-height:44px;color:var(--link);font-weight:700;text-underline-offset:4px}
+/* 접는 모양(첫 화면): 좁은 화면에서는 제목만 보이고 눌러 펼쳐요(home.js), 넓은 화면은 늘 펼침 */
+.sure-grid>details{border-bottom:1px solid var(--line)}
+.sure-grid summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:60px;padding:8px 0;font:700 19px/1.3 var(--display);letter-spacing:var(--tight)}
+.sure-grid summary::-webkit-details-marker{display:none}
+.sure-grid summary::before{content:"";flex:none;width:22px;height:22px;border-radius:50%;background:var(--ok-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6 11.5l3.2 3.2L16 8' fill='none' stroke='%231B7A4B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
+.sure-grid summary::after{content:"";flex:none;width:9px;height:9px;margin:-4px 6px 0 auto;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg)}
+.sure-grid details[open] summary::after{transform:rotate(-135deg);margin-top:5px}
+.sure-body{padding:0 0 18px;color:var(--ink-2);font-size:16px;line-height:1.65}
+.sure-body b{color:var(--ink);font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){.sure-grid summary::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6 11.5l3.2 3.2L16 8' fill='none' stroke='%2374D8A0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}}
+@media (min-width:860px){
+  .sure-grid summary{pointer-events:none;cursor:default;min-height:0;padding:22px 0 6px;font-size:20px}
+  .sure-grid summary::after{display:none}
+  .sure-body{padding-bottom:22px}
+}
 .indep-box{margin-top:22px;font-size:15px;color:var(--ink-2);line-height:1.6}
 .sure-pal{display:none;width:150px;margin-top:8px}
 @media (min-width:860px){
@@ -619,6 +639,7 @@ body.home .site-header nav a.opt{display:none}
 .hx-in{display:grid;gap:28px;padding-bottom:40px}
 .hx-left{display:grid;gap:8px;min-width:0}
 .hx-copy{display:grid;gap:18px;justify-items:start;text-align:left}
+.hx-kicker{display:inline-flex;align-items:center;gap:10px;font:600 15px/1.2 var(--body);padding:9px 14px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(246,241,231,.34);margin-bottom:-4px}
 .hx-copy h1{font-size:clamp(34px,4.3vw,60px)}
 .hx-copy .lead{max-width:29em;color:var(--ink-2)}
 .hx-copy .get{margin-top:6px;width:100%}
@@ -639,10 +660,23 @@ body.home .try-title{font:700 clamp(20px,2vw,24px)/1.35 var(--display);letter-sp
 .try .chat{height:430px;overflow-y:auto;overscroll-behavior:contain;padding:16px 14px 20px;scrollbar-width:thin;scrollbar-color:rgba(246,241,231,.25) transparent}
 /* 진짜 채팅처럼 짧은 장면은 아래쪽에 붙고, 길면 위로 넘겨 봐요 */
 .try .chat{display:flex;flex-direction:column}
-.try .chat>:first-child{margin-top:auto}
+@media (min-width:561px){.try .chat>:first-child{margin-top:auto}}
 .try .chat>.stage{align-self:center}
 .try .chat:focus-visible{outline-offset:-3px;border-radius:0}
-@media (max-width:560px){.try .chat{height:480px}}
+@media (max-width:560px){.try .chat{height:360px;overscroll-behavior:auto}}
+.pc-note-mini{gap:8px;padding:14px 16px;font-size:15px}
+/* 휴대폰·맥(설치 못 하는 기기)의 좁은 화면: 제목 → 설명 → 작은 마스코트 → 눌러 보는 채팅 → PC 안내 순서로
+   (마스코트가 이끄는 첫 화면은 사용자가 정한 것 — 크기만 줄여 채팅이 두 화면 안에 들어오게, 2026-11-27) */
+@media (max-width:899px){
+  .not-pc .hx-left,.not-pc .hx-copy{display:contents}
+  .not-pc .hx-in{gap:16px;justify-items:start}
+  .not-pc .hx-in>*,.not-pc .hx-copy>*{min-width:0}
+  .not-pc .hx-kicker{order:1;margin-bottom:0}.not-pc .hx-copy h1{order:2}.not-pc .hx-copy .lead{order:3}
+  .not-pc .hx-scene{order:4;justify-self:center;width:min(62%,300px);margin-block:-4px -8px}
+  .not-pc .hx-scene .hello-note{display:none}
+  .not-pc .try{order:5;width:100%;margin-top:8px}
+  .not-pc .hx-copy .get{order:6;margin-top:12px}.not-pc .hx-copy .version{order:7;margin-top:0}
+}
 .try .chat-note{margin:0;padding:12px 16px 14px;border-top:1px solid rgba(246,241,231,.12);min-height:3.6em}
 @media (prefers-reduced-motion:no-preference){.chat>.in{animation:chatPop .3s ease-out both}.try-bar i{animation:chatBlink 1.6s infinite}}
 @keyframes chatPop{from{opacity:0;transform:translateY(8px)}}
