@@ -26,7 +26,7 @@ const LABEL_RULE = '한글·영어 소문자·숫자로 1~15자예요. - 는 가
 const PATH_RE = /^[\w-]{1,64}\/[\w-]{4,40}\.(?:webp|jpg|png)$/;
 const HOST_RE = /^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/;
 const MIN = 3, MAX = 10, SIDE = 2000, BYTES = 5242880, THUMB = 240;
-const BAD_PIC = '이 사진은 열 수 없어요. jpg 나 png 로 바꿔 올려 주세요.';
+const BAD_PIC = '열 수 없는 사진은 빼 두었어요. 다른 사진이나 화면 캡처를 골라 주세요.';
 const BIG_PIC = '사진이 너무 커요. 다른 사진을 골라 주세요.';
 const UP_FAIL = '사진을 올리지 못했어요. 인터넷 연결을 확인하고 다시 골라 주세요.';
 const PREVIEW_NOTE = '미리 보기예요. 사진은 올라가지 않고, 신청도 보내지 않아요.';
@@ -242,7 +242,7 @@ async function shrink(file) {
 async function uploadOne(file) {
   const { blob, type, thumb } = await shrink(file);
   if (C.preview) return { path: '', thumb };   // 미리 보기: 서버에 올리지 않는다(이 페이지 메모리의 작은 그림만)
-  const r = await betaCall('photo-url', { type });
+  const r = await betaCall('photo-url', { type, keep: B.photos.map((p) => p.path).filter(Boolean) });   // 서버가 자리를 만들 때 화면의 사진은 지우지 않게(2026-11-27)
   const url = String(r.url || '');
   if (!url.startsWith(UPLOAD_AT) || !PATH_RE.test(String(r.path || ''))) throw fail(UP_FAIL, 'up');
   const ctl = new AbortController();
@@ -386,7 +386,16 @@ function introView(d) {
   const logged = Boolean(C.S.session);
   const kakaoOn = C.S.members ? C.S.members.kakao === true : true;   // 설정을 아직 못 받았으면 있는 것으로(받으면 다시 그림)
   const seats = seatsOf(d);
-  const start = () => { if (logged) toStep(2); else if (kakaoOn) C.kakao(); else C.login(); };
+  // 만 14세 칸(2026-11-27): 처음 카카오로 가입하는 분이 카카오를 다녀온 뒤 가입 창·닉네임 창에 멈추지 않게 여기서 먼저 받는다(서버는 처음 가입 때만 봄)
+  const age = !logged && kakaoOn && C.ageBox ? C.ageBox('bt-age14') : null;
+  const ageSt = age ? C.statusEl() : null;
+  if (age) { age.box.checked = B.age14 === true; age.box.addEventListener('change', () => { B.age14 = age.box.checked; if (age.box.checked) C.say(ageSt, ''); }); }
+  const start = () => {
+    if (logged) { toStep(2); return; }
+    if (!kakaoOn) { C.login(); return; }
+    if (age && !age.box.checked) { C.say(ageSt, C.age14Need, true); age.box.focus(); return; }
+    C.kakao(true);
+  };
   const num = (n) => h('b', { class: 'bt-num', 'aria-hidden': 'true', text: String(n) });
   const item = (n, t, s) => h('li', null, num(n), h('span', null, h('span', { class: 'bt-step-t', text: t }), h('small', { text: s })));
   let main;
@@ -406,11 +415,13 @@ function introView(d) {
       item(3, '스푼 닉네임 적고 끝', '주소·앨범 이름은 뽑힌 뒤에 정해요')),
     h('p', { class: 'bt-note', text: `운영자가 보고 ${seats}명을 뽑아요. 뽑히면 먼치킨을 켤 때 알려 드리고, 이 페이지에서도 보여요.` }),
     h('div', { class: 'bt-cta' },
+      age ? h('div', { class: 'bt-age' }, age.wrap, ageSt) : null,
       main,
       logged ? (C.preview ? h('p', { class: 'hint bt-alt', text: '미리 보기라 로그인은 건너뛰어요.' }) : null)
         : h('p', { class: 'bt-alt' }, kakaoOn
           ? h('button', { class: 'link-btn', type: 'button', text: '아이디로 로그인', onclick: () => C.login() })
-          : h('button', { class: 'link-btn', type: 'button', text: '회원가입', onclick: () => C.openSheet('signup') })))));
+          : h('button', { class: 'link-btn', type: 'button', text: '회원가입', onclick: () => C.openSheet('signup') })),
+      logged ? null : h('p', { class: 'hint bt-same', text: '먼치킨 프로그램을 쓰고 있다면 프로그램과 같은 계정(카카오·아이디)으로 들어와 주세요. 그래야 뽑혔을 때 먼치킨이 알려 드려요.' }))));
 }
 // 이미 앨범이 있음(서버는 mine.album 을 뽑혔을 때만 줘요 — 내 앨범은 내 정보에서)
 function ownerView(m) {

@@ -312,6 +312,11 @@ html.in-app .foot{background:transparent;text-align:center;padding:8px 0 28px}
 .bt-note{margin-top:14px;font-size:15px;line-height:1.6;color:var(--ink-2)}
 .bt-cta{display:grid;gap:8px;margin-top:28px}
 .bt-cta>.status:empty{display:none}
+/* 1단계 만 14세 칸·같은 계정 안내(2026-11-27) */
+.bt-age{display:grid;gap:6px;margin-bottom:4px}
+.bt-age .check input{accent-color:var(--bt-blue)}
+.bt-age>.status:empty{display:none}
+.bt-same{margin:2px 0 0;text-align:center;font-size:13px;line-height:1.55}
 .bt-cta .bt-go{margin-top:0}
 .bt-alt{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0 4px;text-align:center}
 .bt-alt .link-btn{color:var(--ink-2);font-weight:600}

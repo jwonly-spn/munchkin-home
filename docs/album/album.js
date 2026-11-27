@@ -91,6 +91,7 @@ const RETURN = (() => {
     if (['1', '12'].includes(hp.get('months'))) out.months = Number(hp.get('months'));          // &months=1|12 — 첫 화면에서 고른 기간
     out.preview = out.go === 'beta' && hp.get('preview') === '1';                             // #go=beta&preview=1 — 베타 신청 화면 미리 보기
     const q = new URLSearchParams(location.search);
+    if (!out.go && q.get('go') === 'beta') { out.go = 'beta'; out.goBack = true; }          // 카카오에서 돌아옴(?go=beta — kakaoLogin 이 돌아올 주소에 실음, 2026-11-27) · 미리 보기는 그대로
     if (APP_RE.test(q.get('app') || '')) out.app = q.get('app');
     out.kakao = Boolean(out.app) && q.get('kakao') === '1';
     // 휴대폰 카드 결제에서 돌아옴: ?pay=<신청 번호>(서버 redirectUrl) + 포트원이 붙인 paymentId·code·message — 주소를 지우기 전에 떼어 둔다
@@ -111,7 +112,7 @@ const S = {
   me: parse(ls.get('mk_me')),
   members: null,                 // members-config: {password, kakao}
   info: null, infoAt: 0, infoError: '',
-  view: 'home',
+  view: RETURN.go === 'beta' && !RETURN.app ? 'beta' : 'home',   // 베타 신청 주소면 첫 그림부터 베타(2026-11-27 — 상품 화면이 먼저 보였다가 바뀌던 것)
   app: RETURN.app,               // 먼치킨 프로그램 카카오 로그인 자리
   appDone: '',                   // 'ok' · 오류 글
   appAge: false,                 // 먼치킨 안의 카카오 창: 처음 가입이라 "만 14세 이상이에요" 체크가 필요함(서버 #bjlogin-error=age14)
@@ -123,9 +124,9 @@ const S = {
   payNote: null,                 // 결제 안 끝난 카드 신청에 보일 글 {id, text, bad}
   betaPub: null,                 // 베타테스터 모집 띠: 공개 status {open, seats, left} · 못 받으면 {open: false}
   // 베타 신청 미리 보기: 주소에 preview=1 → 이 탭 동안 기억(카카오에서 돌아와도) · 미리 보기 없이 #go=beta 로 오면 끔
-  betaPreview: RETURN.preview || (RETURN.go !== 'beta' && ss.get('mk_beta_preview') === '1')
+  betaPreview: RETURN.preview || ((RETURN.go !== 'beta' || RETURN.goBack === true) && ss.get('mk_beta_preview') === '1')
 };
-if (RETURN.preview) ss.set('mk_beta_preview', '1'); else if (RETURN.go === 'beta') ss.del('mk_beta_preview');
+if (RETURN.preview) ss.set('mk_beta_preview', '1'); else if (RETURN.go === 'beta' && RETURN.goBack !== true) ss.del('mk_beta_preview');
 // 결제하는 분(카드 결제창에 넘김) — 저장하지 않는다(localStorage·sessionStorage 에도 안 씀). 화면을 다시 그려도 쓴 글이 남게 메모리에만.
 const PAYER = { name: '', phone: '', email: '' };
 if (RETURN.plan) S.draft.plan = RETURN.plan;
@@ -377,9 +378,11 @@ function ssoContinue() {
   location.href = API + 'sso?' + new URLSearchParams({ h: location.host, r: location.pathname + location.search });
 }
 // age14: 가입 화면에서 "만 14세 이상이에요"에 체크함(a=1) — 서버는 처음 카카오로 가입할 때만 본다(없으면 #bjlogin-error=age14)
+//  베타 신청으로 가던 중이면 돌아올 주소에 ?go=beta 를 싣는다 — 이 탭 기억(mk_next)은 카카오에서 다른 탭·브라우저로 돌아오면 잃는다(2026-11-27)
 function kakaoLogin(age14 = false) {
   if (S.next) ss.set('mk_next', S.next);
-  location.href = API + 'kakao-start?' + new URLSearchParams({ apikey: KEY, h: location.host, r: location.pathname + location.search, ...(age14 ? { a: '1' } : {}) });
+  const beta = !inApp() && (S.next === 'beta' || (!S.next && S.view === 'beta'));
+  location.href = API + 'kakao-start?' + new URLSearchParams({ apikey: KEY, h: location.host, r: location.pathname + (beta ? '?go=beta' : location.search), ...(age14 ? { a: '1' } : {}) });
 }
 
 // 먼치킨 안의 카카오 로그인 창: 로그인돼 있으면 묻지 않고 승인한다(그 창을 연 프로그램의 자리 번호만 — inApp()).
@@ -406,7 +409,8 @@ function afterLogin(message) {
   closeSheet();
   if (inApp()) { autoApprove(); return; }
   if (S.app) { go('app'); return; }
-  if (S.me && !S.me.nickname) { openSheet('nickname', { join: true }); return; }
+  // 베타 신청 길에서는 닉네임 창을 건너뛴다(스푼 닉네임은 신청 3단계에서 받음 — 2026-11-27, 처음 온 분이 창 두 개에 멈추던 것)
+  if (S.me && !S.me.nickname && (S.next || ss.get('mk_next')) !== 'beta') { openSheet('nickname', { join: true }); return; }
   continueNext();
 }
 function continueNext() {
@@ -740,8 +744,8 @@ function betaCta() {
 }
 function betaBody() {
   if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText, key: KEY,
-    login: betaLogin, kakao: () => { S.next = 'beta'; kakaoLogin(); }, kakaoButton, preview: S.betaPreview, setPreview: setBetaPreview });
-  if (!betaJob && !betaFail) betaJob = import('./beta.js?v=2').then((m) => { betaMod = m; }, () => { betaFail = true; }).finally(() => { betaJob = null; paint(); });
+    login: betaLogin, kakao: (age14) => { S.next = 'beta'; kakaoLogin(age14 === true); }, kakaoButton, ageBox, age14Need: AGE14_NEED, preview: S.betaPreview, setPreview: setBetaPreview });
+  if (!betaJob && !betaFail) betaJob = import('./beta.js?v=3').then((m) => { betaMod = m; }, () => { betaFail = true; }).finally(() => { betaJob = null; paint(); });
   return h('section', { class: 'sect narrow' }, h('p', { class: betaFail ? 'status bad' : 'muted', text: betaFail ? '화면을 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고침해 주세요.' : '불러오는 중이에요…' }));
 }
 function topbar() {
@@ -750,8 +754,8 @@ function topbar() {
     h('span', { class: 'brand' }, h('img', { src: '../munchkin-64.png', alt: '', width: '34', height: '34' }), h('span', null, '먼치킨 ', h('em', { text: '로그인' })))));
   const right = S.session && S.me
     ? h('button', { class: 'me-btn', type: 'button', 'aria-label': '내 정보', onclick: () => go('me') }, icon('user'), h('span', { class: 'me-name', text: S.me.nickname || '내 정보' }))
-    : [h('button', { class: 'btn line small hide-s', type: 'button', text: '회원가입', onclick: () => openSheet('signup') }),
-      h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => openSheet('login') })];
+    : [h('button', { class: 'btn line small hide-s', type: 'button', text: '회원가입', onclick: () => { if (S.view === 'beta') S.next = 'beta'; openSheet('signup'); } }),
+      h('button', { class: 'btn main small', type: 'button', text: '로그인', onclick: () => { if (S.view === 'beta') S.next = 'beta'; openSheet('login'); } })];
   // 이름표 두 칸(2026-11-16 UI 검토 S7): "먼치킨"은 먼치킨.com 첫 화면으로, "추억앨범"은 이 페이지 처음 화면으로. 맨 위에 [먼치킨 받기]도 둔다.
   return h('header', { class: 'top on-night' }, h('div', { class: 'wrap top-in' },
     h('div', { class: 'brand brand-split' },
@@ -1732,7 +1736,7 @@ async function start() {
 
   if (RETURN.loginError) {
     // 베타 신청에서 [카카오로 시작하기]를 눌렀다가 돌아옴(그만둠·처음 가입 만 14세 체크 등) → 뒤 화면은 베타 신청 그대로
-    if (ss.get('mk_next') === 'beta' && !S.session) { ss.del('mk_next'); S.next = 'beta'; S.view = 'beta'; paint(); }
+    if ((RETURN.go === 'beta' || ss.get('mk_next') === 'beta') && !S.session) { ss.del('mk_next'); S.next = 'beta'; S.view = 'beta'; paint(); }
     // 처음 카카오로 가입하는데 만 14세 체크가 없었다 → 가입 화면(맨 위 체크 칸)에서 다시
     if (RETURN.loginError === 'age14') { if (!S.session) openSheet('signup', { kakaoAge: true }); return; }
     toast(KAKAO_ERRORS[RETURN.loginError] || KAKAO_ERRORS.fail, RETURN.loginError !== 'cancel');
@@ -1752,7 +1756,7 @@ async function start() {
     // 베타 신청은 로그인 창을 먼저 띄우지 않는다(설명·3단계부터, 2026-11-26)
     if (!S.session && want === 'beta') { go('beta'); return; }
     if (!S.session) { S.next = want; openSheet('login'); return; }
-    if (RETURN.ticket && S.me && !S.me.nickname) { S.next = want; openSheet('nickname', { join: true }); return; }
+    if (RETURN.ticket && S.me && !S.me.nickname && want !== 'beta') { S.next = want; openSheet('nickname', { join: true }); return; }
     go(want);
   } else if (RETURN.ticket && S.session) {
     // 카카오로 막 로그인함 — 닉네임이 없으면 먼저
