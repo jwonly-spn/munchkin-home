@@ -474,4 +474,16 @@ p,li,dd,summary,figcaption{text-wrap:pretty}
 .bs-go{flex:none;display:inline-flex;align-items:center;gap:2px;text-decoration:underline;text-underline-offset:4px}
 .bs-go .ico{width:18px;height:18px;stroke-width:2.6}
 .beta-strip:focus-visible{outline:3px solid #1A2040;outline-offset:-6px;border-radius:0}
+.beta-cta{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;max-width:600px;margin-top:22px;padding:16px 16px 16px 20px;border-radius:18px;background:var(--coral);color:#1A2040;text-decoration:none;box-shadow:0 10px 30px rgba(10,14,40,.18)}
+.beta-cta .bc-text{flex:1 1 240px;display:grid;gap:3px;min-width:0}
+.bc-tag{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:14px;font-weight:700}
+.bc-tag i{font-style:normal;padding:2px 9px;border-radius:999px;background:#1A2040;color:#FFFFFF;font-size:13px;font-weight:800}
+.beta-cta b{font-size:20px;font-weight:800;line-height:1.35}
+.beta-cta small{font-size:14px;font-weight:600;line-height:1.45}
+.bc-go{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:48px;padding:0 18px;border-radius:14px;background:#1A2040;color:#FFFFFF;font-size:17px;font-weight:800}
+.bc-go .ico{width:18px;height:18px;stroke-width:2.6}
+.beta-cta:hover .bc-go{background:#2a3160}
+.beta-cta:focus-visible{outline:3px solid var(--link);outline-offset:3px}
+#mk-beta-album:empty{display:none}
+@media (max-width:600px){.beta-cta{padding:14px}.beta-cta b{font-size:18px}.bc-go{width:100%;justify-content:center}}
 @media (max-width:600px){.beta-strip{justify-content:flex-start;font-size:15px;gap:4px 8px}.bs-more{display:none}}

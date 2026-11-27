@@ -725,6 +725,19 @@ function betaStrip() {
     h('span', { class: 'bs-text' }, '추억앨범 베타테스터', h('span', { class: 'bs-more', text: ` ${S.betaPub.seats}명 추가 모집 · 뽑히면 12월 31일까지 무료` })),
     h('span', { class: 'bs-go' }, '신청하기', icon('right')));
 }
+// 본문 베타 단추(2026-11-27 사용자 "사이트에도 봇에도 그 어디에도 신청하는 방법이 없잖아 베타테스터를"):
+//  맨 위 띠만으로는 잘 안 보여서, /album 첫 칸(유료 신청 단추 위)과 먼치킨.com 첫 화면 추억앨범 칸에 큰 단추를 하나 더 둔다.
+//  모집 중이고 남은 자리가 있을 때만(띠와 같은 공개 status). 이미 앨범이 있는 분(내 앨범 줄이 보이는 분)에게는 /album 에서 그리지 않는다.
+function betaCta() {
+  ensureBetaPub();
+  if (!S.betaPub?.open) return null;
+  return h('a', { class: 'beta-cta', href: BETA_PAGE, onclick: HOME ? null : (e) => { e.preventDefault(); go('beta'); } },
+    h('span', { class: 'bc-text' },
+      h('span', { class: 'bc-tag' }, h('i', { text: '모집 중' }), `베타테스터 ${S.betaPub.seats}명 · 남은 자리 ${S.betaPub.left}`),
+      h('b', { text: '뽑히면 12월 31일까지 무료예요' }),
+      h('small', { text: '카카오로 시작 → 박제 사진 3장 → 스푼 닉네임' })),
+    h('span', { class: 'bc-go' }, '베타 신청하기', icon('right')));
+}
 function betaBody() {
   if (betaMod) return betaMod.betaView({ h, icon, call, billCall, S, go, toast, paint, openSheet, dropSession, busy, say, statusEl, hostText, key: KEY,
     login: betaLogin, kakao: () => { S.next = 'beta'; kakaoLogin(); }, kakaoButton, preview: S.betaPreview, setPreview: setBetaPreview });
@@ -842,6 +855,7 @@ function homeView() {
         h('h1', { id: 'a-title' }, '방송의 추억을', h('br'), '나만의 앨범으로'),
         h('p', { class: 'lead' }, '최초 박제판, 박제판, 일상 사진을 인스타그램처럼 모아 두는 나만의 사이트예요. 휴대폰만 있어도 만들고 올릴 수 있어요. 주소는 ',
           h('b', { class: 'nobr', text: '내이름.먼치킨.com' }), '처럼 정해요.'),
+        mine ? null : betaCta(),
         h('p', { class: 'hero-price' }, '추억앨범만 ', h('b', { text: `한 달 ${won(albumMonth())}` }), '부터'),
         ctas(),
         h('p', { class: 'note', text: beta ? BETA_TEXT : '청취자는 가입하지 않아도 앨범을 볼 수 있어요.' })),
@@ -1813,6 +1827,13 @@ function homeAuth() {
 function paintHome() {
   $('#mk-auth')?.replaceChildren(...[homeAuth()].flat());
   $('#mk-beta')?.replaceChildren(...[betaStrip()].filter(Boolean));
+  // 첫 화면 추억앨범 칸: 설명 글 아래(미리 보기 단추 위)에 베타 단추
+  const albumCopy = $('#album .album-copy');
+  if (albumCopy) {
+    let slot = $('#mk-beta-album');
+    if (!slot) { slot = h('div', { id: 'mk-beta-album' }); (albumCopy.querySelector('.album-note') || albumCopy.lastElementChild)?.after(slot); }
+    slot.replaceChildren(...[betaCta()].filter(Boolean));
+  }
   const box = $('#mk-pay');
   if (!box) return;
   // 서버 가격을 아직 못 받았거나 못 받았으면: 처음 HTML(위 띠·가격 글)을 그대로 두고, 로그인 전이면 album/ 로 가던 링크만
