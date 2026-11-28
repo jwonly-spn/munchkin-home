@@ -12,7 +12,7 @@ from fontTools.ttLib import TTFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.join(HERE, '..', 'docs')
-SOURCES = ['index.html', '404.html', 'site.css', 'stars.js', 'home.js', 'album/index.html', 'album/album.js', 'album/album.css', 'album/beta.js']
+SOURCES = ['index.html', '404.html', 'site.css', 'stars.js', 'home.js', 'tools/index.html', 'album/index.html', 'album/album.js', 'album/album.css', 'album/beta.js']
 # 글에 없어도 늘 넣는 글자: 영문·숫자·기호 전부, 자주 쓰는 문장 부호, 한글을 치는 동안 보이는 낱자(ㄱ~ㅣ)
 ALWAYS = ''.join(chr(c) for c in range(0x20, 0x7F)) + '·…—–‘’“”「」『』〈〉《》›‹→←↑↓×÷°※♥♡★☆•▾▴✓₩' + ''.join(chr(c) for c in range(0x3131, 0x3164))
 
