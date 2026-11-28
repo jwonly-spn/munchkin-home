@@ -1,0 +1,253 @@
+/* 먼치킨.com 첫 페이지만(2026-11-28 새 흐름 「시안 D」 — 지금 사이트의 옷 + 새 흐름 + 한 장면에 한 마디).
+   site.css·pay.css 다음에 불러요. /album·/tools 는 이 파일을 안 불러요(site.css 는 그대로).
+   장면 = 제목(.h-head) → 그림 또는 눌러 보기 하나(.h-pic) → 글 한 줄(.h-tail).
+   "h-" 로 시작하는 이름은 이 파일에만 있어요(site.css·pay.css 의 .chat·.st·.btn·.small·.seg 같은 이름과 겹치지 않게).
+   머리줄·#mk-beta 띠·받기 단추(.get .btn.dl)·PC 안내(.pc-note)·이용권(#mk-pay)·설치 그림 안내(#install-help)·바닥은 site.css·pay.css 것을 쓰고 모습만 덮어써요.
+   모습 규칙(검토-C2.md 5번): 글자 6단계(휴대폰 40·28·56·17·15·13 / PC 72·44·88·19·16·14) · 둥글기 16·20·999 · 테두리 1px ·
+   산호는 받기 단추·3,000원·추천만 · 바탕 = 밤(첫 화면~네 가지) → 흰색(따져 보기) → 크림(시작·경고·질문) → 밤(마지막). */
+
+body.home{
+  --paper:#FFFFFF;--cream-bg:#F6F1E7;--coral-text:#D5443A;--bar-off:#ECEBF3;--bar-other:#A9AEC6;
+  --chat-bg:#0E1227;--chat-ink:#F6F1E7;--chat-ink-2:#B7BCD9;--chat-line:rgba(246,241,231,.14);
+  --f-hero:40px;--f-h2:28px;--f-num:56px;--f-body:17px;--f-ui:15px;--f-sm:13px;
+  --pad:72px;--cell:48px;
+  background:var(--paper);font:400 var(--f-body)/1.6 var(--body);
+}
+@media (prefers-color-scheme:dark){body.home{--paper:#0E1227;--cream-bg:#181E40;--coral-text:#FF7B6E;--bar-off:#1D2449;--bar-other:#6F769E}}
+@media (min-width:1000px){body.home{--f-hero:72px;--f-h2:44px;--f-num:88px;--f-body:19px;--f-ui:16px;--f-sm:14px;--pad:120px;--cell:56px}}
+
+body.home h1,body.home h2{letter-spacing:-.02em}
+body.home h2{font-size:var(--f-h2);line-height:1.25}
+body.home video{display:block;max-width:100%;height:auto}
+/* 내용 폭: 1080px(좌우 20px) — 머리줄·바닥·설치 안내도 같은 줄에 맞춰요 */
+body.home .wrap{width:100%;max-width:1120px;margin-inline:auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+/* 바탕 세 가지 */
+body.home .h-zone{padding-bottom:var(--pad)}
+body.home .night.h-zone,body.home .night.h-last{background-color:var(--night);
+  background-image:radial-gradient(1.2px 1.2px at 40px 90px,#fff 50%,transparent 51%),radial-gradient(1.6px 1.6px at 330px 210px,#FFE9A8 50%,transparent 51%),radial-gradient(1px 1px at 190px 470px,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 520px 60px,#fff 50%,transparent 51%),radial-gradient(1px 1px at 610px 380px,#FFF6DD 50%,transparent 51%);
+  background-size:420px 640px,420px 640px,420px 640px,770px 910px,770px 910px}
+body.home .h-paper{background:var(--paper)}
+body.home .h-cream{background:var(--cream-bg)}
+
+/* 장면 */
+body.home .h-scene{padding-top:var(--pad)}
+body.home .h-scene>.wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+body.home .h-scene>.wrap>*{min-width:0}
+body.home .h-head{display:grid;gap:8px}
+body.home .h-tail{display:grid;gap:16px;justify-items:start}
+body.home .h-eye{font-size:var(--f-sm);font-weight:600;line-height:1.5;color:var(--ink-2)}
+body.home .h-eye b{color:var(--star);font-weight:600}
+body.home .h-one{color:var(--ink-2)}
+body.home .h-one b{color:var(--ink);font-weight:600}
+body.home .night .h-one b.h-hl{color:var(--star)}
+body.home .h-small{font-size:var(--f-sm);line-height:1.5;color:var(--ink-2)}
+body.home .h-small b{font-weight:600;color:var(--ink)}
+body.home .h-strong{font:700 var(--f-body)/1.6 var(--display);letter-spacing:-.02em}
+body.home .h-more{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:var(--f-ui);font-weight:600;line-height:1.5;text-decoration:none}
+body.home .h-more::after{content:"→"}
+body.home .h-links{display:flex;flex-wrap:wrap;gap:0 24px}
+body.home .h-pc-on{display:none}
+
+/* 받기 단추(site.css .btn.main.dl 을 D 모양으로: 높이 56 · 둥글기 16 · 휴대폰은 가로 꽉) */
+body.home .btn.dl{width:100%;min-height:56px;padding:0 28px;gap:8px;border-radius:16px;font:700 var(--f-body)/1 var(--body);letter-spacing:0}
+body.home .btn.dl .ico{width:20px;height:20px}
+body.home .get{gap:8px;width:100%}
+body.home .h-get-box{display:grid;gap:8px;width:100%}
+body.home .h-get-box .version,body.home .h-last .version{margin-top:0;font-size:var(--f-sm);line-height:1.5;letter-spacing:0}
+body.home .pc-note{max-width:440px}
+
+/* 첫 화면 */
+body.home .h-hero{padding-top:24px}
+body.home .h-hero>.wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
+body.home .h-hero>.wrap>*{min-width:0}
+body.home .h-copy{display:grid;gap:8px}
+body.home .h-kicker{display:flex;align-items:center;gap:8px;font-size:var(--f-sm);font-weight:600;line-height:1.5;color:var(--ink-2)}
+body.home .h-dot{width:8px;height:8px;border-radius:50%;background:#FF5A4D;flex:none}
+body.home .h-hero h1{font-size:min(var(--f-hero),10.7vw);line-height:1.15}
+body.home .h-hero h1 span{display:block;white-space:nowrap}
+body.home .h-hero h1 .h-name{color:var(--star)}
+body.home .h-hero-art{position:relative;justify-self:center;width:min(70%,270px);padding-top:24px}
+body.home .h-hero-art::before{content:"";position:absolute;left:-12%;right:-12%;top:6%;bottom:-18%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.2),rgba(255,217,138,.06) 62%,transparent)}
+body.home .h-hero-art img{position:relative;width:100%;animation:h-bob 4s ease-in-out infinite}
+@keyframes h-bob{50%{transform:translateY(-6px)}}
+body.home .h-note{position:absolute;z-index:1;background:var(--cream);color:#1A2040;font-size:var(--f-ui);font-weight:600;line-height:1.5;padding:8px 16px;border-radius:16px;white-space:nowrap}
+body.home .h-hero-art .h-note{left:-16%;top:0}
+
+/* 방송 채팅 창(늘 어두운 색) */
+body.home .h-chat{width:100%;max-width:440px;background:var(--chat-bg);color:var(--chat-ink);border:1px solid var(--chat-line);border-radius:20px;overflow:hidden}
+body.home .h-chat-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 16px;font-size:var(--f-sm);font-weight:600;line-height:1.5;color:var(--chat-ink-2);border-bottom:1px solid var(--chat-line)}
+body.home .h-chat-bar>span{display:flex;align-items:center;gap:8px}
+body.home .h-log{display:flex;flex-direction:column;justify-content:flex-end;gap:8px;height:var(--log,384px);padding:12px 16px;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,transparent,#000 32px);mask-image:linear-gradient(180deg,transparent,#000 32px)}
+body.home .h-out{display:contents}
+body.home .h-log .h-msg,body.home .h-log .h-st{flex:none}
+body.home .h-st{align-self:center;text-align:center;font-size:var(--f-sm);line-height:1.5;color:var(--chat-ink-2)}
+body.home .h-msg.h-bot{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start}
+body.home .h-msg.h-me{display:flex;align-items:baseline;gap:8px}
+body.home .h-av{width:28px;height:28px;border-radius:50%;overflow:hidden;background:var(--night-2)}
+body.home .h-av img{width:28px;height:28px}
+body.home .h-who{display:flex;align-items:center;gap:8px;font-size:var(--f-sm);font-weight:600;line-height:1.5;color:var(--chat-ink-2);white-space:nowrap}
+body.home .h-msg.h-bot .h-who{margin-bottom:4px}
+body.home .h-role{padding:0 8px;border-radius:999px;background:#7FE3A8;color:#0E3A22}
+body.home .h-role.h-dj{background:var(--star);color:#3A2A00}
+body.home .h-bub{display:inline-block;max-width:100%;white-space:pre-line;background:rgba(255,255,255,.08);border-radius:16px;padding:7px 12px;font-size:var(--f-ui);line-height:1.5}
+body.home .h-msg.h-bot .h-bub{background:rgba(255,255,255,.15)}
+body.home .h-pop{animation:h-pop .3s ease-out both}
+@keyframes h-pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+body.home .h-send{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--chat-line);overflow-x:auto;scrollbar-width:none}
+body.home .h-send::-webkit-scrollbar{display:none}
+body.home .h-send button,body.home .h-seg button{flex:none;min-height:44px;padding:0 16px;border:1px solid transparent;border-radius:999px;background:var(--night-2);color:var(--chat-ink);font-size:var(--f-ui);font-weight:600;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+body.home .h-send button[aria-pressed="true"]{border-color:var(--coral)}
+body.home .h-chat-bar.h-has-seg{min-height:60px;padding-right:8px}
+body.home .h-seg{display:flex;gap:8px}
+body.home .h-seg button{padding:0 12px;background:transparent;color:var(--chat-ink-2)}
+body.home .h-seg button[aria-pressed="true"]{background:var(--night-2);color:var(--chat-ink)}
+
+/* 키우기 영상(보일 때만 재생 · 멈춤 단추는 home.js 가 붙여요) */
+body.home .h-screen{position:relative;width:100%;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/9;background:#1d1a2b}
+body.home .h-screen video{width:100%;height:100%;object-fit:cover}
+body.home .h-vid{position:absolute;right:8px;bottom:8px;min-width:44px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:rgba(14,18,39,.72);color:#F6F1E7;font-size:var(--f-sm);font-weight:600;cursor:pointer}
+
+/* 뽑기판 */
+body.home .h-board{display:grid;grid-template-columns:repeat(5,var(--cell));gap:8px;justify-content:center;padding:16px}
+body.home .h-board button{width:var(--cell);height:var(--cell);padding:0;border:1px solid transparent;border-radius:16px;background:var(--night-2);color:var(--chat-ink);font-size:var(--f-ui);font-weight:600;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+body.home .h-board button:disabled{cursor:default;background:transparent;border-color:var(--chat-line);color:var(--chat-ink-2);font-size:var(--f-sm)}
+body.home .h-board button.h-won:disabled{background:var(--star);border-color:transparent;color:#1A2040;font-weight:700}
+body.home .h-reset{min-height:44px;padding:0 8px;border:0;background:none;color:var(--chat-ink);font-size:var(--f-sm);font-weight:600;cursor:pointer}
+body.home #pick .h-out>*+*{margin-top:8px}
+body.home #pick .h-log{--log:196px;display:block;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(246,241,231,.25) transparent;border-top:1px solid var(--chat-line);-webkit-mask-image:none;mask-image:none}
+
+/* 기본 기능 */
+body.home .h-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+body.home .h-checks li,body.home .h-ticks li{display:flex;gap:8px;align-items:baseline}
+body.home .h-checks li::before,body.home .h-ticks li::before,body.home .h-folds .h-ok::before{content:"✓";color:var(--ink-2);font-weight:700;flex:none}
+
+/* 가격 */
+body.home .h-num{font:700 var(--f-num)/1 var(--display);letter-spacing:-.02em;color:var(--coral-text);white-space:nowrap;font-variant-numeric:tabular-nums}
+body.home .h-bars{display:grid;gap:16px;width:100%;max-width:520px}
+body.home .h-bar{display:grid;gap:8px}
+body.home .h-bar p{display:flex;justify-content:space-between;gap:8px;font-size:var(--f-ui);font-weight:600;line-height:1.5}
+body.home .h-bar p span{color:var(--ink-2);font-weight:400;font-variant-numeric:tabular-nums}
+body.home .h-track{height:16px;border-radius:999px;background:var(--bar-off);overflow:hidden}
+body.home .h-fill{display:block;height:100%;border-radius:999px;transform-origin:left center;transition:transform .6s ease-out}
+body.home .h-bar.h-other .h-fill{width:25%;background:var(--bar-other)}
+body.home .h-bar.h-mk .h-fill{width:100%;background:var(--ink)}
+.h-js body.home .h-bars:not(.in) .h-fill{transform:scaleX(0)}
+body.home .h-price-art{display:none}
+
+/* 고양이가 그림인 장면 */
+body.home .h-cat{position:relative;justify-self:center;width:min(60%,232px)}
+body.home .h-m-off{display:none}
+body.home .h-cat .h-note{left:-22%;top:4%}
+body.home .h-ticks{display:grid;gap:8px}
+body.home .h-ticks b{font-weight:600}
+body.home .h-ticks span{font-size:var(--f-sm);line-height:1.5;color:var(--ink-2);font-variant-numeric:tabular-nums}
+body.home .h-ticks div{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
+body.home .h-bots{display:grid;gap:8px;font-size:var(--f-ui);line-height:1.5;width:100%}
+body.home .h-bots li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px}
+body.home .h-bots b{font-weight:600}
+body.home .h-bots span{color:var(--ink-2)}
+
+/* 디스코드 문의 */
+body.home .h-dc{width:100%;max-width:440px;background:#313338;color:#DBDEE1;border-radius:20px;padding:0 16px 16px;display:grid;gap:16px}
+body.home .h-dc-bar{display:flex;align-items:center;min-height:48px;font-size:var(--f-sm);font-weight:600;color:#B5BAC1;border-bottom:1px solid rgba(255,255,255,.1)}
+body.home .h-dm{display:grid;grid-template-columns:32px minmax(0,1fr);gap:8px}
+body.home .h-dm .h-av{width:32px;height:32px;background:#80848E;color:#fff;display:grid;place-items:center;font-size:var(--f-sm);font-weight:600}
+body.home .h-dm .h-av.h-app{background:#5865F2}
+body.home .h-dm .h-av img{width:32px;height:32px}
+body.home .h-dm .h-nm{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;font-size:var(--f-sm);font-weight:600;line-height:1.5;color:#F2F3F5}
+body.home .h-dm .h-nm time{font-weight:400;color:#949BA4}
+body.home .h-dm .h-tag{padding:0 8px;border-radius:999px;background:#5865F2;color:#fff}
+body.home .h-dm p{font-size:var(--f-ui);line-height:1.5}
+
+/* 사진 */
+body.home .h-shot{width:100%;border-radius:16px;border:1px solid var(--line);overflow:hidden}
+body.home .h-shot img{width:100%}
+body.home .h-addr .h-dim{color:var(--ink-2)}
+/* 추억앨범 칸: album.js 가 .album-note 뒤에 베타 단추(#mk-beta-album)를 끼워요(모집 중일 때만) */
+body.home .h-tail .album-note{font-size:inherit;color:var(--ink-2)}
+body.home .h-tail .beta-cta{margin-top:0}
+
+/* 이용권(#mk-pay — 처음 HTML·album.js 가격표 그대로, 그림자만 빼고 둥글기 16) */
+body.home #mk-pay .card{box-shadow:none;border-radius:16px}
+body.home #mk-pay .notice{border-radius:16px}
+
+/* 접는 목록(결제 전에 확인 · 자주 묻는 질문) */
+body.home .h-folds{border-top:1px solid var(--line);width:100%}
+body.home .h-folds details{border-bottom:1px solid var(--line)}
+body.home .h-folds summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;padding:8px 0;font-weight:600;line-height:1.5}
+body.home .h-folds summary::-webkit-details-marker{display:none}
+body.home .h-folds summary::after{content:"";flex:none;width:8px;height:8px;margin:-4px 4px 0 0;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:rotate(45deg)}
+body.home .h-folds details[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+body.home .h-folds details p{padding:0 0 16px;color:var(--ink-2);font-size:var(--f-ui);line-height:1.5}
+body.home .h-folds details a{color:var(--ink);text-underline-offset:4px}
+body.home .h-folds .h-ok{display:flex;gap:8px;align-items:baseline}
+body.home .h-sure{padding-top:40px}
+
+/* 시작 3단계 */
+body.home .h-steps{display:grid;gap:16px;counter-reset:h-s;width:100%}
+body.home .h-steps li{display:grid;grid-template-columns:40px minmax(0,1fr);gap:0 8px;align-items:start;counter-increment:h-s}
+body.home .h-steps li::before{content:counter(h-s);font:700 var(--f-h2)/1.25 var(--display);color:var(--ink-2)}
+body.home .h-steps b{display:block;font-weight:600}
+body.home .h-steps span{font-size:var(--f-ui);line-height:1.5;color:var(--ink-2)}
+body.home .h-steps .h-must{display:inline-block;margin-left:8px;padding:0 8px;border-radius:999px;background:var(--ink);color:var(--cream-bg);font-size:var(--f-sm);font-weight:600;line-height:1.5}
+
+/* 받을 때 경고 그림 안내(site.css #install-help 그대로 — 크림 바탕 안에서 장면 간격·글자 크기만 맞춤) */
+body.home #install-help{padding:var(--pad) 0 0}
+body.home #install-help .head h2{font-size:var(--f-h2);line-height:1.25}
+body.home .ih-part>summary h3{font-size:var(--f-body)}
+body.home .ih-why,body.home .ih-safe{border-radius:16px}
+
+/* 마지막: 다시 밤 */
+body.home .h-last{text-align:center;padding-bottom:var(--pad)}
+body.home .h-last>.wrap{justify-items:center}
+body.home .h-last .h-cat{width:min(60%,232px)}
+body.home .h-last .h-cat::before{content:"";position:absolute;inset:-6% -14% -14%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,217,138,.18),transparent)}
+body.home .h-last .h-cat img{position:relative}
+body.home .h-last .h-tail{justify-items:center;width:100%;max-width:400px;gap:8px}
+body.home .h-last .get{justify-items:center}
+body.home .h-last .pc-note{text-align:left}
+body.home .h-foot-note{color:var(--foot-ink-2)}
+
+/* 화면에 들어올 때 한 번(html 에 h-js 는 home.js 가 붙여요 — 스크립트가 없으면 처음부터 다 보여요) */
+.h-js body.home .h-rv{opacity:0;transform:translateY(12px);transition:opacity .4s ease-out,transform .4s ease-out}
+.h-js body.home .h-rv.in{opacity:1;transform:none}
+
+@media (min-width:1000px){
+  body.home .h-scene>.wrap{grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-rows:1fr auto auto 1fr;column-gap:8.333%;row-gap:24px}
+  body.home .h-scene .h-head{grid-column:1;grid-row:2}
+  body.home .h-scene .h-tail{grid-column:1;grid-row:3}
+  body.home .h-scene .h-pic{grid-column:2;grid-row:1/5;align-self:center;justify-self:stretch}
+  body.home .h-scene .h-cat{justify-self:start}
+  body.home .h-m-off{display:block}
+  body.home .h-solo .h-head{grid-row:1;align-self:start}
+  body.home .h-solo .h-tail{grid-row:2/5;align-self:start}
+  body.home .h-solo .h-pic{align-self:start}
+  /* 이용권: 가격표 셋이 나란히 들어가게 제목 아래 한 줄 전체 */
+  body.home .h-wide>.wrap{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
+  body.home .h-wide .h-head,body.home .h-wide .h-pic{grid-column:1;grid-row:auto}
+  body.home .btn.dl{width:auto}
+  body.home .get{width:auto}
+  body.home .h-pc-on{display:inline}
+  body.home .h-hero{padding-top:56px}
+  body.home .h-hero>.wrap{grid-template-columns:minmax(0,7fr) minmax(0,5fr);grid-template-rows:1fr auto auto 1fr;column-gap:40px;row-gap:24px}
+  body.home .h-hero .h-copy{grid-column:1;grid-row:2}
+  body.home .h-hero .h-get-box{grid-column:1;grid-row:3;padding-top:16px}
+  body.home .h-hero-art{grid-column:2;grid-row:1/5;align-self:center;justify-self:end;width:min(100%,420px);padding-top:40px}
+  body.home .h-hero-art .h-note{left:-10%}
+  body.home .h-hero h1{font-size:min(var(--f-hero),6.4vw)}
+  body.home .h-cat{width:min(100%,380px)}
+  body.home .h-cat .h-note{left:-8%}
+  body.home .h-checks{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  body.home .h-price-art{display:block;width:300px;margin:0 0 24px 40px}
+  body.home .h-sure{padding-top:var(--pad)}
+  body.home .h-last>.wrap{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
+  body.home .h-last .h-head,body.home .h-last .h-tail,body.home .h-last .h-pic{grid-column:1;grid-row:auto;justify-self:center}
+  body.home .h-last .h-cat{width:360px}
+}
+@media (prefers-reduced-motion:reduce){
+  body.home .h-pop,body.home .h-hero-art img{animation:none}
+  .h-js body.home .h-rv{opacity:1;transform:none;transition:none}
+  body.home .h-fill{transition:none}
+  .h-js body.home .h-bars:not(.in) .h-fill{transform:none}
+}

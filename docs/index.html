@@ -6,7 +6,7 @@
 <link rel="canonical" href="https://xn--s22bu18a0ub.com/"><link rel="icon" href="favicon.ico"><link rel="apple-touch-icon" href="munchkin-256.png">
 <meta name="theme-color" content="#171C3A">
 <link rel="preload" href="fonts/mk-text.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="fonts/mk-title.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=10"><link rel="stylesheet" href="pay.css?v=2"><script src="stars.js?v=3" defer></script><script src="home.js?v=1" defer></script><script type="module" src="album/album.js?v=30"></script>
+<link rel="stylesheet" href="site.css?v=10"><link rel="stylesheet" href="pay.css?v=2"><link rel="stylesheet" href="home.css?v=1"><script src="home.js?v=2" defer></script><script type="module" src="album/album.js?v=30"></script>
 </head>
 <body class="home"><a class="skip" href="#main">본문으로 바로 가기</a><svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><defs>
 <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
@@ -23,92 +23,148 @@
 <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M10 10v10"/></symbol>
 <symbol id="i-devices" viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="10" rx="1.5"/><path d="M6 18h6M9 14v4"/><rect x="17.5" y="8" width="4.5" height="12" rx="1"/></symbol>
 </defs></svg>
-<header class="site-header on-night"><div class="wrap header-in"><a class="brand" href="./"><img src="munchkin-64.png" width="40" height="40" alt="">먼치킨</a><nav aria-label="주 메뉴"><a class="opt" href="#show">기능 소개</a><a href="#s2">시즌 2</a><a href="tools/"><span class="nav-long">유용한 </span>도구</a><a class="opt" href="#pay">이용권</a><a href="album/">추억앨범</a></nav><div class="mk-auth" id="mk-auth"><a class="btn line sm" href="album/">로그인</a><a class="btn line sm join" href="album/">회원가입</a></div><a class="btn main sm header-get" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe">무료 받기</a></div></header>
+<header class="site-header on-night"><div class="wrap header-in"><a class="brand" href="./"><img src="munchkin-64.png" width="40" height="40" alt="">먼치킨</a><nav aria-label="주 메뉴"><a class="opt" href="#show">기능 소개</a><a href="#grow">시즌 2</a><a href="tools/"><span class="nav-long">유용한 </span>도구</a><a class="opt" href="#pay">이용권</a><a href="album/">추억앨범</a></nav><div class="mk-auth" id="mk-auth"><a class="btn line sm" href="album/">로그인</a><a class="btn line sm join" href="album/">회원가입</a></div><a class="btn main sm header-get" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe">무료 받기</a></div></header>
 <main id="main"><div id="mk-beta"></div>
-<section class="hx night" aria-labelledby="hero-title"><i class="sky" aria-hidden="true"></i><div class="wrap hx-in">
-<div class="hx-left"><div class="hx-copy"><p class="hx-kicker"><i class="dot" aria-hidden="true"></i>스푼 DJ를 위한 PC 채팅 봇</p><h1 id="hero-title">방송을 더 재밌게 해줄 존재, 먼치킨!</h1>
-<p class="lead">스푼 방송에 매니저로 들어와 입장 인사, 후원 감사, 채팅 게임을 대신해 주는 Windows PC 프로그램이에요.</p>
-<div class="get" id="get"><a class="btn main dl" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-dl-label>Windows용 무료 받기</span></a>
-<div class="pc-note pc-note-mini" data-pc-note hidden><p class="pc-note-title">먼치킨은 Windows PC 프로그램이에요</p><p>PC에서 먼치킨.com을 열어 받아 주세요.</p><div class="pc-note-actions"><button type="button" class="btn main" data-copy><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사</button><button type="button" class="btn line" data-share hidden><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>카톡이나 디스코드로 보내기</button></div><p class="pc-note-status" role="status" aria-live="polite"></p></div></div><p class="version">먼치킨 0.23.9 · Windows 10·11 (64비트) · 116MB · 무료 베타</p></div>
-<div class="hx-scene"><p class="hello-note" aria-hidden="true">오늘 방송도 힘내세요!</p><img src="art/hero-desk.webp" width="1208" height="857" alt="헤드폰을 쓰고 작은 라디오 책상에서 방송하며 손을 흔드는 먼치킨 고양이" fetchpriority="high"></div></div>
-<div class="try" id="try"><h2 class="try-title">눌러 보세요. 먼치킨이 채팅에서 이렇게 말해요.</h2>
-<div class="try-btns" role="group" aria-label="보고 싶은 장면"><button type="button" data-k="gift" aria-pressed="true">후원이 오면</button><button type="button" data-k="join" aria-pressed="false">청취자가 들어오면</button><button type="button" data-k="quiz" aria-pressed="false">DJ가 !초성퀴즈</button><button type="button" data-k="boss" aria-pressed="false">보스가 나타나면</button></div>
-<div class="chatbox"><p class="try-bar"><i aria-hidden="true"></i>방송 채팅 예시 (이름은 지어낸 거예요)</p><div class="chat" id="try-chat" tabindex="0" role="log" aria-live="off" aria-label="방송 채팅 예시"></div><p class="chat-note" id="try-note">DJ가 정해 둔 인사말 예시예요. 인사말은 DJ가 직접 적어요.</p></div></div>
+<!-- 밤: 방송 중인 구간(첫 화면 + 먼치킨에만 있는 네 가지) -->
+<div class="night h-zone">
+<section class="h-hero" aria-labelledby="hero-title"><div class="wrap">
+<div class="h-copy"><p class="h-kicker"><i class="h-dot" aria-hidden="true"></i>스푼 DJ를 위한 PC 채팅 봇</p>
+<h1 id="hero-title"><span>방송을 더 즐겁게</span><span>방송을 더 편하게</span><span class="h-name">먼치킨!</span></h1></div>
+<figure class="h-hero-art"><p class="h-note" aria-hidden="true">오늘 방송도 힘내세요!</p><img src="art/hero-desk.webp" width="1208" height="857" alt="헤드폰을 쓰고 작은 책상에서 방송하는 먼치킨 고양이" fetchpriority="high"></figure>
+<div class="h-get-box"><div class="get" id="get"><a class="btn main dl" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-dl-label>Windows용 무료 받기</span></a>
+<div class="pc-note pc-note-mini" data-pc-note hidden><p class="pc-note-title">먼치킨은 Windows PC 프로그램이에요</p><p>휴대폰으로 방송해도 돼요. PC에 먼치킨만 켜 두면 돼요.<br class="br-s">PC에서 먼치킨.com을 열어 받아 주세요.</p><div class="pc-note-actions"><button type="button" class="btn main" data-copy><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사</button><button type="button" class="btn line" data-share hidden><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>카톡이나 디스코드로 보내기</button></div><p class="pc-note-status" role="status" aria-live="polite"></p></div></div>
+<p class="h-small"><b>12월 31일까지 무료</b> · 그 뒤 월 3,000원</p><p class="version">먼치킨 0.23.9 · Windows 10·11 (64비트) · 116MB · 무료 베타</p></div>
 </div></section>
-<div class="trust-strip"><div class="wrap"><ul>
-<li><b>스푼 공식 API</b>스푼 비밀번호를 적지 않아요</li>
-<li><b>정식 사업자</b><span>등록번호 <span class="nobr">748-15-02934</span></span></li>
-<li><b>현금영수증</b>계좌이체로 결제할 때</li>
-<li><b>24시간 문의 챗봇</b>먼치킨 디스코드에서</li>
-</ul></div></div>
-<section class="x-sec" id="show" aria-labelledby="show-title"><div class="wrap">
-<div class="x-head"><h2 id="show-title">먼치킨이 방송에서 하는 일</h2><p class="lead">PC에 켜 두면 스푼 방송 채팅에 들어와 이런 일을 대신해요.</p></div>
-<ul class="tiles">
-<li class="tile t-blush"><h3>인사와 후원 감사를 대신해요</h3><p>노래하거나 사연을 읽는 사이 들어온 청취자도 이름을 불러 인사해요.<br class="br-s">후원에는 고맙다고 말해요.</p><div class="chatbox"><div class="chat" data-scene="thanks"></div></div><small>예시 글이에요. 인사말과 감사 인사말은 DJ가 정해요.</small></li>
-<li class="tile t-butter"><h3>초성퀴즈, 업다운, 가위바위보</h3><p>초성퀴즈와 업다운은 DJ나 매니저가 시작하고, 가위바위보는 누구나 해요.<br class="br-s">청취자는 DJ가 고른 보상을 받아요.</p><div class="chatbox"><div class="chat" data-scene="rps"></div></div></li>
-<li class="tile t-sky"><h3>신청곡과 후원자를 잊지 않게</h3><p>채팅에 묻히기 쉬운 신청곡을 순서대로 모아 둬요.<br class="br-s">아직 고맙다고 못 한 후원자는 감사 목록에 남아요.</p><div class="chatbox"><div class="chat" data-scene="song"></div></div><small>신청곡은 DJ가 켜면 받아요. 곡 이름은 지어낸 예시예요.</small></li>
-<li class="tile t-plain"><h3>방송을 한 화면에서</h3><p>채팅을 거슬러 올라가지 않아도 지금 청취자, 하트, 후원이 한 화면에 보여요.<br class="br-s">이름을 누르면 청취자 카드가 열려요.</p><figure><picture><source media="(prefers-color-scheme: dark)" srcset="art/board-dark.webp"><img src="art/board-light.webp" width="947" height="212" loading="lazy" alt="먼치킨 방송 상황판 윗부분. 방송 중 표시와 방송 시간, 청취자 10명, 하트 1,160, 후원 2,054스푼이 큰 숫자로 보여요."></picture><small>실제 먼치킨 화면이에요. 이름은 지어낸 예시예요.</small></figure></li>
+<div id="show">
+<section class="h-scene" id="bank" aria-labelledby="bank-t"><div class="wrap">
+<div class="h-head h-rv"><p class="h-eye">먼치킨에만 있어요 <b>1/4</b></p><h2 id="bank-t">후원은 통장으로,<br>쓰는 건 청취자가</h2></div>
+<div class="h-pic h-rv h-chat" role="group" aria-label="통장 채팅 예시">
+<p class="h-chat-bar"><span><i class="h-dot" aria-hidden="true"></i>방송 중 · 먼치의 방</span></p>
+<div class="h-log">
+<p class="h-st">달무리가 100스푼을 후원해요</p>
+<div class="h-msg h-bot"><span class="h-av" aria-hidden="true"><img src="munchkin-64.png" width="28" height="28" alt=""></span><div><p class="h-who">먼치킨<span class="h-role">매니저</span></p><p class="h-bub">🏦 달무리님 100스푼 자동 입금!
+💰 잔액 100스푼
+⏰ 이번 방송 안에 안 쓰면 삭제돼요!
+👉 !실드 명령어로 바로 사용하실 수 있어요.</p></div></div>
+<div id="bank-out" class="h-out" aria-live="polite"></div>
+</div>
+<div class="h-send" role="group" aria-label="청취자 달무리가 되어 보낼 명령"><button type="button" data-k="shield" aria-pressed="true">!실드 +100</button><button type="button" data-k="fund" aria-pressed="false">!펀딩 +100</button><button type="button" data-k="roul" aria-pressed="false">!룰렛 3</button><button type="button" data-k="menu" aria-pressed="false">!메뉴 1</button></div>
+</div>
+<div class="h-tail"><p class="h-one">DJ가 정해 둔 대로 먼치킨이 알아서 해요.</p></div>
+</div></section>
+<section class="h-scene" id="game" aria-labelledby="game-t"><div class="wrap">
+<div class="h-head h-rv"><p class="h-eye">먼치킨에만 있어요 <b>2/4</b></p><h2 id="game-t">소통 방송엔 한 마디,<br>플리 방송엔 저절로</h2></div>
+<div class="h-pic h-rv h-chat" role="group" aria-label="미니게임 채팅 예시">
+<div class="h-chat-bar h-has-seg"><span><i class="h-dot" aria-hidden="true"></i>방송 중</span><div class="h-seg" role="group" aria-label="방송 종류"><button type="button" data-g="talk" aria-pressed="true">소통 방송</button><button type="button" data-g="play" aria-pressed="false">플리 방송</button></div></div>
+<div class="h-log"><div id="game-out" class="h-out" aria-live="polite"></div></div>
+</div>
+<div class="h-tail"><p class="h-one">초성퀴즈 2,251개 · OX 330개 · 밸런스 254개가 이미 들어 있어요.</p></div>
+</div></section>
+<section class="h-scene" id="grow" aria-labelledby="grow-t"><div class="wrap">
+<div class="h-head h-rv"><p class="h-eye">먼치킨에만 있어요 <b>3/4</b></p><h2 id="grow-t">시즌마다 새로워지는<br>키우기</h2></div>
+<figure class="h-pic h-rv h-screen"><video data-auto muted loop playsinline preload="metadata" poster="s2/boss-wide-poster.webp" aria-label="키우기 보스전 장면 영상"><source src="s2/boss-wide.webm" type="video/webm"><source src="s2/boss-wide.mp4" type="video/mp4"></video></figure>
+<div class="h-tail"><p class="h-one">청취자가 채팅으로 몬스터를 만나 키우는 게임이에요. <b class="h-hl" id="s2-date">12월 1일 0시 시작</b> · 시즌 2 「몬스터 영토전」은 스푼에 없던 방 대 방 대전이에요.</p></div>
+</div></section>
+<section class="h-scene" id="pick" aria-labelledby="pick-t"><div class="wrap">
+<div class="h-head h-rv"><p class="h-eye">먼치킨에만 있어요 <b>4/4</b></p><h2 id="pick-t">아직도 뽑기판,<br>주문 제작하세요?</h2></div>
+<div class="h-pic h-rv h-chat" role="group" aria-label="뽑기판 채팅 예시">
+<div class="h-chat-bar"><span><i class="h-dot" aria-hidden="true"></i>방송 중 · 추억의 뽑기판</span><button type="button" class="h-reset" id="board-reset">처음부터</button></div>
+<div class="h-board" id="board" role="group" aria-label="뽑기판 25칸 — 청취자 밤톨이 되어 눌러서 열어 보세요"></div>
+<div class="h-log"><div id="pick-out" class="h-out" aria-live="polite"></div></div>
+</div>
+<div class="h-tail"><p class="h-one">청취자가 <b>!뽑기 13</b> 하면 먼치킨이 칸을 열어요.</p></div>
+</div></section>
+</div>
+</div>
+<!-- 흰색: 따져 보는 구간 -->
+<div class="h-zone h-paper">
+<section class="h-scene h-solo" id="basic" aria-labelledby="basic-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="basic-t">이런 건 당연히 <br class="h-pc-on">할 줄 알아요</h2></div>
+<ul class="h-pic h-rv h-checks"><li>입장 인사</li><li>감사 인사</li><li>단축 명령어</li><li>신청곡</li><li>후원 효과음</li><li>후원 TTS</li><li>애청지수</li><li>출석</li><li>복권</li><li>룰렛</li><li>VIP 등급</li><li>금지어 알림</li><li>방송 요약 리포트</li><li>운세·궁합</li></ul>
+</div></section>
+<section class="h-scene" id="price" aria-labelledby="price-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="price-t">이 모든 걸 합쳐서</h2><p class="h-num">월 3,000원</p></div>
+<div class="h-pic h-rv">
+<img class="h-price-art" src="art/thanks-cookie.webp" width="640" height="720" alt="쿠키를 안은 먼치킨 고양이" loading="lazy">
+<div class="h-bars" role="img" aria-label="30,000원이면 월 1만 원 봇은 3개월, 먼치킨은 12개월">
+<div class="h-bar h-other"><p>월 1만 원 봇<span>30,000원 = 3개월</span></p><div class="h-track"><i class="h-fill"></i></div></div>
+<div class="h-bar h-mk"><p>먼치킨 1년<span>30,000원 = 12개월</span></p><div class="h-track"><i class="h-fill"></i></div></div>
+</div>
+</div>
+<div class="h-tail">
+<p class="h-one"><b>다른 봇 석 달 쓸 돈이면, 먼치킨은 1년을 함께해요.</b></p>
+<div class="h-get-box"><div class="get"><a class="btn main dl" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-dl-label>Windows용 무료 받기</span></a><div class="pc-note pc-note-mini" data-pc-note hidden><p class="pc-note-title">먼치킨은 Windows PC 프로그램이에요</p><p>휴대폰으로 방송해도 돼요. PC에 먼치킨만 켜 두면 돼요.<br class="br-s">PC에서 먼치킨.com을 열어 받아 주세요.</p><div class="pc-note-actions"><button type="button" class="btn main" data-copy><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사</button><button type="button" class="btn line" data-share hidden><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>카톡이나 디스코드로 보내기</button></div><p class="pc-note-status" role="status" aria-live="polite"></p></div></div>
+<p class="h-small">막대는 1년 결제(30,000원) 기준이에요. 한 달씩 내면 월 3,000원이에요. 2026년 12월 31일까지는 무료예요.</p></div>
+</div>
+</div></section>
+<section class="h-scene" id="tax" aria-labelledby="tax-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="tax-t">심지어 먼치킨은<br>세금도 내요</h2></div>
+<figure class="h-pic h-rv h-cat"><p class="h-note" aria-hidden="true">다른 봇들은… 흠…</p><img src="art/tax.webp" width="481" height="560" alt="안경을 쓰고 영수증을 든 먼치킨 고양이. “다른 봇들은… 흠…”" loading="lazy"></figure>
+<div class="h-tail">
+<ul class="h-ticks">
+<li><div><b>정식 사업자</b><span>뉴비랩 · 748-15-02934</span></div></li>
+<li><div><b>통신판매업 신고</b><span>제2026-대구수성구-1478호</span></div></li>
+<li><div><b>현금영수증</b><span>계좌이체로 결제할 때 신청해요</span></div></li>
 </ul>
-<details class="more"><summary>이것도 다 들어 있어요</summary><ul><li>룰렛·실드·펀딩과 통장</li><li>TTS와 효과음</li><li>VIP 등급 이름도 직접 정해요</li><li>PC 사양에 맞춘 4단계 모드</li><li>켜기만 하면 자동 업데이트</li><li>휴대폰으로 방송하는 날에도</li><li>다른 봇 기록 가져오기</li></ul></details>
-</div></section>
-<section class="s2 x-sec" id="s2" aria-labelledby="s2-title"><div class="wrap">
-<div class="s2-top">
-<p class="s2-date" id="s2-date">12월 1일 0시 시작<span>12월 31일까지</span></p>
-<h2 id="s2-title">키우기 시즌 2 「몬스터 영토전」</h2>
-<p class="lead">12월 한 달 동안 먼치킨을 쓰는 방송들이 대륙 지도 한 장을 나눠 가져요.<br class="br-s">청취자 몬스터로 보스를 잡고, 다른 방과 겨뤄 땅을 넓혀요.<br class="br-s"><b>스푼에는 없던 방 대 방 대전이에요.</b></p></div>
-<div class="s2-grid">
-<div class="s2-part wide">
-<div class="s2-boss"><figure class="screen tall"><div class="ratio"><video data-auto muted loop playsinline preload="none" poster="s2/boss-tall-poster.webp" aria-label="보스전 장면 영상"><source src="s2/boss-tall.webm" type="video/webm"><source src="s2/boss-tall.mp4" type="video/mp4"></video></div></figure><figure class="screen"><div class="ratio"><video data-auto muted loop playsinline preload="none" poster="s2/boss-wide-poster.webp" aria-label="보스전 장면 영상"><source src="s2/boss-wide.webm" type="video/webm"><source src="s2/boss-wide.mp4" type="video/mp4"></video></div></figure><p class="cap">키우기.com 보스전 화면이에요. 이름은 지어낸 예시예요.</p></div>
-<div class="s2-say"><h3>30분마다 보스가 나타나요</h3>
-<p>방송을 켜고 30분 뒤부터 30분마다 나와요.<br class="br-s">청취자가 1분 안에 <code>!참전</code>을 치면 <b>대표 몬스터가 알아서 싸워요.</b></p>
-<p>DJ의 키우기.com 페이지가 있으면 생중계 주소가 채팅에 올라와요.<br class="br-s">DJ PC의 먼치킨 화면에서도 싸우는 장면을 봐요.</p></div>
+<p class="h-small">사업자는 현금영수증이나 카드 영수증으로 비용 처리할 수 있어요. 카드 결제는 심사가 끝나면 열려요.</p>
 </div>
-<div class="s2-part"><h3>스푼에 없던 방 대 방 대전</h3><p>먼치킨을 쓰는 방끼리 실시간으로 겨뤄요.</p>
-<div class="vs" role="img" aria-label="먼치 방과 쿠키 방이 영지전으로 겨루는 모습. 이긴 방은 진 방 땅의 일부를 식민지로 가져가요."><div class="vs-room l"><img src="s2/monster-fire.webp" width="256" height="256" alt="" loading="lazy">먼치 방<small>청취자와 DJ가 한 팀</small></div><div class="vs-mid">VS</div><div class="vs-room r"><img src="s2/monster-water.webp" width="256" height="256" alt="" loading="lazy">쿠키 방<small>지금 방송 중인 다른 방</small></div><p class="vs-win">이긴 방은 진 방 땅의 일부를 식민지로 가져가요</p></div>
-<ol class="steps3"><li><span>DJ가 먼치킨의 방 대항전 화면에서 신청해요 (시즌 2에는 이름이 영지전이에요)</span></li><li><span>60초 동안 <code>!응원 100</code>으로 냥을 걸어요</span></li><li><span>가위바위보, 하나빼기, 몬스터 대전 가운데 하나로 겨뤄요</span></li></ol>
-<p class="cap">두 방 모두 먼치킨을 켜고 신청한 채 방송 중이어야 해요.<br class="br-s">방 이름은 지어낸 예시예요.</p></div>
-<div class="s2-part"><h3>이기면 지도의 우리 땅이 넓어져요</h3>
-<figure class="screen"><div class="ratio"><video data-auto muted loop playsinline preload="metadata" poster="s2/map-poster.webp" aria-label="영토 지도 영상. 방송마다 땅 색이 다르고 경계가 번지듯 움직여요."><source src="s2/map.webm" type="video/webm"><source src="s2/map.mp4" type="video/mp4"></video></div></figure><p class="cap">키우기.com 영토 지도 예시예요. 이름은 지어낸 거예요.</p>
-<div class="prize"><b>12월 31일, 땅이 가장 넓은 <span class="nobr">DJ 1명에게</span></b><span>먼치킨 2027년 1월 무료 이용권과 486스푼을 드려요.</span></div></div>
+</div></section>
+<section class="h-scene" id="move" aria-labelledby="move-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="move-t">다른 봇을 쓰고 계셔도<br>걱정 없어요!</h2><p class="h-strong">다른 봇 기록 이어오기 가능!</p></div>
+<figure class="h-pic h-rv h-cat"><img src="art/moving.webp" width="560" height="528" alt="이사 상자에서 서류를 꺼내는 먼치킨 고양이" loading="lazy"></figure>
+<div class="h-tail">
+<ul class="h-bots">
+<li><b>에디봇</b><span>애청지수 · 룰렛 · 실드</span></li>
+<li><b>ZIZI</b><span>애청지수 · 룰렛 · 실드</span></li>
+<li><b>에디냥</b><span>애청지수 · 룰렛 · 실드 + 인사 · 단축 명령어 · 펀딩</span></li>
+</ul>
 </div>
-<div class="s2-join"><p><b>참가는 [참가] 한 번이면 돼요.</b><br class="br-s">먼치킨을 켜고 키우기 화면에서 [참가]를 누르면 지도에 우리 방 기지가 생겨요.</p><div class="get"><a class="btn main dl" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-dl-label>Windows용 무료 받기</span></a></div></div>
 </div></section>
-<!-- kit:home --><section class="kit-home" id="kit" aria-labelledby="kit-home-title"><div class="wrap"><div class="kit-home-in">
-<div class="kit-home-copy"><p class="kit-kicker">유용한 도구 · 무료 덤</p><h2 id="kit-home-title">방송할 때 필요한 도구,<br>먼치킨이 함께 드려요</h2><p class="lead">먼치킨 이용요금과 별개로 드리는 1+1 이에요.</p>
-<a class="btn line" href="tools/">유용한 도구 더 알아보기<svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></a></div>
-<ul class="kit-mini">
-<li><a href="tools/#studio"><img src="tools/studio.webp" width="1200" height="674" alt="" loading="lazy"><b>먼치킨 송출</b><span>앱플레이어 없이 PC로 스푼 방송</span></a></li>
-<li><a href="tools/#sounddeck"><img src="tools/sounddeck.webp" width="1000" height="450" alt="" loading="lazy"><b>SoundDeck</b><span>단축키 한 번에 효과음·배경 음악</span></a></li>
-<li class="kit-mini-more"><a href="tools/#more"><b>더 준비하고 있어요</b><span>새 도구가 나오면 알려 드려요</span></a></li>
-</ul></div></div></section><!-- /kit:home -->
-<section class="album-taste" id="album" aria-labelledby="album-title"><div class="wrap"><div class="album-taste-in">
-<div class="album-copy"><h2 id="album-title">추억앨범</h2><p class="lead">내 박제판, 최초 박제판, 방송 추억이 모이는 나만의 작은 사이트예요.</p><p class="address-example"><span>내이름</span>.먼치킨.com</p><p class="album-note">최초 박제판에 이름이 적히면 저절로 올라가요.<br class="br-s">청취자는 하트와 댓글, 답글로 마음을 남겨요.</p><a class="btn line" href="album/">추억앨범 자세히 보기<svg class="ico" aria-hidden="true"><use href="#i-next"/></svg></a></div>
-<div class="duo-art"><p class="album-addr">밤톨.먼치킨.com</p><div class="arch blush"><i class="stars" aria-hidden="true"></i><img class="art" src="art/album.webp" width="581" height="720" alt="사진 앨범을 꼭 껴안은 먼치킨" loading="lazy"></div><div class="memories" role="img" aria-label="밤톨.먼치킨.com 예시. 박제판 그림 세 장에 첫 번째 함께한 순간(최초 박제판), 오늘도 고마워요(방송 추억), 별빛처럼 반짝인 우리(내 박제판)라고 적혀 있어요."><div class="memory m1"><img src="art/board-sample-1.webp" width="308" height="308" alt="" loading="lazy"><span>첫 번째 함께한 순간</span><b>최초 박제판</b></div><div class="memory m2"><img src="art/board-sample-2.webp" width="308" height="308" alt="" loading="lazy"><span>오늘도 고마워요</span><b>방송 추억</b></div><div class="memory m3"><img src="art/board-sample-3.webp" width="308" height="308" alt="" loading="lazy"><span>별빛처럼 반짝인 우리</span><b>내 박제판</b></div></div><p class="example-label">지어낸 이름과 내용으로 만든 예시예요.</p></div>
-</div></div></section>
-<section class="sure x-sec" id="sure" aria-labelledby="sure-title"><div class="wrap sure-in">
-<div class="x-head"><h2 id="sure-title">결제 전에 확인해 보세요</h2><p class="lead">사업자 등록, 통신판매업 신고, 현금영수증, 스푼 공식 API.<br class="br-s">먼치킨은 전부 돼요.</p><img class="sure-pal" src="art/thanks-cookie.webp" width="640" height="720" alt="" loading="lazy"></div>
-<div><div class="sure-grid" data-fold>
-<details open><summary>정식 사업자예요</summary><div class="sure-body">뉴비랩(NEWVIE Lab)<br>사업자등록번호 <b>748-15-02934</b><br><a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=7481502934" target="_blank" rel="noopener">공정거래위원회에서 확인하기<span class="sr">(새 창)</span></a></div></details>
-<details open><summary>통신판매업을 신고했어요</summary><div class="sure-body">신고번호 <b>제2026-대구수성구-1478호</b></div></details>
-<details open><summary>현금영수증을 받을 수 있어요</summary><div class="sure-body">계좌이체로 결제할 때 개인(소득공제)이나 사업자(지출증빙) 현금영수증을 신청해요.<br>카드 결제는 심사 중이라 지금은 계좌이체만 돼요.</div></details>
-<details open><summary>스푼 공식 API로 연결해요</summary><div class="sure-body">Spoon Developers API를 써요.<br>허용은 스푼 화면에서 누르고, 스푼 비밀번호는 먼치킨에 적지 않아요.<br>연결은 먼치킨 설정에서 「연결 끊기」로 언제든 끊을 수 있어요.</div></details>
-<details open><summary>물어볼 곳이 있어요</summary><div class="sure-body">고객안내 <b>0505-008-0032</b><br>디스코드 「먼치킨 DJ 모임」의 먼치킨 챗봇이 24시간 문의를 받아요.</div></details>
-<details open><summary>쓰던 봇 기록을 옮겨 와요</summary><div class="sure-body">에디봇·ZIZI는 애청지수와 룰렛 기록을,<br>에디냥은 인사·단축 명령어·펀딩 설정까지 옮겨요.<br>옮기기 직전에 먼치킨 기록을 저절로 백업해요.</div></details>
-</div><p class="indep-box">먼치킨은 스푼(Spoon)이 만든 프로그램이 아니며, 스푼과 제휴 관계가 없는 독립 서비스예요.</p></div>
+<section class="h-scene" id="help" aria-labelledby="help-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="help-t">밤에도 깨어 있는<br>먼치킨 챗봇</h2></div>
+<div class="h-pic h-rv h-dc" role="group" aria-label="실제 디스코드 문의">
+<p class="h-dc-bar"># 문의 · 먼치킨 DJ 모임</p>
+<div class="h-dm"><span class="h-av" aria-hidden="true">DJ</span><div><p class="h-nm">어느 DJ<time>오후 4:02</time></p><p>매니저 킵 추가가 안 돼요. 고정 매니저만 되나요?</p></div></div>
+<div class="h-dm"><span class="h-av h-app" aria-hidden="true"><img src="munchkin-64.png" width="32" height="32" alt=""></span><div><p class="h-nm">먼치킨 챗봇<span class="h-tag">앱</span><time>오후 4:04</time></p><p>고정 매니저가 아니어도 돼요. 방송 중에 준 매니저도 쓸 수 있어요.</p></div></div>
+<div class="h-dm"><span class="h-av" aria-hidden="true">DJ</span><div><p class="h-nm">어느 DJ<time>오후 4:24</time></p><p>찾았습니다. 감사합니다!</p></div></div>
+</div>
+<div class="h-tail"><p class="h-one">디스코드에서 24시간 문의를 받아요.</p></div>
 </div></section>
-<section class="price x-sec" id="pay" aria-labelledby="pay-title"><div class="wrap">
-<div class="x-head"><h2 id="pay-title">이용권</h2><p class="free-line">2026년 12월 31일까지는 무료예요.</p><p class="lead">2027년 1월 1일부터 유료예요.<br class="br-s">먼치킨 송출은 먼치킨 이용권의 무료 덤이에요.</p></div>
-<p class="price-eq"><b>다른 봇 석 달 쓸 돈이면, 먼치킨은 1년을 함께해요.</b><span>월 1만 원 봇 3개월 = 30,000원</span><span>먼치킨 1년 = 30,000원</span></p>
-<div class="pt" id="mk-pay"><div class="pt-grid"><article class="card pt-card"><h3>추억앨범만</h3><p class="hint">나만의 추억앨범 사이트</p><p class="pt-price"><b>3,000원</b><span> / 월</span></p><p class="pt-sub">1년 결제 시 30,000원</p><a class="btn block line" href="album/" aria-label="추억앨범만 신청하기">신청하기</a></article><article class="card pt-card pt-best"><p class="pt-badge">★ 추천</p><h3>먼치킨만</h3><p class="hint">먼치킨 봇 · 송출은 무료 덤</p><p class="pt-price"><b>3,000원</b><span> / 월</span></p><p class="pt-sub">1년 결제 시 30,000원</p><a class="btn block main" href="album/" aria-label="먼치킨만 신청하기">신청하기</a></article><article class="card pt-card"><h3>먼치킨 + 추억앨범</h3><p class="hint">봇 + 추억앨범 · 송출은 무료 덤</p><p class="pt-price"><b>5,000원</b><span> / 월</span></p><p class="pt-sub">1년 결제 시 50,000원 <span class="chip sale">16% 할인</span></p><a class="btn block line" href="album/" aria-label="먼치킨 + 추억앨범 신청하기">신청하기</a></article></div><p class="notice">유료화는 1월 1일부터이며, 이전에 결제한 내역은 자동으로 1월 1일부터 사용됩니다.</p><p class="hint">신청과 결제는 먼치킨 계정으로 로그인한 뒤에 해요.<br class="br-s">지금은 계좌이체로 결제해요.</p></div>
+<section class="h-scene" id="tools" aria-labelledby="tools-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="tools-t">먼치킨을 쓰면<br>이런 것도 드려요</h2></div>
+<figure class="h-pic h-rv h-shot"><img src="tools/studio.webp" width="1200" height="674" alt="먼치킨 송출 프로그램 화면" loading="lazy"></figure>
+<div class="h-tail"><p class="h-one"><b>먼치킨 송출</b>과 <b>SoundDeck</b>. 먼치킨 이용요금과 별개로 드리는 1+1이에요.</p><a class="h-more" href="tools/">유용한 도구 더 알아보기</a></div>
 </div></section>
-
-<section class="start-section night" aria-labelledby="start-title"><i class="sky" aria-hidden="true"></i><div class="wrap"><div class="section-head"><h2 id="start-title">오늘 방송부터 함께해요</h2><a href="#install-help" class="text-link">설치 안내 자세히 보기<svg class="ico" aria-hidden="true"><use href="#i-below"/></svg></a></div>
-<ol class="start-steps">
-<li><span class="num" aria-hidden="true">1</span><h3>받고, 로그인하기</h3><p>Windows PC에 먼치킨을 설치하고 먼치킨 계정으로 로그인해요.</p></li>
-<li><span class="num" aria-hidden="true">2</span><h3>스푼 연결하기</h3><p>스푼 DJ 계정으로 연결해 먼치킨이 내 방송을 돕도록 허용해요.</p><p>허용은 스푼 화면에서 눌러요. 스푼 비밀번호는 먼치킨에 적지 않아요.</p></li>
-<li class="must"><span class="num" aria-hidden="true">3</span><span class="must-badge">빠뜨리지 마세요</span><h3>꼭 매니저로 지정하기</h3><p>먼치킨이 제대로 일하려면 꼭 매니저여야 해요.<br class="br-s">매니저가 아니면 입장 인사가 늦거나 빠지고, 팔로우 감사는 나가지 않아요.</p><ol class="mgr-path" aria-label="첫 방송에서 누르는 순서"><li><span>청취자 목록</span></li><li><span>먼치킨</span></li><li><span>매니저 지정</span></li></ol><p>방송이 끝나면 고정 매니저로 두세요.</p></li>
-</ol></div></section>
-
+<section class="h-scene" id="album" aria-labelledby="album-title"><div class="wrap">
+<div class="h-head h-rv"><p class="h-eye">추억앨범</p><h2 id="album-title" class="h-addr">내이름<span class="h-dim">.먼치킨.com</span></h2></div>
+<figure class="h-pic h-rv h-cat h-m-off"><img src="art/album.webp" width="581" height="720" alt="앨범을 안은 먼치킨 고양이" loading="lazy"></figure>
+<div class="h-tail album-copy"><p class="h-one album-note">최초 박제판과 방송 추억이 모이는 나만의 작은 사이트예요.</p><p class="h-links"><a class="h-more" href="album/">추억앨범 자세히 보기</a></p></div>
+</div></section>
+<section class="h-scene h-solo h-wide" id="pay" aria-labelledby="pay-title"><div class="wrap">
+<div class="h-head h-rv"><h2 id="pay-title">이용권</h2><p class="h-one">2026년 12월 31일까지는 무료예요.</p></div>
+<div class="h-pic h-rv"><div class="pt" id="mk-pay"><div class="pt-grid"><article class="card pt-card"><h3>추억앨범만</h3><p class="hint">나만의 추억앨범 사이트</p><p class="pt-price"><b>3,000원</b><span> / 월</span></p><p class="pt-sub">1년 결제 시 30,000원</p><a class="btn block line" href="album/" aria-label="추억앨범만 신청하기">신청하기</a></article><article class="card pt-card pt-best"><p class="pt-badge">★ 추천</p><h3>먼치킨만</h3><p class="hint">먼치킨 봇 · 송출은 무료 덤</p><p class="pt-price"><b>3,000원</b><span> / 월</span></p><p class="pt-sub">1년 결제 시 30,000원</p><a class="btn block main" href="album/" aria-label="먼치킨만 신청하기">신청하기</a></article><article class="card pt-card"><h3>먼치킨 + 추억앨범</h3><p class="hint">봇 + 추억앨범 · 송출은 무료 덤</p><p class="pt-price"><b>5,000원</b><span> / 월</span></p><p class="pt-sub">1년 결제 시 50,000원 <span class="chip sale">16% 할인</span></p><a class="btn block line" href="album/" aria-label="먼치킨 + 추억앨범 신청하기">신청하기</a></article></div><p class="notice">유료화는 1월 1일부터이며, 이전에 결제한 내역은 자동으로 1월 1일부터 사용됩니다.</p><p class="hint">신청과 결제는 먼치킨 계정으로 로그인한 뒤에 해요.<br class="br-s">지금은 계좌이체로 결제해요.</p></div></div>
+</div></section>
+<section class="h-scene h-solo h-sure" id="sure" aria-labelledby="sure-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="sure-t">결제 전에 <br class="h-pc-on">확인해 보세요</h2></div>
+<div class="h-pic h-rv h-folds">
+<details><summary><span class="h-ok">정식 사업자예요</span></summary><p>뉴비랩(NEWVIE Lab) · 사업자등록번호 748-15-02934 · <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=7481502934" target="_blank" rel="noopener">공정거래위원회에서 확인할 수 있어요<span class="sr">(새 창)</span></a>.</p></details>
+<details><summary><span class="h-ok">통신판매업을 신고했어요</span></summary><p>신고번호 제2026-대구수성구-1478호</p></details>
+<details><summary><span class="h-ok">현금영수증을 받을 수 있어요</span></summary><p>계좌이체로 결제할 때 개인(소득공제)이나 사업자(지출증빙) 현금영수증을 신청해요. 자세한 세금 처리는 세무사나 국세청(☎126)에 물어봐 주세요.</p></details>
+<details><summary><span class="h-ok">스푼 공식 API로 연결해요</span></summary><p>허용은 스푼 화면에서 누르고, 스푼 비밀번호는 먼치킨에 적지 않아요.</p></details>
+<details><summary><span class="h-ok">물어볼 곳이 있어요</span></summary><p>고객안내 0505-008-0032 · 디스코드 「먼치킨 DJ 모임」</p></details>
+</div>
+</div></section>
+</div>
+<!-- 크림: 시작하는 구간 -->
+<div class="h-zone h-cream">
+<section class="h-scene h-solo" id="start" aria-labelledby="start-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="start-t">오늘 방송부터 <br class="h-pc-on">함께해요</h2></div>
+<ol class="h-pic h-rv h-steps">
+<li><div><b>받고, 로그인하기</b><span>먼치킨을 설치하고 먼치킨 계정으로 로그인해요.</span></div></li>
+<li><div><b>스푼 연결하기</b><span>스푼 화면에서 허용만 눌러요.</span></div></li>
+<li><div><b>방송에서 먼치킨을 꼭 매니저로 지정하기<span class="h-must">빠뜨리지 마세요</span></b><span>청취자 목록 › 먼치킨 › 매니저 지정. 매니저여야 인사·감사가 제대로 나가요.</span></div></li>
+</ol>
+</div></section>
 <section id="install-help" class="sec" aria-labelledby="ih-title">
     <div class="wrap">
       <div class="head">
@@ -225,15 +281,24 @@
       <p class="ih-note">그림은 실제 창을 간단히 옮겨 그린 거예요.<br class="br-s">엣지와 윈도우 버전에 따라 글자나 단추 모양이 조금 다를 수 있어요.</p>
     </div>
   </section>
-
-<section class="section wrap narrow" id="faq" aria-labelledby="faq-title"><div class="section-head"><h2 id="faq-title">자주 묻는 질문</h2></div><div class="faq-list">
+<section class="h-scene h-solo" id="faq" aria-labelledby="faq-t"><div class="wrap">
+<div class="h-head h-rv"><h2 id="faq-t">자주 묻는 질문</h2></div>
+<div class="h-pic h-rv h-folds">
 <details><summary>지금 무료로 쓸 수 있나요?</summary><p>먼치킨은 2026년 12월 31일까지 무료예요.<br class="br-s">먼치킨만 쓰는 분은 신청하지 않아도 돼요.<br class="br-s">2027년 1월 1일부터 유료예요.<br class="br-s">이용권은 지금 <a href="#pay">이용권 칸</a>에서 신청할 수 있고, 그 전에 결제한 이용권은 1월 1일부터 자동으로 쓰여요.<br class="br-s">계좌이체는 지금 되고, 카드 결제는 KG이니시스 심사가 끝나면 열려요.</p></details>
 <details><summary>휴대폰으로 방송해도 되나요?</summary><p>네. Windows PC에 먼치킨을 켜 두면 휴대폰 방송에서도 인사, 게임, 통장이 움직여요.<br class="br-s">효과음과 <abbr title="글을 소리로 읽어 주는 기능">TTS</abbr>는 PC에서 나와요.<br class="br-s">먼치킨은 DJ의 PC에서 움직이니, 방송할 때 PC와 먼치킨을 함께 켜 두세요.</p></details>
 <details><summary>추억앨범은 지금 신청할 수 있나요?</summary><p>네. <a href="album/">먼치킨.com/album</a>에서 누구나 신청할 수 있어요.<br class="br-s">결제가 확인되면 앨범이 바로 만들어지고, 이용 기간은 1월 1일부터 시작해요.<br class="br-s"><a href="https://xn--hu5bi2af5y.com/" target="_blank" rel="noopener">한이준 추억앨범<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>에서 어떤 모습인지 먼저 만나 보세요.</p></details>
-<details><summary>새 버전은 어떻게 받나요?</summary><p>먼치킨을 켜면 새 버전으로 저절로 업데이트해요.<br class="br-s">공지와 자세한 업데이트 소식은 <a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">먼치킨 디스코드<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>에서 만나요.</p></details></div></section>
-<section class="last night" aria-labelledby="final-title"><i class="sky" aria-hidden="true"></i><div class="wrap"><h2 id="final-title">다음 방송, 먼치킨과 함께할까요?</h2><div class="get"><a class="btn main dl" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-dl-label>Windows용 무료 받기</span></a>
-<div class="pc-note" data-pc-note hidden><p class="pc-note-title">먼치킨은 Windows PC 프로그램이에요</p><p>이 기기에는 설치할 수 없어요.<br class="br-s">PC에서 먼치킨.com을 열어 받아 주세요.<br class="br-s">주소를 보내 두면 PC에서 바로 열 수 있어요.</p><div class="pc-note-actions"><button type="button" class="btn main" data-copy><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사</button><button type="button" class="btn line" data-share hidden><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>카톡이나 디스코드로 보내기</button></div><p class="pc-note-status" role="status" aria-live="polite"></p></div></div><p class="version">먼치킨 0.23.9 · Windows 10·11 (64비트) · 116MB · 무료 베타</p><p class="final-help"><a href="#install-help">받을 때 경고가 나오면 그림 안내를 보세요<svg class="ico" aria-hidden="true"><use href="#i-above"/></svg></a></p><img src="art/aegyo-1.webp" width="512" height="512" alt="먼치킨 쿠키를 안고 앉아 있는 먼치킨" loading="lazy"></div></section>
-</main><footer class="site-footer"><div class="wrap"><div class="footer-top"><a class="brand" href="./">먼치킨</a><nav class="footer-links" aria-label="바닥 메뉴"><a href="https://xn--hu5bi2af5y.com/terms.html" target="_blank" rel="noopener">이용약관<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a><a href="https://xn--hu5bi2af5y.com/privacy.html" target="_blank" rel="noopener">개인정보처리방침<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a><a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">디스코드<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></nav></div><p class="indep">먼치킨은 스푼(Spoon)이 만든 프로그램이 아니며, 스푼과 제휴 관계가 없는 독립 서비스예요.</p><details class="foot-biz"><summary>사업자 정보</summary><p><span>뉴비랩 (NEWVIE Lab)</span><span>대표 이지원</span><span>사업자등록번호 748-15-02934</span><span>통신판매업 신고번호 제2026-대구수성구-1478호</span></p><p><span>대구광역시 수성구 동대구로 336</span><span>전화번호 0505-008-0032</span><span>likegorogoro@naver.com</span></p></details><p class="copyright">© MUNCHKIN · 작은 친구, 더 즐거운 방송.</p></div></footer>
+<details><summary>새 버전은 어떻게 받나요?</summary><p>먼치킨을 켜면 새 버전으로 저절로 업데이트해요.<br class="br-s">공지와 자세한 업데이트 소식은 <a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">먼치킨 디스코드<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>에서 만나요.</p></details>
+</div>
+</div></section>
+</div>
+<!-- 마지막: 다시 밤 -->
+<section class="night h-scene h-last" aria-labelledby="final-title"><div class="wrap">
+<figure class="h-pic h-rv h-cat"><img src="art/aegyo-1.webp" width="512" height="512" alt="쿠키를 안은 먼치킨 고양이" loading="lazy"></figure>
+<div class="h-head h-rv"><h2 id="final-title">다음 방송,<br>먼치킨과 함께할까요?</h2></div>
+<div class="h-tail"><div class="get"><a class="btn main dl" data-dl href="https://github.com/jwonly-spn/jun-live/releases/download/v0.23.9/Munchkin-Setup-0.23.9.exe"><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg><span data-dl-label>Windows용 무료 받기</span></a>
+<div class="pc-note" data-pc-note hidden><p class="pc-note-title">먼치킨은 Windows PC 프로그램이에요</p><p>이 기기에는 설치할 수 없어요.<br class="br-s">PC에서 먼치킨.com을 열어 받아 주세요.<br class="br-s">주소를 보내 두면 PC에서 바로 열 수 있어요.</p><div class="pc-note-actions"><button type="button" class="btn main" data-copy><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg>주소 복사</button><button type="button" class="btn line" data-share hidden><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>카톡이나 디스코드로 보내기</button></div><p class="pc-note-status" role="status" aria-live="polite"></p></div></div><p class="version">먼치킨 0.23.9 · Windows 10·11 (64비트) · 116MB · 무료 베타</p></div>
+</div></section>
+</main><footer class="site-footer"><div class="wrap"><div class="footer-top"><a class="brand" href="./">먼치킨</a><nav class="footer-links" aria-label="바닥 메뉴"><a href="https://xn--hu5bi2af5y.com/terms.html" target="_blank" rel="noopener">이용약관<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a><a href="https://xn--hu5bi2af5y.com/privacy.html" target="_blank" rel="noopener">개인정보처리방침<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a><a href="https://discord.gg/XjfyZDfBtW" target="_blank" rel="noopener">디스코드<span class="sr">(새 창)</span><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></nav></div><p class="h-foot-note">채팅 속 이름은 모두 지어낸 예시예요. 펀딩·룰렛·메뉴판·뽑기 상품은 DJ가 미리 정해요. 챗봇 대화는 실제 문의예요(이름은 지웠고 답은 줄였어요).</p><p class="indep">먼치킨은 스푼(Spoon)이 만든 프로그램이 아니며, 스푼과 제휴 관계가 없는 독립 서비스예요.</p><details class="foot-biz"><summary>사업자 정보</summary><p><span>뉴비랩 (NEWVIE Lab)</span><span>대표 이지원</span><span>사업자등록번호 748-15-02934</span><span>통신판매업 신고번호 제2026-대구수성구-1478호</span></p><p><span>대구광역시 수성구 동대구로 336</span><span>전화번호 0505-008-0032</span><span>likegorogoro@naver.com</span></p></details><p class="copyright">© MUNCHKIN · 작은 친구, 더 즐거운 방송.</p></div></footer>
 <script>
 // 받기 단추: Windows PC 가 아니면(휴대폰·태블릿·맥) 설치 파일 대신 "PC에서 받기" 안내. 판별은 화면 너비가 아니라 기기 종류(OS·터치)로.
 // 스크립트가 꺼져 있으면 아무것도 바뀌지 않아요(받기 단추가 그대로 보이고, 설치 그림은 제목을 눌러 펼쳐요). 미리 보기에서만 ?device=phone|pc 로 바꿔 볼 수 있어요.
