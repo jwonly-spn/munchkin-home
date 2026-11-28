@@ -13,6 +13,9 @@ const q = new URLSearchParams(location.search);
 if (q.get('mock') && q.get('mock') !== '1') sessionStorage.setItem('mock_kind', q.get('mock'));
 const kind = sessionStorage.getItem('mock_kind') || 'new';
 const tester = kind === 'tester' || kind === 'tester-wait';
+// 먼치킨 엠베서더(2026-11-28): ?mock=amb(앨범 없음 — 내 정보에서 만들기) · amb-owner(앨범 있음)
+const amb = kind === 'amb' || kind === 'amb-owner';
+const FAR = Date.parse('2100-12-31T23:59:59+09:00');
 const now = Date.now(), DAY = 86400000;
 const TOKEN = 'T'.repeat(43);
 const PLAN = { munchkin: '먼치킨', album: '추억앨범', bundle: '먼치킨 + 추억앨범' };
@@ -23,7 +26,7 @@ const st = JSON.parse(sessionStorage.getItem('mock_st') || 'null') || {
     : kind === 'tester-wait' ? [{ id: 'occccccccccc', plan: 'bundle', months: 1, amount: 5000, payer: '밤톨2468', album: null, state: 'pending', created: now - 600000, sent: null, done: null, nick: '밤톨', until_to: null, newAlbum: null, pay: 'card', payAt: null },
       { id: 'oddddddddddd', plan: 'munchkin', months: 1, amount: 3000, payer: '밤톨1357', album: null, state: 'test', created: now - 2 * DAY, sent: null, done: now - 2 * DAY, nick: '밤톨', until_to: null, newAlbum: null, pay: 'card', payAt: now - 2 * DAY }]
       : [],
-  albums: kind === 'owner' ? [{ id: 'aqwertyuio', name: '밤톨 추억앨범', host: 'xn--qh3bm70b.xn--s22bu18a0ub.com', site: 'https://xn--qh3bm70b.xn--s22bu18a0ub.com/', paidUntil: now + 23 * DAY, state: 'active' }] : [],
+  albums: kind === 'owner' || kind === 'amb-owner' ? [{ id: 'aqwertyuio', name: '밤톨 추억앨범', host: 'xn--qh3bm70b.xn--s22bu18a0ub.com', site: 'https://xn--qh3bm70b.xn--s22bu18a0ub.com/', paidUntil: now + 23 * DAY, state: 'active' }] : [],
   paid: {}   // 가짜 결제창에서 결제한 paymentId → 'ok' | 'fail'
 };
 // 인생역전 캐릭터(View 모양 — 지어낸 이름·숫자). life-char 만 처음부터 있다.
@@ -68,6 +71,19 @@ window.fetch = async (url, init = {}) => {
     return reply({ ok: false, error: '미리 보기에서 안 되는 요청' }, 400);
   }
   if (path.endsWith('/bakje-billing')) {
+    if (amb && sess && b.action === 'info') return reply({ ok: true, open: true, albumOpen: true, munchkinFrom: Date.parse('2026-11-23T00:00:00+09:00'), munchkinPaidFrom: PAID_FROM, now: Date.now(),
+      bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '뉴비랩' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 12],
+      addons: {}, ents: { munchkin: FAR, album: FAR }, owns: st.albums.map((a) => a.id), albums: st.albums, orders: st.orders, admin: false, ambassador: true, card });
+    if (b.action === 'amb-album') {
+      if (!amb) return reply({ ok: false, error: '먼치킨 엠베서더만 할 수 있어요.' }, 403);
+      if (st.albums.length) return reply({ ok: false, error: '이미 추억앨범이 있어요. 내 정보에서 볼 수 있어요.' }, 400);
+      const label = String(b.label || '').normalize('NFC').trim().toLowerCase();
+      if (label === '하늘') return reply({ ok: false, error: '이미 쓰이고 있는 주소예요. 다른 이름을 골라 주세요.' }, 409);
+      const host = new URL('https://' + label + '.먼치킨.com').hostname;
+      const a = { id: 'a' + Math.random().toString(36).slice(2, 11).padEnd(9, 'z'), name: b.name || st.me.nickname + ' 추억앨범', host, site: 'https://' + host + '/', paidUntil: PAID_FROM - 1, state: 'active' };
+      st.albums.push(a); save();
+      return reply({ ok: true, album: a });
+    }
     switch (b.action) {
       case 'info': return !sess ? reply({ ok: false, error: '다시 로그인해 주세요.' }, 401) : legacy ? reply({ ok: true, open: true, albumOpen: false, munchkinFrom: Date.parse('2026-12-01T00:00:00+09:00'), munchkinPaidFrom: PAID_FROM, bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '뉴비랩' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], addons: {}, ents: { munchkin: now + 12 * DAY }, owns: [], albums: st.albums, orders: st.orders, admin: false })
         : reply({ ok: true, open: true, albumOpen: kind !== 'beta', munchkinFrom: Date.parse('2026-11-23T00:00:00+09:00'), munchkinPaidFrom: PAID_FROM, now: Date.now(), bank: { bank: '토스뱅크', number: '1000-0000-0000', holder: '뉴비랩' }, prices: { munchkin: 3000, album: 3000, bundle: 5000 }, year: { munchkin: 30000, album: 30000, bundle: 50000 }, months: [1, 3, 6, 12], addons: {}, ents: { munchkin: now + 12 * DAY, ...(st.albums[0] ? { album: st.albums[0].paidUntil } : {}) }, owns: st.albums.map((a) => a.id), albums: st.albums, orders: st.orders, admin: false, card });

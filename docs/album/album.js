@@ -1167,6 +1167,39 @@ function stepper(done) {
   return h('ol', { class: 'stepper', 'aria-label': '신청 단계' }, items.map((t, i) => h('li', { class: done[i] ? 'done' : '' }, h('b', null, done[i] ? icon('check') : String(i + 1)), h('span', { text: t }))));
 }
 const kvRow = (k, ...v) => h('div', { class: 'kv-row' }, h('dt', { text: k }), h('dd', null, ...v));
+// 먼치킨 엠베서더(2026-11-28, 서버 info.ambassador): 운영자가 고른 DJ — 엠베서더인 동안 먼치킨·추억앨범·송출 무료.
+//  이용권 칸은 "엠베서더 · 모두 무료", 가진 앨범은 끝나는 날 대신 "엠베서더 · 무료", 앨범이 없으면 내 정보에서 돈 없이 바로 만든다(amb-album).
+const AMB_LINE = '🎖️ 먼치킨 엠베서더 · 모두 무료';
+const AMB_NOTE = '먼치킨 엠베서더라서 먼치킨·추억앨범·송출을 모두 무료로 써요. 이용권을 따로 사지 않아도 돼요.';
+const isAmb = () => Boolean(S.session && S.info?.ambassador === true);
+function ambAlbumForm() {
+  const me = S.me || {};
+  const out = statusEl(), st = statusEl();
+  const labelIn = input('amb-label', { maxlength: '15', value: S.draft.label || '', placeholder: '예: 먼치', autocapitalize: 'none', spellcheck: 'false', autocomplete: 'off', inputmode: 'text', 'aria-describedby': 'amb-label-hint' });
+  labelIn.addEventListener('input', (e) => { if (!e.isComposing) checkLabel(labelIn.value, out); });
+  labelIn.addEventListener('compositionend', () => checkLabel(labelIn.value, out));
+  const nameIn = input('amb-name', { maxlength: '40', autocomplete: 'off', placeholder: `${me.nickname || 'DJ'} 추억앨범` });
+  const btn = h('button', { class: 'btn main block', type: 'button', text: '이 주소로 앨범 만들기', onclick: () => busy(btn, st, async () => {
+    const label = (labelIn.value || '').normalize('NFC').trim().toLowerCase();
+    if (!label) { labelIn.focus(); throw new Error('주소 이름을 적어 주세요.'); }
+    if (!LABEL_RE.test(label)) { labelIn.focus(); throw new Error('한글·영어 소문자·숫자로 1~15자예요. - 는 가운데에만 쓸 수 있어요.'); }
+    const name = nickOf(nameIn.value || '');
+    if (name && ([...name].length < 2 || [...name].length > 40)) { nameIn.focus(); throw new Error(`앨범 이름은 2~40자로 정해 주세요. 비우면 "${me.nickname || 'DJ'} 추억앨범"이 돼요.`); }
+    await billCall('amb-album', { label, ...(name ? { name } : {}) });
+    S.draft.label = ''; S.labelOk = null; saveDraft();
+    toast('앨범을 만들었어요');
+    await loadInfo().catch(() => {});
+    paint();
+  }) });
+  if (S.draft.label) setTimeout(() => checkLabel(S.draft.label, out), 0);
+  return [h('p', { class: 'notice', text: '먼치킨 엠베서더라서 추억앨범을 돈 없이 바로 만들 수 있어요.' }),
+    h('div', { class: 'field' }, h('label', { for: 'amb-label', text: '주소 이름' }),
+      h('div', { class: 'addr' }, h('span', { class: 'addr-pre', text: 'https://' }), labelIn, h('span', { class: 'addr-suf', text: '.' + SUFFIX })),
+      out,
+      h('p', { class: 'hint', id: 'amb-label-hint', text: '한글·영어 소문자·숫자로 1~15자, - 는 가운데에만. 앨범이 만들어진 뒤에는 바꾸기 어려워요.' })),
+    field('amb-name', '앨범 이름(선택)', nameIn, `사이트 맨 위와 링크 미리 보기에 보여요. 비우면 "${me.nickname || 'DJ'} 추억앨범"`),
+    st, btn];
+}
 const copyChip = (text, label) => h('button', { class: 'copy-chip', type: 'button', onclick: () => copyLine(text, label) }, icon('copy'), '복사');
 // ---------- 카드 결제(포트원 V2 → KG이니시스 결제창) ----------
 // 결제 단추를 누를 때만 SDK 를 불러온다. 미리 보기(이 PC 의 mock.js)는 가짜 결제창(window.__mkMockPortOne)을 쓴다 — 실제 포트원에 아무것도 보내지 않는다.
@@ -1551,6 +1584,7 @@ function payBox() {
   const src = S.session ? S.info : S.pub;
   if (S.session) ensureInfo(); else ensurePub();
   const out = [paidBanner()];
+  if (isAmb()) return [...out, h('p', { class: 'notice', text: AMB_NOTE }), h('button', { class: 'btn line block', type: 'button', text: '내 정보 보기', onclick: () => go('me') })];
   if (S.payDone) out.push(payResult());
   const join = () => S.session ? null : h('p', { class: 'pt-join' }, '계정이 없나요? ', linkBtn('1분이면 가입해요', () => openSheet('signup')));
   // 서버 가격을 아직 못 받았거나 못 받았으면: 처음 HTML 의 가격 글을 그대로(불러오는 동안 깜빡이지 않게 · 서버가 답하지 않아도 가격이 보이게)
@@ -1606,6 +1640,12 @@ function applyView() {
     ensureInfo();
     return h('section', { class: 'sect narrow' }, paidBanner(), sectionHead('추억앨범 신청', '추억앨범 신청하기'),
       h('div', { class: 'card' }, S.infoError ? [h('p', { class: 'status bad', text: S.infoError }), h('button', { class: 'btn line', type: 'button', text: '다시 불러오기', onclick: () => ensureInfo(true) })] : h('p', { class: 'muted', text: '불러오는 중이에요…' })));
+  }
+  if (info.ambassador) {
+    const wait = (info.orders || []).filter((o) => o.state === 'pending');
+    return h('section', { class: 'sect narrow' }, sectionHead('먼치킨 엠베서더', '이용권을 사지 않아도 돼요', '엠베서더인 동안 먼치킨·추억앨범·송출을 모두 무료로 써요.'),
+      wait.length ? h('div', { class: 'stack' }, h('h3', { class: 'sub', text: '확인을 기다리는 신청' }), wait.map((o) => orderCard(o, info))) : null,
+      h('button', { class: 'btn main block', type: 'button', text: '내 정보 보기', onclick: () => go('me') }));
   }
   const albums = info.albums || [];
   const owner = albums.length > 0;
@@ -1759,23 +1799,25 @@ function meView() {
     h('article', { class: 'card' }, h('h3', { text: '내 추억앨범' }),
       !info ? h('p', { class: 'muted', text: S.infoError || '불러오는 중이에요…' })
         : albums.length ? albums.map((a) => {
-          const left = leftOf(a);
+          const left = isAmb() && (!a.state || a.state === 'active') ? { text: '엠베서더 · 무료', bad: false } : leftOf(a);
           return h('div', { class: 'my-album' },
             h('div', { class: 'my-album-top' }, h('b', { text: a.name || '내 추억앨범' }), h('span', { class: 'chip' + (left.bad ? ' bad' : ''), text: left.text })),
             h('p', { class: 'mono addr-line', text: hostText(a.host) }),
             h('div', { class: 'row-btns' },
               a.site ? h('a', { class: 'btn line small', href: a.site, target: '_blank', rel: 'noopener' }, icon('link'), '앨범 열기') : null,
-              h('button', { class: 'btn main small', type: 'button', text: '연장하기', onclick: () => { S.draft.album = a.id; saveDraft(); go('apply'); } })));
+              isAmb() ? null : h('button', { class: 'btn main small', type: 'button', text: '연장하기', onclick: () => { S.draft.album = a.id; saveDraft(); go('apply'); } })));
         })
         : orders.find((o) => o.state === 'pending' && o.newAlbum)
           ? (orders.find((o) => o.state === 'pending' && o.newAlbum).pay === 'card'
             ? [h('p', { class: 'muted', text: `${orders.find((o) => o.state === 'pending' && o.newAlbum).newAlbum.label}.${SUFFIX} 신청의 ${CARD_WAIT}` }), h('button', { class: 'btn line block', type: 'button', text: '카드 결제 마치기', onclick: () => go('apply') })]
             : [h('p', { class: 'muted', text: `${orders.find((o) => o.state === 'pending' && o.newAlbum).newAlbum.label}.${SUFFIX} 신청이 확인을 기다리고 있어요. ${WAIT_ALBUM}` }), h('button', { class: 'btn line block', type: 'button', text: '입금 안내 보기', onclick: () => go('apply') })])
+          : isAmb() ? ambAlbumForm()
           : albumBeta()
             ? [h('p', { class: 'muted', text: '아직 추억앨범이 없어요. ' + BETA_TEXT }), previewBtn('btn main block')]
             : [h('p', { class: 'muted', text: '아직 추억앨범이 없어요.' }), h('button', { class: 'btn main block', type: 'button', text: '추억앨범 신청하기', onclick: () => go('apply') })]),
     h('article', { class: 'card' }, h('h3', { text: '이용권' }),
-      h('dl', { class: 'kv' }, kvRow('먼치킨', until('munchkin')), kvRow('추억앨범', until('album')))),
+      isAmb() ? [h('dl', { class: 'kv' }, kvRow('이용권', h('b', { text: AMB_LINE }))), h('p', { class: 'hint', text: AMB_NOTE })]
+        : h('dl', { class: 'kv' }, kvRow('먼치킨', until('munchkin')), kvRow('추억앨범', until('album')))),
     h('article', { class: 'card' }, h('h3', { text: '내 신청' }),
       !info ? h('p', { class: 'muted', text: '불러오는 중이에요…' })
         : orders.length ? h('ul', { class: 'orders' }, orders.slice(0, 10).map((o) => h('li', null,
