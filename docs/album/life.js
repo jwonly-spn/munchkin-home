@@ -4,11 +4,14 @@
 // 서버 life 웹 길(POST /functions/v1/life/me — 머리글 apikey + x-bj-session): 몸통 {action}
 //  me → {ok, char: View|null} · code {agree?: true} → {ok, code: '123456', until}(캐릭터가 없으면 agree 가 있어야 — 없으면 400 "동의가 필요해요.")
 //  · erase → {ok}(캐릭터·번호·영수증 지움) · 401 "다시 로그인해 주세요." · 403 "이용이 막힌 계정이에요."
+//  · cancel → {ok}(살아 있는 번호 지움) · rekey → {ok}(캐릭터 번호를 새로 — 모든 방의 연결이 풀리고 캐릭터·돈은 그대로)
+//   (2026-11-28 보안 검토: 게임이 꺼진 방에 번호를 치면 3분 동안 살아 있어 본 사람이 먼저 쓸 수 있음 → [번호 지우기]·[다른 방 연결 모두 끊기]·주의 글)
 //  View = {name, rank, rankName, money, works, rankWorks, titles:[칭호 글], top, promo} — 이 화면은 이름·직급·돈·칭호만 보인다.
 // album.js 가 화면을 그릴 때마다 lifeView(ctx) 를 부른다. ctx = album.js 의 h·icon·call·S·go·toast·paint·openSheet·dropSession·busy·say·statusEl
 //  · login(아이디 로그인 창 — 로그인하면 이 화면으로) · kakao(카카오 로그인 — 돌아올 주소 ?go=life) · kakaoButton · ageBox · age14Need.
 // 화면: (로그인 전) 설명·3단계 + [카카오로 시작하기]·[아이디로 로그인] / (로그인) 캐릭터 없음 = 동의 칸 + [연결 번호 받기](동의 전엔 눌리지 않음)
-//  · 캐릭터 있음 = 한 장(직급·돈·칭호) + [연결 번호 받기] + 맨 아래 [게임 기록 지우기] / 번호 = 큰 6자리 + 3:00 시계 + "!연결 123456" 복사 → 시간이 지나면 [새 번호].
+//  · 캐릭터 있음 = 한 장(직급·돈·칭호) + [연결 번호 받기] + 맨 아래 [다른 방 연결 모두 끊기]·[게임 기록 지우기](둘 다 묻는 창 뒤)
+//  / 번호 = 큰 6자리 + 3:00 시계 + [번호 지우기] + "!연결 123456" 복사 + 주의 글 세 줄 → 시간이 지나면 [새 번호].
 // 모양: 베타 신청 화면(beta.js)과 같은 집안(bt-* 칸)을 쓰고, 이 화면만의 것(lf-*)은 아래 STYLE 을 문서에 한 번 붙인다
 //  (CSSStyleSheet — index.html CSP 가 <style> 을 막아서. album.css 는 건드리지 않음 — 옛 브라우저면 bt-* 모양만으로 보인다).
 //  제목(h1·h2)은 글꼴 조각(mk-title.woff2)에 있는 글자만 쓴다("캐릭터"의 '릭', "칭호"의 '칭'은 없어서 제목에 안 씀 — 본문은 괜찮음).
@@ -20,7 +23,9 @@ const CODE_RE = /^\d{6}$/;          // contract CODE_RE
 const LINK_CMD = '!연결';           // 봇 기본 연결 명령(lifeSettings.linkCmd)
 const EXAMPLE = '123456';
 const AGREE_TEXT = '게임 기록(캐릭터 이름·게임 돈·직급·칭호)을 먼치킨 서버에 보관하는 데 동의해요. 스푼 아이디·닉네임은 보관하지 않아요.';
-const CODE_NOTE = '번호는 3분 동안 한 번만 써요. 남에게 보여 주지 마세요.';
+// 번호 아래 주의 글(보안 검토 — 사실대로, 세 줄)
+const CODE_NOTES = ['이 번호를 다른 사람이 먼저 치면 그 사람 방에 내 캐릭터가 이어져요.', '인생역전이 켜진 방 채팅에만 쳐 주세요.', '연결이 안 됐으면 [번호 지우기]를 눌러 주세요.'];
+const REKEY_LINES = ['모든 방송의 연결이 풀려요.', '캐릭터·돈·직급은 그대로예요.', `다시 이으려면 새 번호로 ${LINK_CMD} 해 주세요.`];
 const STALE = 60000;
 const STYLE = `
 .view-life{--bt-pink:#C2255C;--bt-pink-soft:#FFF0F4;--bt-pink-line:#FFC9D5;--bt-blue:#0062C4}
@@ -57,7 +62,13 @@ const STYLE = `
 .lf-cmd .lf-kbd{font-size:21px;padding:9px 14px;border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
 .lf-cmd .btn{gap:6px}
 .lf-cmd .btn .ico{width:18px;height:18px}
-.lf-warn{width:100%;margin-top:4px;text-align:left;font-size:15px;line-height:1.55}
+.lf-warn{width:100%;margin-top:4px;text-align:left;font-size:15px;line-height:1.55;gap:4px}
+.lf-cancel{margin-top:-2px}
+.lf-done{margin-top:20px}
+.lf-ask .sheet-head h2{font-family:var(--body);font-weight:800;font-size:19px;letter-spacing:-.01em}
+.lf-ask .sheet-body p{font-size:16px;line-height:1.6}
+.lf-ask-btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}
+.lf-ask-btns .btn{white-space:normal;line-height:1.3;padding-inline:12px}
 .lf-gone{font-size:20px;font-weight:800}
 .lf-code-box .bt-go{width:100%;margin-top:4px}
 .lf-next{margin-top:10px;font-size:15px;line-height:1.55}
@@ -81,6 +92,7 @@ const L = {
   age14: false,      // 로그인 전 만 14세 칸
   code: '', end: 0,  // 받은 번호 · 끝나는 때(이 기기 시계 — 받은 때 + 서버가 준 남은 시간, 이상하면 3분)
   gone: false,       // 번호 시간이 지남 → [새 번호]
+  done: '',          // 방금 끝낸 일 한 줄("번호를 지웠어요" · "모든 방의 연결을 끊었어요") — 다음 번호를 받으면 지움
   timer: 0,
   dirty: false       // 번호를 받음 → 방에서 이었을 수 있으니 이 탭이 다시 보이면 캐릭터를 다시 물음
 };
@@ -91,7 +103,7 @@ const clock = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${M
 const cmdOf = (code) => `${LINK_CMD} ${code}`;
 function reset(owner) {
   stopTimer();
-  Object.assign(L, { owner, char: undefined, at: 0, job: null, err: '', blocked: false, agree: false, code: '', end: 0, gone: false, dirty: false });
+  Object.assign(L, { owner, char: undefined, at: 0, job: null, err: '', blocked: false, agree: false, code: '', end: 0, gone: false, done: '', dirty: false });
 }
 function focusId(id) { setTimeout(() => document.getElementById(id)?.focus({ preventScroll: true }), 30); }
 let styled = false;
@@ -183,7 +195,7 @@ function getCode(btn, st) {
     const code = String(r.code ?? '');
     if (!CODE_RE.test(code)) throw Error('번호를 받지 못했어요. 다시 눌러 주세요.');
     const left = Number(r.until) - Date.now();
-    L.code = code; L.gone = false; L.dirty = true;
+    L.code = code; L.gone = false; L.dirty = true; L.done = '';
     L.end = Date.now() + (left > 0 && left <= TTL + 5000 ? left : TTL);   // PC 시계가 틀려도 3분 안에서
     startTimer();
     repaint();
@@ -194,6 +206,53 @@ function getCode(btn, st) {
       document.querySelector('.lf-code-box')?.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
     }, 40);
   });
+}
+// [번호 지우기] — 살아 있는 번호를 서버에서 지운다(게임이 꺼진 방에 쳤거나 남이 봤을 때)
+function cancelCode(btn, st) {
+  C.busy(btn, st, async () => {
+    await lifeCall('cancel');
+    stopTimer();
+    Object.assign(L, { code: '', end: 0, gone: false, done: '번호를 지웠어요' });
+    repaint();
+    focusId('lf-done');
+  });
+}
+// 묻는 창(로그인 창과 같은 dialog.sheet 모양 — 사진으로 확인할 수 있게 브라우저 confirm 대신). 고르면 true, 닫거나 그만두면 false.
+function ask(title, lines, okText) {
+  const { h, icon } = C;
+  if (typeof HTMLDialogElement !== 'function' || !HTMLDialogElement.prototype.showModal) return Promise.resolve(confirm([title, ...lines].join('\n')));
+  return new Promise((resolve) => {
+    let answer = false;
+    const ok = h('button', { class: 'btn main', type: 'button', text: okText, onclick: () => { answer = true; d.close(); } });
+    const no = h('button', { class: 'btn line', type: 'button', text: '그만두기', onclick: () => d.close() });
+    const d = h('dialog', { class: 'sheet lf-ask', 'aria-labelledby': 'lf-ask-h' },
+      h('div', { class: 'sheet-in' },
+        h('div', { class: 'sheet-head' },
+          h('span', { class: 'icon-gap' }),
+          h('h2', { id: 'lf-ask-h', text: title }),
+          h('button', { class: 'icon-btn', type: 'button', 'aria-label': '닫기', onclick: () => d.close() }, icon('close'))),
+        h('div', { class: 'sheet-body' }, lines.map((t) => h('p', { text: t })), h('div', { class: 'lf-ask-btns' }, no, ok))));
+    d.addEventListener('close', () => { d.remove(); resolve(answer); });
+    document.body.append(d);
+    d.showModal();
+    no.focus();
+  });
+}
+// [다른 방 연결 모두 끊기] — 캐릭터 번호를 새로(rekey): 모든 방의 연결이 풀리고 캐릭터·돈·직급은 그대로
+function rekeyBtn(st) {
+  const { h } = C;
+  return h('button', { class: 'link-btn', type: 'button', text: '다른 방 연결 모두 끊기', onclick: (e) => {
+    const btn = e.currentTarget;
+    ask('다른 방 연결을 모두 끊을까요?', REKEY_LINES, '모두 끊기').then((yes) => {
+      if (!yes) { btn.focus(); return; }
+      C.busy(btn, st, async () => {
+        await lifeCall('rekey');
+        L.done = '모든 방의 연결을 끊었어요';   // 떠 있는 번호는 그대로 둔다(서버가 정함 — 화면이 멋대로 지웠다고 하지 않게)
+        repaint();
+        focusId('lf-done');
+      });
+    });
+  } });
 }
 async function copyCmd(text, el) {
   try { await navigator.clipboard.writeText(text); C.toast('복사했어요. 스푼 방 채팅에 붙여 넣어 주세요'); }
@@ -274,10 +333,12 @@ function codeBox(st) {
     h('p', { class: 'lf-code', 'aria-label': [...L.code].join(' '), text: L.code }),
     h('div', { class: 'lf-bar', 'aria-hidden': 'true' }, bar),
     h('p', { class: 'lf-timer', id: 'lf-timer', role: 'timer', text: `${clock(left)} 남았어요` }),
+    h('button', { class: 'link-btn lf-cancel', type: 'button', text: '번호 지우기', onclick: (e) => cancelCode(e.currentTarget, st) }),
     h('p', { class: 'lf-how', text: '먼치킨이 있는 스푼 방 채팅에 이렇게 적어 주세요' }),
     h('div', { class: 'lf-cmd' }, cmdEl,
       h('button', { class: 'btn line small', type: 'button', 'aria-label': `${cmd} 복사`, onclick: () => copyCmd(cmd, cmdEl) }, icon('copy'), '복사')),
-    h('p', { class: 'notice warn lf-warn', text: CODE_NOTE }));
+    h('div', { class: 'notice warn lf-warn', role: 'note' }, CODE_NOTES.map((t) => h('p', { text: t }))),
+    st);
 }
 
 // 캐릭터 한 장(이름 · 직급 · 가진 돈 · 칭호)
@@ -296,14 +357,19 @@ function charCard(v) {
 
 function eraseBtn(st) {
   const { h } = C;
-  return h('button', { class: 'link-btn', type: 'button', text: '게임 기록 지우기', onclick: (e) => C.busy(e.currentTarget, st, async () => {
-    if (!confirm('게임 기록을 지울까요?\n캐릭터 이름·게임 돈·직급·칭호가 모두 지워지고 되돌릴 수 없어요.')) return;
-    await lifeCall('erase');
-    stopTimer();
-    Object.assign(L, { char: null, code: '', end: 0, gone: false, agree: false, dirty: false, at: Date.now() });
-    C.toast('게임 기록을 지웠어요');
-    C.paint(); window.scrollTo({ top: 0 }); focusId('lf-title');
-  }) });
+  return h('button', { class: 'link-btn', type: 'button', text: '게임 기록 지우기', onclick: (e) => {
+    const btn = e.currentTarget;
+    ask('게임 기록을 지울까요?', ['캐릭터 이름·게임 돈·직급·칭호가 모두 지워지고 되돌릴 수 없어요.'], '지우기').then((yes) => {
+      if (!yes) { btn.focus(); return; }
+      C.busy(btn, st, async () => {
+        await lifeCall('erase');
+        stopTimer();
+        Object.assign(L, { char: null, code: '', end: 0, gone: false, done: '', agree: false, dirty: false, at: Date.now() });
+        C.toast('게임 기록을 지웠어요');
+        C.paint(); window.scrollTo({ top: 0 }); focusId('lf-title');
+      });
+    });
+  } });
 }
 
 // 로그인함 — 캐릭터 없음(동의 칸) · 캐릭터 있음(한 장)
@@ -333,12 +399,15 @@ function memberView() {
       h('button', { class: 'btn block big bt-go', type: 'button', text: '연결 번호 받기', onclick: (e) => getCode(e.currentTarget, st) }),
       h('p', { class: 'hint bt-alt', text: '새 방에서 내 캐릭터로 놀려면 그 방 채팅에 번호를 적어요.' }));
   }
-  const foot = v ? (() => { const st2 = statusEl(); return h('div', { class: 'lf-foot' }, st2, eraseBtn(st2)); })() : null;
+  // 맨 아래: [다른 방 연결 모두 끊기](캐릭터 카드 아래 · 기록 지우기 위) · [게임 기록 지우기]
+  const foot = v ? (() => { const st2 = statusEl(); return h('div', { class: 'lf-foot' }, st2, rekeyBtn(st2), eraseBtn(st2)); })() : null;
+  const done = L.done ? h('p', { class: 'status good lf-done', id: 'lf-done', tabindex: '-1', role: 'status', text: L.done }) : null;
   return wrap(
     ...head('인생역전 계정 연결', '연결 번호 받기',
       v ? '번호를 받아 먼치킨이 있는 스푼 방 채팅에 적으면 그 방에서도 이 캐릭터로 이어서 놀아요.'
         : '번호를 받아 먼치킨이 있는 스푼 방 채팅에 적으면 그 방의 내 캐릭터가 이 계정에 이어져요.'),
     v ? charCard(v) : null,
+    done,
     action,
     showCode && !L.gone ? h('p', { class: 'hint lf-next', text: v ? '방에서 연결하면 그 방에서도 이 캐릭터로 이어서 놀아요.' : '방에서 연결한 뒤 이 화면을 다시 열면 내 캐릭터가 보여요.' }) : null,
     foot);

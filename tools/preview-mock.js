@@ -5,7 +5,7 @@
 //  가짜 결제창(window.__mkMockPortOne): sessionStorage mock_pay 가 ok·late(반영 늦음)·cancel·fail·mobile-ok·mobile-cancel 이면 그대로 하고, 없으면 화면에 가짜 창을 띄워 고르게 한다.
 //  실제 포트원·KG 에는 아무것도 보내지 않는다(이 파일은 올리는 파일이 아님 — tools/preview.mjs 가 /album/mock.js 로만 준다).
 //  인생역전 연결 번호(2026-11-28, album/#go=life): life-none(캐릭터 없음 — 동의 뒤 번호) · life-char(캐릭터 있음 — 지어낸 "먼치")
-//   서버 life 웹 길(/functions/v1/life/me)과 같은 모양으로 답한다: me → {char} · code {agree?} → {code, until} · erase · 세션이 없으면 401.
+//   서버 life 웹 길(/functions/v1/life/me)과 같은 모양으로 답한다: me → {char} · code {agree?} → {code, until} · erase · cancel · rekey · 세션이 없으면 401.
 //   로그인된 모습을 보려면 페이지보다 먼저 localStorage mk_session 에 가짜 표('T' 43자)를 넣는다(사진 도구 preload).
 const SB = 'https://aksegkhhugqvvaidgvro.supabase.co';
 const q = new URLSearchParams(location.search);
@@ -125,6 +125,9 @@ window.fetch = async (url, init = {}) => {
         if (!st.life && b.agree !== true) return reply({ ok: false, error: '동의가 필요해요.' }, 400);
         return reply({ ok: true, code: '274815', until: Date.now() + 180000 });
       case 'erase': st.life = null; save(); return reply({ ok: true });
+      // 보안 검토(2026-11-28): 살아 있는 번호 지우기 · 캐릭터 번호 새로(모든 방 연결 풀림 — 캐릭터·돈은 그대로)
+      case 'cancel': return reply({ ok: true });
+      case 'rekey': return reply({ ok: true });
     }
     return reply({ ok: false, error: '모르는 요청이에요.' }, 400);
   }
