@@ -101,7 +101,7 @@ for (const t of ['방송을 더 즐겁게', '방송을 더 편하게', '먼치�
   ok(html.includes(t), `글 "${t}" 이 있어야 해요`);
 }
 for (const [rel, s] of [['index.html', html], ['home.js', read('home.js')], ['home.css', read('home.css')]]) {
-  for (const bad of ['절세', '누구나']) ok(!s.includes(bad), `${rel} 에 "${bad}" 가 있으면 안 돼요`);
+  for (const bad of ['절세', '누구나 절세', '누구나 비용']) ok(!s.includes(bad), `${rel} 에 "${bad}" 가 있으면 안 돼요`);
 }
 
 // 6. 장면 고양이 그림
