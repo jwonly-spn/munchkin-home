@@ -108,6 +108,39 @@ for (const [rel, s] of [['index.html', html], ['home.js', read('home.js')], ['ho
 for (const f of ['bank', 'lottery', 'tax', 'chatbot', 'tools', 'moving']) {
   ok(fs.existsSync(path.join(DOCS, 'art', f + '.webp')), `docs/art/${f}.webp 가 있어야 해요`);
 }
+// 7. 문장마다 줄바꿈(11/23 규칙 · 11/28 사용자 "마침표 했으면 다음줄에 쓰라고"): 문장 끝(한글 + . ? !) 뒤에 글이 이어지면
+//    그 사이에 <br class="br-s"> 가 있어야 해요. 글 조각만 봐요(script·style 안, 봇 채팅 말풍선 .h-bub, 윈도·엣지 창 그림 .shot 은 빼요).
+//    앞 문장이 3자 이하("네.")면 괜찮아요.
+{
+  const VOID = new Set(['br', 'img', 'input', 'meta', 'link', 'hr', 'source', 'use', 'path', 'circle', 'rect', 'line', 'polyline', 'wbr']);
+  const parts = html.split(/(<[^>]+>)/);
+  const stack = [], tags = [];
+  let skip = 0;
+  const missing = [];
+  parts.forEach((tok, i) => {
+    if (tok.startsWith('<')) {
+      const m = /^<\s*(\/)?\s*([a-zA-Z0-9]+)/.exec(tok);
+      if (!m || tok.startsWith('<!')) return;
+      const name = m[2].toLowerCase();
+      if (['script', 'style', 'title', 'textarea'].includes(name)) skip += m[1] ? -1 : 1;
+      if (m[1]) { const k = tags.lastIndexOf(name); if (k >= 0) { stack.length = k; tags.length = k; } }
+      else if (!tok.endsWith('/>') && !VOID.has(name)) { stack.push((/class="([^"]*)"/.exec(tok) || [])[1] || ''); tags.push(name); }
+      return;
+    }
+    if (skip > 0 || !tok.trim() || stack.some((c) => c.split(/\s+/).some((x) => x === 'shot' || x === 'h-bub'))) return;
+    let from = 0;
+    for (const m of tok.matchAll(/([가-힣][.?!]+)[ \t\n]+/g)) {
+      const before = tok.slice(from, m.index + m[1].length), after = tok.slice(m.index + m[0].length);
+      from = m.index + m[0].length;
+      const next = parts[i + 1] || '';
+      if (!after.trim() && (!next || next.startsWith('</') || /^<br/i.test(next))) continue;
+      if (before.replace(/\s/g, '').length <= 3) continue;
+      missing.push(before.trim().slice(-20) + ' / ' + (after.trim() || next).slice(0, 15));
+    }
+  });
+  ok(missing.length === 0, `문장 끝 뒤에 줄바꿈(<br class="br-s">)이 없어요: ${missing.join(' | ')}`);
+}
+
 // 페이지가 부르는 그림·영상 파일이 다 있어야 해요
 const assets = [...new Set([...html.matchAll(/\b(?:src|poster|srcset)="([^"#:]+?)"/g)].map((m) => m[1].split('?')[0]))];
 const gone = assets.filter((a) => !fs.existsSync(path.join(DOCS, a)));
