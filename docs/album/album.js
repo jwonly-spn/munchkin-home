@@ -341,6 +341,9 @@ async function loadMe() {
   if (!S.session) return;
   try { const r = await memberCall('me'); saveMe(r.member); S.banned = r.banned === true; }
   catch { /* 401 이면 이미 로그아웃, 인터넷 문제면 기억해 둔 계정으로 */ }
+  // 닉네임이 없는 회원(카카오로 가입하며 안 정함 — 11/28 밤 사용자 "닉네임 없는 사람들 닉네임 만들라고 (DJ 이름으로)"): 들어올 때 이 탭에서 한 번, DJ 이름으로 정하게 묻는다
+  //  먼치킨 프로그램 안의 로그인 창(inApp)·다른 창이 떠 있으면 묻지 않는다 · [나중에 정할게요]로 닫을 수 있다
+  if (S.me && !S.me.nickname && !inApp() && !ss.get('mk_nick_ask')) { ss.set('mk_nick_ask', '1'); setTimeout(() => { if (!sheet && S.me && !S.me.nickname) openSheet('nickname', { dj: true }); }, 600); }
 }
 // 로그아웃 = 모든 곳에서(서버가 이 계정의 세션을 모두 지운다 — 다른 추억앨범·먼치킨 프로그램도)
 async function logoutAll() {
@@ -618,9 +621,10 @@ const STEPS = {
     return {
       title: had ? '닉네임 바꾸기' : '닉네임 정하기', focus: nk,
       body: [
-        h('p', { class: 'lead-s', text: '추억앨범 댓글에는 닉네임만 보여요. 입금자명에도 닉네임이 들어가요.' }),
+        h('p', { class: 'lead-s', text: had ? '추억앨범 댓글에는 닉네임만 보여요. 입금자명에도 닉네임이 들어가요.' : '스푼에서 쓰는 DJ 이름으로 정해 주세요(꾸밈 글자는 빼고). 추억앨범 댓글·입금자명에 이 이름이 보여요.' }),
         form,
-        x.join ? h('div', { class: 'links' }, linkBtn('나중에 정할게요', () => { closeSheet(); continueNext(); })) : null
+        x.join ? h('div', { class: 'links' }, linkBtn('나중에 정할게요', () => { closeSheet(); continueNext(); }))
+          : x.dj ? h('div', { class: 'links' }, linkBtn('나중에 정할게요', () => closeSheet())) : null
       ]
     };
   },
