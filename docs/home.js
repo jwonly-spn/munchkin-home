@@ -78,6 +78,9 @@
       const nodes = rows.map(row);
       if (!quiet && !still) nodes.forEach((x) => x.classList.add('h-pop'));
       pickOut.replaceChildren(...nodes);
+      // 당첨이 다 나와 글이 두 덩이면 창 안에서 넘겨 볼 수 있게 하고 맨 아래(최근 글)를 보여 줘요
+      const logBox = pickOut.parentElement;
+      requestAnimationFrame(() => { logBox.scrollTop = logBox.scrollHeight; });
     };
     const fresh = () => {
       opened = new Set(); bank = 600; board.replaceChildren();
