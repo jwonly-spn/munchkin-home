@@ -26,6 +26,11 @@ const AGREE_TEXT = '게임 기록(캐릭터 이름·게임 돈·직급·칭호)�
 // 번호 아래 주의 글(보안 검토 — 사실대로, 세 줄)
 const CODE_NOTES = ['이 번호를 다른 사람이 먼저 치면 그 사람 방에 내 캐릭터가 이어져요.', '인생역전이 켜진 방 채팅에만 쳐 주세요.', '연결이 안 됐으면 [번호 지우기]를 눌러 주세요.'];
 const REKEY_LINES = ['모든 방송의 연결이 풀려요.', '캐릭터·돈·직급은 그대로예요.', `다시 이으려면 새 번호로 ${LINK_CMD} 해 주세요.`];
+// 방금 끝낸 일 글(한 줄이면 초록 상태 글, USED_LINES 는 주의 색 두 줄)
+const DONE_CANCEL = ['번호를 지웠어요'];
+const USED_LINES = ['이 번호는 이미 쓰였거나 시간이 지났어요.', '내가 이은 게 아니라면 아래 [다른 방 연결 모두 끊기]를 눌러 주세요.'];
+const DONE_REKEY = ['모든 방의 연결을 끊었어요'];
+const DONE_REKEY_CODE = ['모든 방의 연결을 끊었어요. 떠 있던 번호도 지웠어요.'];
 const STALE = 60000;
 const STYLE = `
 .view-life{--bt-pink:#C2255C;--bt-pink-soft:#FFF0F4;--bt-pink-line:#FFC9D5;--bt-blue:#0062C4}
@@ -65,6 +70,9 @@ const STYLE = `
 .lf-warn{width:100%;margin-top:4px;text-align:left;font-size:15px;line-height:1.55;gap:4px}
 .lf-cancel{margin-top:-2px}
 .lf-done{margin-top:20px}
+.lf-done.notice{gap:4px;font-size:15px;line-height:1.55}
+.lf-done:focus{outline:none}
+.lf-foot .link-btn.lf-hot{color:var(--bad);font-weight:800;background:var(--bad-soft);border-radius:12px;padding:0 14px}
 .lf-ask .sheet-head h2{font-family:var(--body);font-weight:800;font-size:19px;letter-spacing:-.01em}
 .lf-ask .sheet-body p{font-size:16px;line-height:1.6}
 .lf-ask-btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px}
@@ -92,7 +100,9 @@ const L = {
   age14: false,      // 로그인 전 만 14세 칸
   code: '', end: 0,  // 받은 번호 · 끝나는 때(이 기기 시계 — 받은 때 + 서버가 준 남은 시간, 이상하면 3분)
   gone: false,       // 번호 시간이 지남 → [새 번호]
-  done: '',          // 방금 끝낸 일 한 줄("번호를 지웠어요" · "모든 방의 연결을 끊었어요") — 다음 번호를 받으면 지움
+  done: null,        // 방금 끝낸 일 글 줄들(DONE_CANCEL · USED_LINES · DONE_REKEY…) — 다음 번호를 받으면 지움
+  used: false,       // [번호 지우기]를 눌렀는데 지울 번호가 없었음(이미 쓰였거나 시간이 지남) → 주의 색 + [다른 방 연결 모두 끊기] 강조
+  jumpRekey: false,  // 다시 그린 뒤 [다른 방 연결 모두 끊기]로 화면을 옮길지
   timer: 0,
   dirty: false       // 번호를 받음 → 방에서 이었을 수 있으니 이 탭이 다시 보이면 캐릭터를 다시 물음
 };
@@ -103,7 +113,7 @@ const clock = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${M
 const cmdOf = (code) => `${LINK_CMD} ${code}`;
 function reset(owner) {
   stopTimer();
-  Object.assign(L, { owner, char: undefined, at: 0, job: null, err: '', blocked: false, agree: false, code: '', end: 0, gone: false, done: '', dirty: false });
+  Object.assign(L, { owner, char: undefined, at: 0, job: null, err: '', blocked: false, agree: false, code: '', end: 0, gone: false, done: null, used: false, jumpRekey: false, dirty: false });
 }
 function focusId(id) { setTimeout(() => document.getElementById(id)?.focus({ preventScroll: true }), 30); }
 let styled = false;
@@ -152,6 +162,7 @@ function load(quiet = false) {
     .finally(() => {
       if (L.owner === owner) L.job = null;
       if (C.S.view === 'life') repaint();
+      if (L.jumpRekey) setTimeout(jumpToRekey, 30);
     });
 }
 // 이 탭이 다시 보이면(스푼 앱에서 !연결 하고 돌아옴 · 오래 둠) 조용히 다시 묻기
@@ -195,7 +206,7 @@ function getCode(btn, st) {
     const code = String(r.code ?? '');
     if (!CODE_RE.test(code)) throw Error('번호를 받지 못했어요. 다시 눌러 주세요.');
     const left = Number(r.until) - Date.now();
-    L.code = code; L.gone = false; L.dirty = true; L.done = '';
+    L.code = code; L.gone = false; L.dirty = true; L.done = null; L.used = false;
     L.end = Date.now() + (left > 0 && left <= TTL + 5000 ? left : TTL);   // PC 시계가 틀려도 3분 안에서
     startTimer();
     repaint();
@@ -208,14 +219,31 @@ function getCode(btn, st) {
   });
 }
 // [번호 지우기] — 살아 있는 번호를 서버에서 지운다(게임이 꺼진 방에 쳤거나 남이 봤을 때)
+//  서버 답 {ok, removed}: removed false = 지울 번호가 없었음(이미 쓰였거나 시간이 지남) → 사실대로 주의 두 줄 + [다른 방 연결 모두 끊기]로 눈이 가게
+//  (보안 다시 검토 2026-11-28 — 남이 먼저 쓴 뒤에도 "지웠어요"라고 하면 피해자가 안전하다고 믿음). removed 가 없으면(옛 서버) 지운 것으로 본다.
 function cancelCode(btn, st) {
   C.busy(btn, st, async () => {
-    await lifeCall('cancel');
+    const r = await lifeCall('cancel');
+    const removed = r?.removed !== false;
     stopTimer();
-    Object.assign(L, { code: '', end: 0, gone: false, done: '번호를 지웠어요' });
+    Object.assign(L, { code: '', end: 0, gone: false, done: removed ? DONE_CANCEL : USED_LINES, used: !removed });
     repaint();
     focusId('lf-done');
+    if (!removed) {
+      // 남이 이었다면 캐릭터가 그새 생겼을 수 있다 → 다시 물어 카드·[다른 방 연결 모두 끊기]가 보이게(다 그린 뒤 그 단추로 화면을 옮김)
+      L.jumpRekey = true;
+      load(true);
+      setTimeout(jumpToRekey, 60);
+    }
   });
+}
+// [다른 방 연결 모두 끊기]로 화면을 옮김(주의 글은 그대로 보이게 — 단추가 화면 안에 들어오는 만큼만)
+function jumpToRekey() {
+  const b = document.getElementById('lf-rekey');
+  if (!b || !L.jumpRekey) return;
+  L.jumpRekey = false;
+  const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  b.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
 }
 // 묻는 창(로그인 창과 같은 dialog.sheet 모양 — 사진으로 확인할 수 있게 브라우저 confirm 대신). 고르면 true, 닫거나 그만두면 false.
 function ask(title, lines, okText) {
@@ -241,13 +269,16 @@ function ask(title, lines, okText) {
 // [다른 방 연결 모두 끊기] — 캐릭터 번호를 새로(rekey): 모든 방의 연결이 풀리고 캐릭터·돈·직급은 그대로
 function rekeyBtn(st) {
   const { h } = C;
-  return h('button', { class: 'link-btn', type: 'button', text: '다른 방 연결 모두 끊기', onclick: (e) => {
+  return h('button', { class: 'link-btn' + (L.used ? ' lf-hot' : ''), id: 'lf-rekey', type: 'button', text: '다른 방 연결 모두 끊기', onclick: (e) => {
     const btn = e.currentTarget;
     ask('다른 방 연결을 모두 끊을까요?', REKEY_LINES, '모두 끊기').then((yes) => {
       if (!yes) { btn.focus(); return; }
       C.busy(btn, st, async () => {
         await lifeCall('rekey');
-        L.done = '모든 방의 연결을 끊었어요';   // 떠 있는 번호는 그대로 둔다(서버가 정함 — 화면이 멋대로 지웠다고 하지 않게)
+        // 서버(lg_rekey)가 이 회원의 번호도 지운다 → 떠 있던 번호 칸을 닫는다(보안 다시 검토 N1)
+        const hadCode = Boolean(L.code);
+        stopTimer();
+        Object.assign(L, { code: '', end: 0, gone: false, used: false, jumpRekey: false, done: hadCode ? DONE_REKEY_CODE : DONE_REKEY });
         repaint();
         focusId('lf-done');
       });
@@ -364,7 +395,7 @@ function eraseBtn(st) {
       C.busy(btn, st, async () => {
         await lifeCall('erase');
         stopTimer();
-        Object.assign(L, { char: null, code: '', end: 0, gone: false, done: '', agree: false, dirty: false, at: Date.now() });
+        Object.assign(L, { char: null, code: '', end: 0, gone: false, done: null, used: false, agree: false, dirty: false, at: Date.now() });
         C.toast('게임 기록을 지웠어요');
         C.paint(); window.scrollTo({ top: 0 }); focusId('lf-title');
       });
@@ -401,7 +432,11 @@ function memberView() {
   }
   // 맨 아래: [다른 방 연결 모두 끊기](캐릭터 카드 아래 · 기록 지우기 위) · [게임 기록 지우기]
   const foot = v ? (() => { const st2 = statusEl(); return h('div', { class: 'lf-foot' }, st2, rekeyBtn(st2), eraseBtn(st2)); })() : null;
-  const done = L.done ? h('p', { class: 'status good lf-done', id: 'lf-done', tabindex: '-1', role: 'status', text: L.done }) : null;
+  // 방금 끝낸 일: 보통은 초록 한 줄 · 이미 쓰인 번호는 주의 색 두 줄(캐릭터가 없으면 [다른 방 연결 모두 끊기]가 없으니 첫 줄만)
+  const doneLines = L.done ? (L.used && !v ? L.done.slice(0, 1) : L.done) : null;
+  const done = !doneLines ? null : L.used
+    ? h('div', { class: 'notice warn lf-done', id: 'lf-done', tabindex: '-1', role: 'alert' }, doneLines.map((t) => h('p', { text: t })))
+    : h('p', { class: 'status good lf-done', id: 'lf-done', tabindex: '-1', role: 'status', text: doneLines.join(' ') });
   return wrap(
     ...head('인생역전 계정 연결', '연결 번호 받기',
       v ? '번호를 받아 먼치킨이 있는 스푼 방 채팅에 적으면 그 방에서도 이 캐릭터로 이어서 놀아요.'
