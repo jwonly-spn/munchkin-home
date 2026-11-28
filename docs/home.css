@@ -115,7 +115,7 @@ body.home .h-board button:disabled{cursor:default;background:transparent;border-
 body.home .h-board button.h-won:disabled{background:var(--star);border-color:transparent;color:#1A2040;font-weight:700}
 body.home .h-reset{min-height:44px;padding:0 8px;border:0;background:none;color:var(--chat-ink);font-size:var(--f-sm);font-weight:600;cursor:pointer}
 body.home #pick .h-out>*+*{margin-top:8px}
-body.home #pick .h-log{--log:196px;display:block;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(246,241,231,.25) transparent;border-top:1px solid var(--chat-line);-webkit-mask-image:none;mask-image:none}
+body.home #pick .h-log{--log:216px;display:block;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(246,241,231,.25) transparent;border-top:1px solid var(--chat-line);-webkit-mask-image:none;mask-image:none}
 
 /* 기본 기능 */
 body.home .h-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
