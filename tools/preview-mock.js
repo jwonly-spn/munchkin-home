@@ -4,6 +4,9 @@
 //  legacy(바뀌기 전 서버 답 — card 없음·albumOpen 없음·먼치킨 12/1) · 로그인 전 prices 는 sessionStorage mock_pub=0 이면 예전 서버처럼 401
 //  가짜 결제창(window.__mkMockPortOne): sessionStorage mock_pay 가 ok·late(반영 늦음)·cancel·fail·mobile-ok·mobile-cancel 이면 그대로 하고, 없으면 화면에 가짜 창을 띄워 고르게 한다.
 //  실제 포트원·KG 에는 아무것도 보내지 않는다(이 파일은 올리는 파일이 아님 — tools/preview.mjs 가 /album/mock.js 로만 준다).
+//  인생역전 연결 번호(2026-11-28, album/#go=life): life-none(캐릭터 없음 — 동의 뒤 번호) · life-char(캐릭터 있음 — 지어낸 "먼치")
+//   서버 life 웹 길(/functions/v1/life/me)과 같은 모양으로 답한다: me → {char} · code {agree?} → {code, until} · erase · 세션이 없으면 401.
+//   로그인된 모습을 보려면 페이지보다 먼저 localStorage mk_session 에 가짜 표('T' 43자)를 넣는다(사진 도구 preload).
 const SB = 'https://aksegkhhugqvvaidgvro.supabase.co';
 const q = new URLSearchParams(location.search);
 if (q.get('mock') && q.get('mock') !== '1') sessionStorage.setItem('mock_kind', q.get('mock'));
@@ -22,6 +25,9 @@ const st = JSON.parse(sessionStorage.getItem('mock_st') || 'null') || {
   albums: kind === 'owner' ? [{ id: 'aqwertyuio', name: '밤톨 추억앨범', host: 'xn--qh3bm70b.xn--s22bu18a0ub.com', site: 'https://xn--qh3bm70b.xn--s22bu18a0ub.com/', paidUntil: now + 23 * DAY, state: 'active' }] : [],
   paid: {}   // 가짜 결제창에서 결제한 paymentId → 'ok' | 'fail'
 };
+// 인생역전 캐릭터(View 모양 — 지어낸 이름·숫자). life-char 만 처음부터 있다.
+const LIFE_CHAR = { name: '먼치', rank: 5, rankName: '대리', money: 1284500, works: 412, rankWorks: 37, titles: ['🚲 자전거 출근러', '🍀 대박 인생'], top: false, promo: null };
+if (!('life' in st)) st.life = kind === 'life-char' ? LIFE_CHAR : null;
 const save = () => sessionStorage.setItem('mock_st', JSON.stringify(st));
 const reply = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 // 서버 info.card(변경-1123 Ruling 4): {show, canPay, mode, storeId, channelKey} — show 가 거짓이면 키는 빈 글
@@ -109,6 +115,18 @@ window.fetch = async (url, init = {}) => {
       }
       case 'cancel': { const o = st.orders.find((x) => x.id === b.id); if (o) { o.state = 'canceled'; o.done = Date.now(); } save(); return reply({ ok: true, order: o }); }
     }
+  }
+  // 인생역전 연결 번호(서버 life 웹 길 — 2-7 약속과 같은 답)
+  if (path.endsWith('/life/me')) {
+    if (!sess) return reply({ ok: false, error: '다시 로그인해 주세요.' }, 401);
+    switch (b.action) {
+      case 'me': return reply({ ok: true, char: st.life });
+      case 'code':
+        if (!st.life && b.agree !== true) return reply({ ok: false, error: '동의가 필요해요.' }, 400);
+        return reply({ ok: true, code: '274815', until: Date.now() + 180000 });
+      case 'erase': st.life = null; save(); return reply({ ok: true });
+    }
+    return reply({ ok: false, error: '모르는 요청이에요.' }, 400);
   }
   return reply({ ok: false, error: '미리 보기' }, 404);
 };
